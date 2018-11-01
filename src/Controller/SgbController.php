@@ -5,7 +5,9 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\LigneBudgetaire;
+use App\Entity\Service;
 use App\Repository\LigneBudgetaireRepository;
+use App\Repository\ServiceRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -205,7 +207,62 @@ class SgbController extends AbstractController
             'uneLigne'=>$uneLigne
         ]);
     }
-    
+    /**
+     *      service de l'université
+     *  
+     */
+
+    /**
+     * @Route("/sgb/service/new", name="service_create")
+     * @Route("/sgb/service/{id}/edit", name="service_edit")
+     */
+    public function formservice(ServiceRepository $serviceRepository, Service $unservice = null, Request $request, ObjectManager $manager){
+       
+        if(!$unservice){
+        $unservice= new Service();
+    }
+    $em = $this->getDoctrine()->getManager();
+        $frmservice= $this->createFormBuilder( $unservice)
+                    ->add('designation')
+                    ->add('emailservice')
+                    ->add('description')
+                    ->getForm();
+       
+                    $frmservice->handleRequest($request);
+                    if( $frmservice->isSubmitted() &&  $frmservice->isValid()){
+                        if($em->getRepository("\App\Entity\Service")->findOneBy(array('designation'=>$unservice->getDesignation())) && $unservice->getId()!=null){
+                           echo '<h2 style="color:#000305;"> le service existe déjà </h2>';
+                        }else{
+                            $manager->persist($unservice);
+                            $manager->flush(); 
+                            //return $this->redirectToRoute('sgb_show', ['id' => $uneLigne->getId()]);    
+                        }
+                    } 
+                    $lesServices = $serviceRepository->findAll();        
+        return $this->render('sgb/service/service.html.twig', [
+            'formService'=> $frmservice->createView(),
+            'editMode'=> $unservice->getId()!==null,
+            'lesServices'=>$lesServices
+        ]);
+     }
+
+
+     /**
+     * @Route("/sgb/service/{id}/delete", name="service_delete")
+     */
+    public function deleteservice(Service $service = null, Request $request, ObjectManager $manager){
+       
+        if(!$service){
+       exit;
+    }
+         
+                        $manager->remove($service);
+                        $manager->flush(); 
+                        return $this->render('sgb/service/service.html.twig');   
+                  
+    }
+
+
     /**
      * @Route("/bootstrap.css", name="boots")
      */

@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme formService 'bootstrap_4_layout.html.twig' %}
+
+{% block body %}
+    <h1>Service </h1>
+   
+   {{ form_start(formService)}}
+ <button type="submit" class="btn btn-success">
+ {% if editMode %}
+  Modifier
+  {% else %}
+   Enregistrer
+  {% endif %}
+  
+   </button>
+
+    {{ form_row(formService.designation, {'attr' :{'placeholder':'Designation'}})}}
+    {{ form_row(formService.emailservice, {'attr' :{'placeholder':'E-mail'}})}}
+    {{ form_row(formService.description, {'attr' :{'placeholder':'description'}})}}
+   
+    {{ form_end(formService)}}
+
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Designation</th>
+      <th scope="col">E-mail</th>
+      <th scope="col">Description</th>
+      <th scope="col">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for service in lesServices %}
+    <tr>
+      <th scope="row">{{service.id}}</th>
+      <td>{{service.designation}}</td>
+      <td> {{service.emailservice}}</td>
+      <td>{{service.description}}</td>
+        <td><a href="{{path('service_edit', {'id':service.id})}}" class="btn btn-primary">Modifier</a>
+        <a href="{{path('service_delete', {'id':service.id})}}" class="btn btn-primary">Supprimer</a>
+      </td>
+    </tr>
+{% endfor %}
+    <tr class="table-primary">
+      <th scope="row"></th>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+   
+  </tbody>
+</table> 
+
+
+{% endblock %}
