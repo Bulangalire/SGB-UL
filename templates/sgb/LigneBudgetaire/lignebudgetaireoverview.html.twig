@@ -9,7 +9,8 @@
     
 <a type="submit" href="{{path('sgb_create')}}" class="btn btn-primary" >Ajout</a>
 <a type="submit" href="{{path('sgb_excelimport')}}" class="btn btn-primary" >Importet des lignes depuis Excel</a>
-<p class="btn btn-primary" >depenses : {{ligneDepense}}</p><p class="btn btn-primary">Recettes: {{ligneRecette}}</p>
+<a type="submit" name="trierdepenses" class="btn btn-success" >Depenses : {{ligneDepense}}</a>
+<a type="submit" name="trierRecette" class="btn btn-success">Recettes : {{ligneRecette}}</a>
 <table class="table table-hover">
   <thead>
     <tr>

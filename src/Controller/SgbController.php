@@ -57,6 +57,7 @@ class SgbController extends AbstractController
         // Trouver toutes les lignes portant cette Intitule
        // $ligneRecette = $repository->findByCategorieLigne("Recette");
         //$ligneDepense = $repository->findByCategorieLigne("Depense");
+       dump($request);
         $ligneRecette=$this->getDoctrine()->getRepository("\App\Entity\LigneBudgetaire")->findByCategorieLigne("Recette");
         $ligneDepense=$this->getDoctrine()->getRepository("\App\Entity\LigneBudgetaire")->findByCategorieLigne("Depense");
         // Trouver toutes les lignes
