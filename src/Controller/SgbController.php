@@ -230,18 +230,18 @@ class SgbController extends AbstractController
        
                     $frmservice->handleRequest($request);
                     if( $frmservice->isSubmitted() &&  $frmservice->isValid()){
-                        if($em->getRepository("\App\Entity\Service")->findOneBy(array('designation'=>$unservice->getDesignation())) && $unservice->getId()!=null){
-                           echo '<h2 style="color:#000305;"> le service existe déjà </h2>';
+                        if($em->getRepository("\App\Entity\Service")->findOneBy(array('designation'=>$unservice->getDesignation(), 'emailservice'=>$unservice->getEmailservice(), 'description'=>$unservice->getDescription())) && $unservice->getId()!==null){
+                           echo '<h2 style="color:red;"> le service existe déjà </h2>';
                         }else{
                             $manager->persist($unservice);
                             $manager->flush(); 
-                            //return $this->redirectToRoute('sgb_show', ['id' => $uneLigne->getId()]);    
+                            //return $this->redirectToRoute('sgb_show', ['id' => $uneLigne->getId()]);
                         }
                     } 
                     $lesServices = $serviceRepository->findAll();        
-        return $this->render('sgb/service/service.html.twig', [
+            return $this->render('sgb/service/service.html.twig', [
             'formService'=> $frmservice->createView(),
-            'editMode'=> $unservice->getId()!==null,
+           'editMode'=> $unservice->getId()!==null,
             'lesServices'=>$lesServices
         ]);
      }
@@ -258,7 +258,7 @@ class SgbController extends AbstractController
          
                         $manager->remove($service);
                         $manager->flush(); 
-                        return $this->render('sgb/service/service.html.twig');   
+                        return $this->redirectToRoute('service_create');   
                   
     }
 
