@@ -1,7 +1,7 @@
-<!DOCTYPE html>
+<!DOCTYPE html >
 <html>
     <head>
-        <meta charset="UTF-8">
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
         <title>{% block title %}SGB-UL{% endblock %}</title>
         <!--<link rel="stylesheet" href="https://bootswatch.com/4/flatly/bootstrap.min.css">-->
         <link rel="stylesheet" href="{{path('boots')}}">
@@ -21,6 +21,9 @@
             </li>
              <li class="nav-item">
                 <a class="nav-link" href="{{path('service_create')}}">Service <span class="sr-only"></span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{path('personne_create')}}">Personne <span class="sr-only"></span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{path('lb_overview')}}">Ligne Budgetaire <span class="sr-only">(current)</span></a>

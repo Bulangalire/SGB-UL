@@ -52,6 +52,7 @@
                             <td>
                                 <a href="{{path('service_edit', {'id':service.id})}}" class="btn btn-primary">Modifier</a>
                                 <a href="{{path('service_delete', {'id':service.id})}}" class="btn btn-primary">Supprimer</a>
+                                <a href="{{path('personne_by_service', {'id':service.id})}}" class="btn btn-primary">Personnes</a>
                             </td>
                         </tr>
                     {% endfor %}

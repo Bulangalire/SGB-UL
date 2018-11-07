@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme formPersonne 'bootstrap_4_layout.html.twig' %}
+
+{% block body %}
+
+    <table>
+        <tbody>
+          <tr>
+              <td>
+
+                    <h3>Personne
+                    </h3>
+
+                    {{ form_start(formPersonne)}}
+                    <button type="submit" class="btn btn-success">
+                        {% if editMode %}
+                            Modifier
+                        {% else %}
+                            Enregistrer
+                        {% endif %}
+
+                    </button>
+
+                    {{ form_row(formPersonne.nom, {'attr' :{'placeholder':'Nom'}})}}
+                    {{ form_row(formPersonne.postnom, {'attr' :{'placeholder':'Postnom'}})}}
+                    {{ form_row(formPersonne.prenom, {'attr' :{'placeholder':'Prénom'}})}}
+                    {{ form_row(formPersonne.password, {'attr' :{'placeholder':'password'}})}}
+                    {{ form_row(formPersonne.login, {'attr' :{'placeholder':'Login'}})}}
+                    {{ form_row(formPersonne.signature)}}
+                    {{ form_row(formPersonne.services)}}
+ 
+
+                    {{ form_end(formPersonne)}}
+
+              </td>
+            <td>
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Nom</th>
+                        <th scope="col">Postnom</th>
+                        <th scope="col">Prénom</th>
+                        <th scope="col">Login</th>
+                        <th scope="col">Servive</th>
+                        <th scope="col">Action</th>
+                            
+                       
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for personne in lesPersonnes %}
+                        <tr>
+                            <th scope="row">{{personne.id}}</th>
+                            <td>{{personne.nom}}</td>
+                            <td>{{personne.postnom}}</td>
+                            <td>{{personne.prenom}}</td>
+                            <td>{{personne.login}}</td>
+                            <td>{{personne.services.designation}}</td>
+                           <td>
+                                <a href="{{path('personne_edit', {'id':personne.id})}}" class="btn btn-primary">Modifier</a>
+                                <a href="{{path('personne_delete', {'id':personne.id})}}" class="btn btn-primary">Supprimer</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="table-primary">
+                        <th scope="row"></th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                </tbody>
+            </table>
+
+        </td>
+
+    </tr>
+
+</tbody>
+</table>
+
+{% endblock %}

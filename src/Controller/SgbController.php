@@ -6,8 +6,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\LigneBudgetaire;
 use App\Entity\Service;
-use App\Repository\LigneBudgetaireRepository;
+use App\Entity\Personne;
 use App\Repository\ServiceRepository;
+use App\Repository\PersonneRepository;
+use App\Repository\LigneBudgetaireRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -213,8 +215,10 @@ class SgbController extends AbstractController
      */
 
     /**
+     * @Route("/sgb/service/new/{errordelete}", name="errordeleteservice")
      * @Route("/sgb/service/new", name="service_create")
      * @Route("/sgb/service/{id}/edit", name="service_edit")
+     * 
      */
     public function formservice(ServiceRepository $serviceRepository, Service $unservice = null, Request $request, ObjectManager $manager){
        
@@ -251,16 +255,92 @@ class SgbController extends AbstractController
      * @Route("/sgb/service/{id}/delete", name="service_delete")
      */
     public function deleteservice(Service $service = null, Request $request, ObjectManager $manager){
+     if(!$service){
+       exit;
+    } 
+                    try{
+                        $manager->remove($service);
+                        $manager->flush(); 
+                        return $this->redirectToRoute('service_create');  
+                    }catch(\Exception $e){
+                        return $this->redirectToRoute('service_create');  
+                    }
+}
+
+     /**
+     *      Personne de l'université
+     *  
+     */
+
+    /**
+     * @Route("/sgb/personne/new", name="personne_create")
+     * @Route("/sgb/personne/{id}/edit", name="personne_edit")
+     * @Route("/sgb/personne/{id}/filtrer", name="personne_by_service")
+     */
+    public function formpersonne($id=null, PersonneRepository $personneRepository,ServiceRepository $serviceeRepository, Personne $unePersonne = null, Request $request, ObjectManager $manager){
        
-        if(!$service){
+        if(!$unePersonne){
+        $unePersonne= new Personne();
+    }
+    $em = $this->getDoctrine()->getManager();
+        $frmpersonne= $this->createFormBuilder( $unePersonne)
+                    ->add('nom')
+                    ->add('postnom')
+                    ->add('prenom')
+                    ->add('login')
+                    ->add('password')
+                    ->add('signature')
+                    ->add('services', ChoiceType::class, array(
+                        'choices'  => array($serviceeRepository->findAll())
+                        )) 
+                    ->getForm();
+                   
+                    $frmpersonne->handleRequest($request);
+                    if( $frmpersonne->isSubmitted() &&  $frmpersonne->isValid()){
+                        if($em->getRepository("\App\Entity\Personne")->findOneBy(array('nom'=>$unePersonne->getNom(), 'postnom'=>$unePersonne->getPostnom(), 'prenom'=>$unePersonne->getPrenom(), 'services'=>$unePersonne->getServices()->getDesignation())) && $unePersonne->getId()!==null){
+                           echo '<h2 style="color:red;"> la Personne existe déjà </h2>';
+                        }else{
+                            $manager->persist($unePersonne);
+                            $manager->flush(); 
+                            //return $this->redirectToRoute('sgb_show', ['id' => $uneLigne->getId()]);
+                        }
+                    } 
+                    if($unePersonne->getId()==null){
+                        $lesPersonnes = $personneRepository->findAll();  
+                    }else{
+                        if($id!=null){
+                        $lesPersonnes = $personneRepository->findByServices($serviceeRepository->findById($id)); 
+                        }
+                    }
+                          
+            return $this->render('sgb/personne/personne.html.twig', [
+            'formPersonne'=> $frmpersonne->createView(),
+           'editMode'=> $unePersonne->getId()!==null,
+            'lesPersonnes'=>$lesPersonnes
+        ]);
+     }
+
+
+     /**
+     * @Route("/sgb/personne/personne/{id}", name="personne_delete")
+     */
+    public function deletePersonne(Personne $personne = null, Request $request, ObjectManager $manager){
+       
+        if(!$personne){
        exit;
     }
          
-                        $manager->remove($service);
-                        $manager->flush(); 
-                        return $this->redirectToRoute('service_create');   
+    try{
+        $manager->remove($personne);
+        $manager->flush(); 
+        return $this->redirectToRoute('personne_create');  
+    }catch(\Exception $e){
+        return $this->redirectToRoute('personne_create');
+    }
                   
     }
+
+
 
 
     /**

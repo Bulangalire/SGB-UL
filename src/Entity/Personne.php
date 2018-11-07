@@ -47,7 +47,7 @@ class Personne
     private $signature;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\service", inversedBy="personnes")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Service", inversedBy="personnes")
      */
     private $services;
 
@@ -128,12 +128,12 @@ class Personne
         return $this;
     }
 
-    public function getServices(): ?service
+    public function getServices(): ?Service
     {
         return $this->services;
     }
 
-    public function setServices(?service $services): self
+    public function setServices(?Service $services): self
     {
         $this->services = $services;
 
