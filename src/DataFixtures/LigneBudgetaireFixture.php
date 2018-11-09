@@ -20,26 +20,26 @@ class LigneBudgetaireFixture extends Fixture
                
         for($s=1; $s<=4; $s++){
             $service = new Service();
-            $service->setDesignation( $faker->sentencece())
-                    ->setEmailservice("davidbulangalire$s@gmail.com")
-                    ->setDescription("Un petit text descriptif $s");
+            $service->setDesignation( $faker->sentence())
+                    ->setEmailservice($faker->email())
+                    ->setDescription($faker->paragraph(2));
 
             $manager->persist($service);
 
             for($j = 1; $j<=mt_rand(4, 6); $j++){
                 $personne = new Personne();
-                $personne->setNom("Anget Nom $j")
-                         ->setPostnom("AngetPostnom $j")
-                         ->setPrenom("Anget prenom $j")
-                         ->setLogin("Login $j")
-                         ->setPassword("Anget $j")
-                         ->setSignature("http://placehold.it/80x30")
+                $personne->setNom($faker->name())
+                         ->setPostnom($faker->name())
+                         ->setPrenom($faker->name())
+                         ->setLogin($faker->name())
+                         ->setPassword($faker->password())
+                         ->setSignature($faker->imageUrl($width = 120, $height = 80))
                          ->setServices( $service);
                 $manager->persist($personne);
                 
                 for($dep=1; $dep<=12; $dep++){
                     $depense = new Depense();
-                    $depense->setLibele(date("F d"))
+                    $depense->setLibele($faker->sentence())
                             ->setMontantdepense(mt_rand(20, 100))
                             ->setCreateAt(new \DateTime())
                             ->setUtilisateurdepense($personne);
@@ -57,7 +57,7 @@ class LigneBudgetaireFixture extends Fixture
             $ligneBudgetaire = new LigneBudgetaire();
             $ligneBudgetaire->setIntituleLigne("Salaire Agent n°$i")
                             ->setCompteLigne(5455+$i)
-                            ->setCategorieLigne("Recette")
+                            ->setCategorieLigne(randomElement($array = array ("Recette","Depense")))
                             ->setDescription("Une autre ligne budgetaire $i");
             $manager->persist($ligneBudgetaire);
         }
