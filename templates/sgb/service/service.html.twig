@@ -7,7 +7,7 @@
     <table>
         <tbody>
           <tr>
-              <td>
+             <td nowrap valign=top>
 
                     <h3>Service
                     </h3>
@@ -29,7 +29,7 @@
                     {{ form_end(formService)}}
 
               </td>
-            <td>
+             <td rowspan=2>
 
             <table class="table table-hover">
                 <thead>
@@ -50,8 +50,11 @@
                                 {{service.emailservice}}</td>
                             <td>{{service.description}}</td>
                             <td>
-                                <a href="{{path('service_edit', {'id':service.id})}}" class="btn btn-primary">Modifier</a>
-                                <a href="{{path('service_delete', {'id':service.id})}}" class="btn btn-primary">Supprimer</a>
+
+                                 <a href="{{path('service_edit', {'id':service.id})}}"><img src="{{path('edit_button')}}" /></a> 
+                                &nbsp; &nbsp; 
+                                <a href="{{path('service_delete', {'id':service.id})}}"> <img src="{{path('delete_button')}}" /></a>
+                      
                                 <a href="{{path('personne_by_service', {'id':service.id})}}" class="btn btn-primary">Personnes</a>
                             </td>
                         </tr>

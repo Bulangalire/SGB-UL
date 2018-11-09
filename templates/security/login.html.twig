@@ -1,0 +1,28 @@
+<link rel="stylesheet" href="{{path('boots')}}">
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+    <h1>Login</h1> 
+
+   <form action="{{ path('user_login') }}" method ="post">
+        <div class="form-group">
+            <input type="text" placeholder="Login" required name="_username" class="form-control">
+            
+        </div>
+         <div class="form-group">
+            <input type="password" placeholder="Mot de passe" required name="_password" class="form-control">
+            
+        </div>
+        <div class="form-group">
+            <button type="submit" required class="btn btn-success"> Connexion </button>
+            
+        </div>
+        
+   </form>
+    
+</div>
+{% endblock %}

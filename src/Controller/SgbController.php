@@ -10,15 +10,16 @@ use App\Entity\Personne;
 use App\Repository\ServiceRepository;
 use App\Repository\PersonneRepository;
 use App\Repository\LigneBudgetaireRepository;
+use App\Repository\DepenseRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntType;
-
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 class SgbController extends AbstractController
 {
     /**
@@ -277,22 +278,25 @@ class SgbController extends AbstractController
      * @Route("/sgb/personne/{id}/edit", name="personne_edit")
      * @Route("/sgb/personne/{id}/filtrer", name="personne_by_service")
      */
-    public function formpersonne($id=null, PersonneRepository $personneRepository,ServiceRepository $serviceeRepository, Personne $unePersonne = null, Request $request, ObjectManager $manager){
+    public function formpersonne($id=null, PersonneRepository $personneRepository, Personne $unePersonne = null, Request $request, ObjectManager $manager){
        
         if(!$unePersonne){
         $unePersonne= new Personne();
     }
     $em = $this->getDoctrine()->getManager();
+    $service=$em->getRepository("\App\Entity\Service");
         $frmpersonne= $this->createFormBuilder( $unePersonne)
                     ->add('nom')
                     ->add('postnom')
                     ->add('prenom')
-                    ->add('login')
+                    ->add('username')
                     ->add('password')
                     ->add('signature')
-                    ->add('services', ChoiceType::class, array(
-                        'choices'  => array($serviceeRepository->findAll())
-                        )) 
+                    ->add('services', EntityType::class, array(
+                        'class'  => Service::class,
+                        'choice_label' => 'designation'
+                            ))
+                        
                     ->getForm();
                    
                     $frmpersonne->handleRequest($request);
@@ -309,7 +313,7 @@ class SgbController extends AbstractController
                         $lesPersonnes = $personneRepository->findAll();  
                     }else{
                         if($id!=null){
-                        $lesPersonnes = $personneRepository->findByServices($serviceeRepository->findById($id)); 
+                        $lesPersonnes = $personneRepository->findByServices($service->findById($id)); 
                         }
                     }
                           
@@ -358,7 +362,7 @@ class SgbController extends AbstractController
                     ->getForm();
        
                     $frmDepense->handleRequest($request);
-                    
+
                     if( $frmservice->isSubmitted() &&  $frmDepense->isValid()){
                         if($em->getRepository("\App\Entity\Depense")->find($unedepense->getId()!==null)){
                            echo '<h2 style="color:red;"> le service existe déjà </h2>';
@@ -387,6 +391,20 @@ class SgbController extends AbstractController
     public function bootstrap(){
 
         return $this->render('bootstrap.css');
+    }
+    /**
+     * @Route("/resources/images/delete.png", name="delete_button")
+     */
+    public function setDelete_button(){
+
+        return $this->render('/resources/images/delete.png');
+    }
+    /**
+     * @Route("/resources/images/edit.png", name="edit_button")
+     */
+    public function setEdit_button(){
+
+        return $this->render('/resources/images/edit.png');
     }
    
 }

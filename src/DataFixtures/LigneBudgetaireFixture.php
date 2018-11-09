@@ -10,13 +10,13 @@ use App\Entity\Service;
 use App\Entity\Personne;
 use App\Entity\Depense;
 use App\Entity\recette;
-
+//require_once 'fzaninotto\faker\src\autoload.php';
 class LigneBudgetaireFixture extends Fixture
 {
     public function load(ObjectManager $manager)
     {
         //J'Utilise le pacquet Faker pour creer des données de test
-        $faker = Faker\Factory::create('fr_FR');
+        $faker = \Faker\Factory::create('fr_FR');
                
         for($s=1; $s<=4; $s++){
             $service = new Service();
@@ -31,7 +31,7 @@ class LigneBudgetaireFixture extends Fixture
                 $personne->setNom($faker->name())
                          ->setPostnom($faker->name())
                          ->setPrenom($faker->name())
-                         ->setLogin($faker->name())
+                         ->setUsername($faker->name())
                          ->setPassword($faker->password())
                          ->setSignature($faker->imageUrl($width = 120, $height = 80))
                          ->setServices( $service);
@@ -57,7 +57,7 @@ class LigneBudgetaireFixture extends Fixture
             $ligneBudgetaire = new LigneBudgetaire();
             $ligneBudgetaire->setIntituleLigne("Salaire Agent n°$i")
                             ->setCompteLigne(5455+$i)
-                            ->setCategorieLigne(randomElement($array = array ("Recette","Depense")))
+                            ->setCategorieLigne(\Faker\Provider\Base::randomElement($array = array ('Recette','Depense')))
                             ->setDescription("Une autre ligne budgetaire $i");
             $manager->persist($ligneBudgetaire);
         }

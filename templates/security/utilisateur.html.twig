@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+ 
+<h3>Ajout d'un utilisateur</h3>
+{{form_start(formUser)}}
+ {{ form_row(formUser.nom, {'attr' :{'placeholder':'Nom'}})}}
+{{ form_row(formUser.postnom, {'attr' :{'placeholder':'Postnom'}})}}
+{{ form_row(formUser.prenom, {'attr' :{'placeholder':'Prénom'}})}}
+{{ form_row(formUser.password, {'attr' :{'placeholder':'password'}})}}
+{{ form_row(formUser.passwordconfirm, {'attr' :{'placeholder':'password confirmer'}})}}
+{{ form_row(formUser.username, {'attr' :{'placeholder':'Login'}})}}
+{{ form_row(formUser.signature)}}
+{{ form_row(formUser.services)}}
+<button type="submit" class="btn btn-success">Ajouter</button>
+{{form_end(formUser)}}
+
+{% endblock %}

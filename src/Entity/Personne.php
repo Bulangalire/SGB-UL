@@ -3,12 +3,19 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PersonneRepository")
+ * @UniqueEntity(
+ * fields={"username"},
+ * message="Ce login est déjà Utiliser !"
+ * )
  */
-class Personne
-{
+class Personne implements UserInterface
+{ 
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -33,14 +40,15 @@ class Personne
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\Length(min=8, minMessage="Votre mot de passe doit etre de minimum 8 Caracteres.")
      */
     private $password;
-
+  
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\EqualTo(propertyPath="password", message="Veuillez saisir le même mot de passe.")
      */
-    private $login;
-
+    private $passwordconfirm;
+   
     /**
      * @ORM\Column(type="blob", nullable=true)
      */
@@ -50,6 +58,11 @@ class Personne
      * @ORM\ManyToOne(targetEntity="App\Entity\Service", inversedBy="personnes")
      */
     private $services;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $username;
 
     public function getId(): ?int
     {
@@ -104,17 +117,18 @@ class Personne
         return $this;
     }
 
-    public function getLogin(): ?string
+    public function getPasswordconfirm(): ?string
     {
-        return $this->login;
+        return $this->passwordconfirm;
     }
 
-    public function setLogin(?string $login): self
+    public function setPasswordconfirm(?string $passwordconfirm): self
     {
-        $this->login = $login;
+        $this->passwordconfirm = $passwordconfirm;
 
         return $this;
     }
+   
 
     public function getSignature()
     {
@@ -136,6 +150,22 @@ class Personne
     public function setServices(?Service $services): self
     {
         $this->services = $services;
+
+        return $this;
+    }
+    public function getRoles(){
+        return ['ROLE_USER'];
+    }
+    public function eraseCredentials(){}
+    public function getSalt(){}
+    public function getUsername(): ?string
+    {
+        return $this->username;
+    }
+
+    public function setUsername(?string $username): self
+    {
+        $this->username = $username;
 
         return $this;
     }
