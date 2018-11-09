@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme formLigne 'bootstrap_4_layout.html.twig' %}
+
+{% block body %}
+    <h1>Ligne budgetaire</h1>
+   
+   {{ form_start(formLigne)}}
+ <button type="submit" class="btn btn-success">
+ {% if editMode %}
+  Modifier
+  {% else %}
+   Enregistrer
+  {% endif %}
+  
+   </button>
+
+    {{ form_row(formLigne.intituleLigne, {'attr' :{'placeholder':'Intitulé'}})}}
+    {{ form_row(formLigne.CompteLigne, {'attr' :{'placeholder':'Compte'}})}}
+   
+    {% for categorie in formLigne.CategorieLigne %}
+    {{ form_row(categorie) }}
+    {% endfor %}
+    {{ form_row(formLigne.description, {'attr' :{'placeholder':'description'}})}}
+   
+    {{ form_end(formLigne)}}
+{% endblock %}

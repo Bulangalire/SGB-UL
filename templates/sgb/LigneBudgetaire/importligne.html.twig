@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme formimport 'bootstrap_4_layout.html.twig' %}
+
+{% block body %}
+    <h1> Importer des lignes budgetaire</h1>
+    {{ form_start(formimport)}}
+   {{ form_widget(formimport)}}
+ <button type="submit" class="btn btn-success">Importer</button>
+  
+    {{ form_end(formimport)}}
+{% endblock %}

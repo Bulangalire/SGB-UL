@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+
+<div class="form-group">
+  <fieldset>
+    <label class="control-label" for="readOnlyInput">ID</label>
+    <input class="form-control" id="readOnlyInput"  readonly="" type="text"  value="{{uneLigne.id}}">
+  </fieldset>
+    <label class="col-form-label" for="inputDefault">Intitulé</label>
+    <input class="form-control" id="inputDefault" type="text" value="{{uneLigne.intituleLigne}}">
+
+    <label class="col-form-label" for="compte">Compte</label>
+    <input class="form-control"  id="compte" type="text"  value="{{uneLigne.compteLigne}}">
+
+    <label for="exampleSelect1">Catégorie</label>
+      <select class="form-control" id="categorie">
+        <option selected="selected">{{uneLigne.categorieLigne}}</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+      </select>
+<label class="col-form-label" for="Description">Description</label>
+    <input class="form-control"  id="Description" type="text"  value="{{uneLigne.description}}">
+</div>
+
+{% endblock %}
