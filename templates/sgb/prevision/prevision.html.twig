@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <table>
+        <tbody>
+            <tr>
+                <td nowrap="nowrap" valign="top">
+                    <h3>Prevision  </h3>
+                    {{ form_start(formPrevision)}}
+
+                    {{ form_widget(formPrevision)}}
+
+                    {{ form_end(formPrevision)}}
+
+                </td>
+
+                <td rowspan="2">
+
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <th scope="row"></th>
+                                <td></td>
+                            </tr>
+
+                            <tr class="table-primary">
+                                <th scope="row"></th>
+                                <td></td>
+
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </td>
+
+            </tr>
+            <tr></tr>
+
+        </tbody>
+    </table>
+
+{% endblock %}

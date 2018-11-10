@@ -6,7 +6,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\LigneBudgetaire;
 use App\Entity\Service;
+use App\Entity\Previsionbudget;
 use App\Entity\Personne;
+use App\Entity\SousRubrique;
 use App\Repository\ServiceRepository;
 use App\Repository\PersonneRepository;
 use App\Repository\LigneBudgetaireRepository;
@@ -62,7 +64,7 @@ class SgbController extends AbstractController
         // Trouver toutes les lignes portant cette Intitule
        // $ligneRecette = $repository->findByCategorieLigne("Recette");
         //$ligneDepense = $repository->findByCategorieLigne("Depense");
-       dump($request);
+     
         $ligneRecette=$this->getDoctrine()->getRepository("\App\Entity\LigneBudgetaire")->findByCategorieLigne("Recette");
         $ligneDepense=$this->getDoctrine()->getRepository("\App\Entity\LigneBudgetaire")->findByCategorieLigne("Depense");
         // Trouver toutes les lignes
@@ -79,26 +81,19 @@ class SgbController extends AbstractController
      * @Route("sgb/LigneBudgetaire/importligne", name="sgb_excelimport")
      */
     public function importligne(Request $request){
-    dump($request);
-         $formimportligne= $this->createFormBuilder( null)
+           $formimportligne= $this->createFormBuilder( null)
                     ->add('attachment', FileType::class)
                     ->getForm();
        
                     $formimportligne->handleRequest($request);
-                    
                     if( $formimportligne->isSubmitted() &&  $formimportligne->isValid()){
-                     
-                       
                         $file = $formimportligne['attachment']->getData();
-                       
-                       
-                       
-                       
-                             //$file=$_FILES['importfile']['tmp_name'];
+                        //$file=$_FILES['importfile']['tmp_name'];
                             $handle = fopen($file, "r");
                             $i=0;
                                 while(($fileop = fgetcsv($handle,1000, ";")) !== false){
                                     $em = $this->getDoctrine()->getManager();
+                                   
                                     $LigneBudgetaire = new LigneBudgetaire();
                                     $LigneBudgetaire->setIntituleLigne($fileop[1]);
                                     $LigneBudgetaire->setCompteLigne($fileop[2], IntType::class);
@@ -118,13 +113,11 @@ class SgbController extends AbstractController
                         //return $this->redirectToRoute('lb_overview');    
                         return $this->redirect($this->generateUrl('lb_overview', [
                             'sum'=>$i
-                        ]));  
-                    
-                }
+                        ]));
+                    }
                 return $this->render('sgb/LigneBudgetaire/importligne.html.twig', [
-            'formimport'=> $formimportligne->createView()]);    
-        
-    }
+            'formimport'=> $formimportligne->createView()]); 
+        }
 
 
     /**
@@ -381,6 +374,38 @@ class SgbController extends AbstractController
      }
 
 
+    /**
+     * @Route("/sgb/prevision/new", name="sgb_prevision")
+     */
+    public function prevision(Request $request){
+        $prevision = new Previsionbudget();
+        $Recette ='Recette';
+        $formPrevision = $this->createFormBuilder($prevision )        
+                    ->add('sousRubrique', EntityType::class, array(
+                        'class'  => SousRubrique::class,
+                        'choice_label' => 'nom'
+                            ))
+                    ->add('lignebudgetprevision', EntityType::class, array(
+                        'class'  => LigneBudgetaire::class,
+                        'query_builder' => function (\Doctrine\ORM\EntityRepository $er)use ($Recette){
+                            //$Recette="Recette";
+                            return $er->createQueryBuilder('categorieLigne')
+                            ->where('categorieLigne=:Recette')
+                            ->setParameter('Recette', $Recette);
+                        }
+                        ,'multiple'=>false
+                        ,'required' => true
+                        ,'label'=> 'LigneRecette'
+                        ,'placeholder'=>'--Choisir une ligne--'
+                            ))
+                    
+                                                ->getForm();
+                                                dump($formPrevision);
+                        $formPrevision->handleRequest($request);
+        return $this->render('sgb/prevision/prevision.html.twig', [
+            'formPrevision'=> $formPrevision->createView()]);
+    }
+
 
 
 
@@ -406,5 +431,9 @@ class SgbController extends AbstractController
 
         return $this->render('/resources/images/edit.png');
     }
+
+
+
+     
    
 }

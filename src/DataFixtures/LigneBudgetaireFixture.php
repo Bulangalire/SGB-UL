@@ -49,10 +49,7 @@ class LigneBudgetaireFixture extends Fixture
 
                 $manager->flush();
         }
-
-
-        
-        
+                
         for($i = 1; $i<=10; $i++){
             $ligneBudgetaire = new LigneBudgetaire();
             $ligneBudgetaire->setIntituleLigne("Salaire Agent n°$i")
@@ -64,5 +61,21 @@ class LigneBudgetaireFixture extends Fixture
 
 
         $manager->flush();
+
+        for($i=1; $i<=4; $i++){
+            $rubrique = new Rubrique();
+            $rubrique->setNom("Foctionnement");
+            $manager->persist($rubrique);
+    
+            for($j=1; $j<=10; $j++){
+                $sourRubrique = new SousRubrique();
+                $sourRubrique->setNom("Recettes sur services académiques");
+                $sousRubrique->setRubrique($rubrique);
+            }
+        }
+        $manager->flush();
+
     }
+
+    
 }

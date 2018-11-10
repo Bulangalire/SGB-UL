@@ -29,7 +29,7 @@
                 <a class="nav-link" href="{{path('lb_overview')}}">Ligne Budgetaire <span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/prevision">Prévision</a>
+                <a class="nav-link" href="{{path('sgb_prevision')}}">Prévision</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/Recette">Recette</a>
@@ -41,11 +41,23 @@
                 <a class="nav-link" href="/rapports">Rapports</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{path('admin')}}">Configuration</a>
+                <a class="nav-link" href="{{path('admin_formimportrubrique')}}">Configuration</a>
             </li>
-             <li class="nav-item">
+             
+
+            {% if app.user %}
+                
+                 <li class="nav-item">
                 <a class="nav-link" href="{{path('user_logout')}}">Deconnexion</a>
             </li>
+             <li class="nav-item">
+               <b> <a class="nav-link">  {{ app.user.nom }} : {{ app.user.services.designation }}  </a> </b>
+                 </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{path('user_login')}}">Connexion</a>
+            </li>
+            {% endif %}
             </ul>
             <!--<form class="form-inline my-2 my-lg-0">
             <input class="form-control mr-sm-2" type="text" placeholder="Search">

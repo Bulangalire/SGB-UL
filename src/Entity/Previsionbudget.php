@@ -6,6 +6,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PrevisionbudgetRepository")
+ * @UniqueEntity(
+ * fields={"anneebudgetprevision", "service", "lignebudgetprevision"},
+ * message="Cette ligne a été déjà  prevue dans ce service pour l'année budgetaire selectionée !!!"
  */
 class Previsionbudget
 {
@@ -43,6 +46,11 @@ class Previsionbudget
      * @ORM\Column(type="boolean", nullable=true)
      */
     private $iscentraliser;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\SousRubrique")
+     */
+    private $sousrubrique;
 
     public function getId(): ?int
     {
@@ -105,6 +113,18 @@ class Previsionbudget
     public function setIscentraliser(?bool $iscentraliser): self
     {
         $this->iscentraliser = $iscentraliser;
+
+        return $this;
+    }
+
+    public function getSousrubrique(): ?SousRubrique
+    {
+        return $this->sousrubrique;
+    }
+
+    public function setSousrubrique(?SousRubrique $sousrubrique): self
+    {
+        $this->sousrubrique = $sousrubrique;
 
         return $this;
     }
