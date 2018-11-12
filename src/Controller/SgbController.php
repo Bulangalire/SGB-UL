@@ -2,26 +2,28 @@
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
-use App\Entity\LigneBudgetaire;
 use App\Entity\Service;
-use App\Entity\Previsionbudget;
 use App\Entity\Personne;
 use App\Entity\SousRubrique;
+use App\Entity\Anneebudgetaire;
+use App\Entity\LigneBudgetaire;
+use App\Entity\Previsionbudget;
+use App\Repository\DepenseRepository;
 use App\Repository\ServiceRepository;
 use App\Repository\PersonneRepository;
 use App\Repository\LigneBudgetaireRepository;
-use App\Repository\DepenseRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
 class SgbController extends AbstractController
 {
     /**
@@ -249,7 +251,7 @@ class SgbController extends AbstractController
      * @Route("/sgb/service/{id}/delete", name="service_delete")
      */
     public function deleteservice(Service $service = null, Request $request, ObjectManager $manager){
-     if(!$service){
+     if(!$service){ 
        exit;
     } 
                     try{
@@ -377,33 +379,95 @@ class SgbController extends AbstractController
     /**
      * @Route("/sgb/prevision/new", name="sgb_prevision")
      */
-    public function prevision(Request $request){
+    public function prevision(Request $request, ObjectManager $manager){
+        
+        $em = $this->getDoctrine()->getManager();
         $prevision = new Previsionbudget();
-        $Recette ='Recette';
-        $formPrevision = $this->createFormBuilder($prevision )        
-                    ->add('sousRubrique', EntityType::class, array(
-                        'class'  => SousRubrique::class,
-                        'choice_label' => 'nom'
+        
+        $formPrevision = $this->createFormBuilder($prevision)
+                ->add('sousrubrique', EntityType::class, array(
+                    'class'  => Sousrubrique::class,
+                    'choice_label' => 'nom',
+                    'label'=>'Sous Rubrique'
+                        ))
+                    ->add('service', EntityType::class, array(
+                        'class'  => Service::class,
+                        'choice_label' => 'designation'
                             ))
                     ->add('lignebudgetprevision', EntityType::class, array(
-                        'class'  => LigneBudgetaire::class,
-                        'query_builder' => function (\Doctrine\ORM\EntityRepository $er)use ($Recette){
-                            //$Recette="Recette";
-                            return $er->createQueryBuilder('categorieLigne')
-                            ->where('categorieLigne=:Recette')
-                            ->setParameter('Recette', $Recette);
-                        }
-                        ,'multiple'=>false
-                        ,'required' => true
-                        ,'label'=> 'LigneRecette'
-                        ,'placeholder'=>'--Choisir une ligne--'
+                        'class'  => Lignebudgetaire::class,
+                        'choice_label' => 'intituleLigne'
                             ))
+                    ->add('anneebudgetprevision', EntityType::class, array(
+                        'class'  => Anneebudgetaire::class,
+                        'choice_label' => 'anneebudget'
+                            ))
+
+                    ->add('iscentraliser', ChoiceType::class,[
+                        'choices'=>array(
+                            'Centraliser'=>true,
+                            'Decentraliser'=>false,
+                            ),
+                        'expanded'=> false,
+                        'label'=> 'Centraliser ou Decentraliser',
+                ])
+                ->add('montantprevision')
+                    ->getForm();
+       
+                    $formPrevision->handleRequest($request);
+                    if( $formPrevision->isSubmitted() &&  $formPrevision->isValid()){
+                        if($em->getRepository("\App\Entity\Previsionbudget")->findOneBy(
+                            array('service'=>$prevision->getService(), 
+                            'anneebudgetprevision'=>$prevision->getAnneebudgetprevision(), 
+                            'lignebudgetprevision'=>$prevision->getLignebudgetprevision()) 
+                            )&& $prevision->getId()!==null){
+                                echo '<h2 style="color:red;"> la prevision existe déjà </h2>';
+                            }else{
+                       $manager->persist($prevision);
+                       $manager->flush();
+
+                            }
+                    }
+                    $previsions = $em->getRepository(Previsionbudget::class)->findAll();
                     
-                                                ->getForm();
-                                                dump($formPrevision);
-                        $formPrevision->handleRequest($request);
+                    /*
+                        $ligneRecettes = $em->getRepository(LigneBudgetaire::class)->findAll();
+                        $services = $em->getRepository(Service::class)->findAll();
+                        $sousRubriques = $em->getRepository(SousRubrique::class)->findAll();
+                        $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
+                        $Recette="Recette";
+                        $queryRecette= $em->createQuery(
+                            '
+                            SELECT
+                                        l.intituleLigne, 
+                                        l.id
+                            FROM
+                                    App\Entity\LigneBudgetaire l
+                            WHERE
+                                    l.categorieLigne= :catLigne
+                            '
+
+                        )->setParameter('catLigne', $Recette );
+                        $resultatRecette = $queryRecette->execute(); 
+
+                        $Depense="Depense";
+                        $queryDepense= $em->createQuery(
+                            '
+                            SELECT
+                                        l.intituleLigne, 
+                                        l.id
+                            FROM
+                                    App\Entity\LigneBudgetaire l
+                            WHERE
+                                    l.categorieLigne= :catLigne
+                            '
+
+                        )->setParameter('catLigne', $Depense );
+                        $resultatDepense = $queryDepense->execute(); 
+                        */
         return $this->render('sgb/prevision/prevision.html.twig', [
-            'formPrevision'=> $formPrevision->createView()]);
+                         'formPrevision'=>$formPrevision->createView(),
+                         'previsions'=>$previsions ]);
     }
 
 

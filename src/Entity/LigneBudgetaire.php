@@ -23,10 +23,7 @@ class LigneBudgetaire
      */
     private $intituleLigne;
 
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     */ 
-    private $compteLigne;
+ 
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -37,6 +34,11 @@ class LigneBudgetaire
      * @ORM\Column(type="text", nullable=true)
      */
     private $description;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $compteLigne;
 
     public function getId(): ?int
     {
@@ -55,17 +57,7 @@ class LigneBudgetaire
         return $this;
     }
 
-    public function getCompteLigne(): ?int
-    {
-        return $this->compteLigne;
-    }
-
-    public function setCompteLigne(?int $compteLigne): self
-    {
-        $this->compteLigne = $compteLigne;
-
-        return $this;
-    }
+ 
 
     public function getCategorieLigne(): ?string
     {
@@ -87,6 +79,18 @@ class LigneBudgetaire
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getCompteLigne(): ?string
+    {
+        return $this->compteLigne;
+    }
+
+    public function setCompteLigne(string $compteLigne): self
+    {
+        $this->compteLigne = $compteLigne;
 
         return $this;
     }

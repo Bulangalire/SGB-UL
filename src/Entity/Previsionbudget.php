@@ -3,12 +3,14 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PrevisionbudgetRepository")
  * @UniqueEntity(
  * fields={"anneebudgetprevision", "service", "lignebudgetprevision"},
  * message="Cette ligne a été déjà  prevue dans ce service pour l'année budgetaire selectionée !!!"
+ * )
  */
 class Previsionbudget
 {

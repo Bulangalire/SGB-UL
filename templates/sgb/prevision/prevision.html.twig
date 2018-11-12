@@ -1,51 +1,112 @@
 {% extends 'base.html.twig' %}
-
+{% form_theme formPrevision 'bootstrap_4_layout.html.twig' %}
 {% block body %}
-
+    <h3>Prevision
+    </h3>
     <table>
         <tbody>
+           
             <tr>
-                <td nowrap="nowrap" valign="top">
-                    <h3>Prevision  </h3>
-                    {{ form_start(formPrevision)}}
+                <td>
 
-                    {{ form_widget(formPrevision)}}
-
-                    {{ form_end(formPrevision)}}
+                     {{ form_start(formPrevision)}}
+                      {{ form_row(formPrevision.sousrubrique)}}
 
                 </td>
 
-                <td rowspan="2">
-
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th scope="col"></th>
-
-                            </tr>
-                        </thead>
-                        <tbody>
-
-                            <tr>
-                                <th scope="row"></th>
-                                <td></td>
-                            </tr>
-
-                            <tr class="table-primary">
-                                <th scope="row"></th>
-                                <td></td>
-
-                            </tr>
-
-                        </tbody>
-                    </table>
+                <td>
+                    
+                    {{ form_row(formPrevision.service, {'attr': {'selected':'{{ app.user.services.designation }}' }})}}
 
                 </td>
 
+                <td></td>
             </tr>
-            <tr></tr>
+            <tr>
+                <td>
+                   
+                    {{ form_row(formPrevision.lignebudgetprevision)}}
+                </td>
+                <td>
+                    
+                    {{ form_row(formPrevision.anneebudgetprevision)}}
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                  
+                    {{ form_row(formPrevision.iscentraliser)}}
+                </td>
+                <td>
+                    {{ form_row(formPrevision.montantprevision, {'attr' :{'required':'required'}})}}
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <button type="submit" name="send" class="btn btn-success">
+                        Sauvegarder</button>
+                </td>
+                <td>
+                    <h5></h5>
 
+                </td>
+                <td></td>
+            </tr>
+
+
+
+            {{ form_end(formPrevision)}}
+
+            <tr>
+            <td colspan='3'>
+             <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Rubrique</th>
+                        <th scope="col">Ligne</th>
+                        <th scope="col">Service</th>
+                        <th scope="col">Année</th>
+                        <th scope="col">Montant</th>
+                        <th scope="col">Action</th>
+                            
+                       
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prevision in previsions %}
+                        <tr>
+                            <th scope="row">{{prevision.id}}</th>
+                            <td>{{prevision.sousrubrique.nom}}</td>
+                            <td>{{prevision.lignebudgetprevision.intituleLigne}}</td>
+                            <td>{{prevision.service.designation}}</td>
+                            <td>{{prevision.anneebudgetprevision.anneebudget}}</td>
+                            <td>{{prevision.montantprevision}}</td>
+                            
+                           <td>
+                                <a href="{{path('sgb_prevision', {'id':prevision.id})}}"><img src="{{path('edit_button')}}" /></a> 
+                                &nbsp; &nbsp; 
+                                <a href="{{path('sgb_prevision', {'id':prevision.id})}}"> <img src="{{path('delete_button')}}" /></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="table-primary">
+                        <th scope="row"></th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                </tbody>
+            </table>
+            
+            
+            </td>
+            </tr>
         </tbody>
     </table>
-
 {% endblock %}
