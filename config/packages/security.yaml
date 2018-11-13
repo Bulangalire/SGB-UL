@@ -15,6 +15,9 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
+            # les urls auxquels s'appliquent ce firewall, dans ce cas, ce sont toutes les urls
+           # pattern: ^/
+
             anonymous: true
 
             provider: in_database
@@ -22,8 +25,13 @@ security:
             form_login:
                 login_path: user_login
                 check_path: user_login
+                # Securisation des formulaires
+                csrf_token_generator: security.csrf.token_manager
+                # La page par defaut apres une connexion reussie
+                default_target_path: user_menu
             
             logout:
+                # La route où se trouve le process de deconnexion
                 path: user_logout
                 target: user_login
 
@@ -37,6 +45,9 @@ security:
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
-    #access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+    # Les regles de securité
+    # Là dans ce cas seul les utilisateurs ayant le rôle ROLE_ADMIN
+    # peuvent acceder à toutes les pages commençant par /admin
+    access_control:
+         #- { path: ^/admin, roles: ROLE_ADMIN }
+         #- { path: ^/profile, roles: ROLE_USER }

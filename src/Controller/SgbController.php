@@ -8,6 +8,7 @@ use App\Entity\SousRubrique;
 use App\Entity\Anneebudgetaire;
 use App\Entity\LigneBudgetaire;
 use App\Entity\Previsionbudget;
+use Symfony\Bridge\Twig\AppVariable;
 use App\Repository\DepenseRepository;
 use App\Repository\ServiceRepository;
 use App\Repository\PersonneRepository;
@@ -378,12 +379,15 @@ class SgbController extends AbstractController
 
     /**
      * @Route("/sgb/prevision/new", name="sgb_prevision")
+     * @Route("/sgb/prevision/{id}/edit", name="prevision_edit")
      */
-    public function prevision(Request $request, ObjectManager $manager){
+    public function prevision(Request $request, PersonneRepository $personneRepository,Previsionbudget $prevision=null,  ObjectManager $manager){
         
-        $em = $this->getDoctrine()->getManager();
+       
+      if(!$prevision){
         $prevision = new Previsionbudget();
-        
+    }
+    $em = $this->getDoctrine()->getManager();
         $formPrevision = $this->createFormBuilder($prevision)
                 ->add('sousrubrique', EntityType::class, array(
                     'class'  => Sousrubrique::class,
@@ -423,13 +427,39 @@ class SgbController extends AbstractController
                             )&& $prevision->getId()!==null){
                                 echo '<h2 style="color:red;"> la prevision existe déjà </h2>';
                             }else{
-                       $manager->persist($prevision);
-                       $manager->flush();
+                                $manager->persist($prevision);
+                                $manager->flush();
 
                             }
                     }
                     $previsions = $em->getRepository(Previsionbudget::class)->findAll();
-                    
+                  
+                    $serviceuser=$this->getUser()->getServices()->getId();
+                  
+                    $queryLigneParService= $em->createQuery(
+                        '
+                        SELECT
+                                    r.nom,
+                                    s.designation,
+                                    l.intituleLigne,
+                                    a.anneebudget,
+                                    p.id,
+                                    p.montantprevision
+                        FROM
+                   
+                                App\Entity\Previsionbudget p
+                        LEFT JOIN App\Entity\SousRubrique r WITH p.sousrubrique = r.id
+                        LEFT JOIN  App\Entity\Service s WITH p.service = s.id
+                        LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
+                        LEFT JOIN  App\Entity\Anneebudgetaire a WITH p.anneebudgetprevision = a.id
+                        WHERE
+                                p.service= :serviceuser
+                        '
+                         )->setParameter('serviceuser', $serviceuser );
+                    $resultatLigneParService = $queryLigneParService->execute(); 
+                   // echo 'Service :'. $session->get('serviceuser');
+                   
+                
                     /*
                         $ligneRecettes = $em->getRepository(LigneBudgetaire::class)->findAll();
                         $services = $em->getRepository(Service::class)->findAll();
@@ -467,7 +497,7 @@ class SgbController extends AbstractController
                         */
         return $this->render('sgb/prevision/prevision.html.twig', [
                          'formPrevision'=>$formPrevision->createView(),
-                         'previsions'=>$previsions ]);
+                         'previsions'=>$resultatLigneParService ]);
     }
 
 
@@ -480,6 +510,49 @@ class SgbController extends AbstractController
     public function bootstrap(){
 
         return $this->render('bootstrap.css');
+    }
+    /**
+     * @Route("/popper.js", name="popper")
+     */
+    public function popper(){
+
+        return $this->render('popper.js');
+    }
+     /**
+     * @Route("/bootstrapjs.js", name="bootstrapjs")
+     */
+    public function bootstrapjs(){
+
+        return $this->render('bootstrapjs.js');
+    }
+    /**
+     * @Route("/jquery.js", name="jquery")
+     */
+    public function jquery(){
+
+        return $this->render('jquery.js');
+    }
+     /**
+     * @Route("/CustomScrollbarjs.js", name="CustomScrollbarjs")
+     */
+    public function CustomScrollbarjs(){
+
+        return $this->render('CustomScrollbarjs.js');
+    }
+    /**
+     * @Route("/all.css", name="all")
+     */
+    public function cssAll(){
+
+        return $this->render('all.css');
+    }
+    /**
+     * @Route("/CustomScrollbar.css", name="CustomScrollbar")
+     */
+    public function CustomScrollbar(){
+    
+
+        return $this->render('CustomScrollbar.css');
     }
     /**
      * @Route("/resources/images/delete.png", name="delete_button")

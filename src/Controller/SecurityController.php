@@ -4,16 +4,20 @@ namespace App\Controller;
 
 use App\Entity\Personne;
 use App\Entity\Rubrique;
-use App\Entity\SousRubrique;
-
 use App\Form\AjouUserType;
+
+use App\Entity\SousRubrique;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\HttpFoundation\Session\Storage\PhpBridgeSessionStorage;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 class SecurityController extends AbstractController
 {
@@ -21,10 +25,16 @@ class SecurityController extends AbstractController
     /**
      * @Route("/security/utilisateur", name="useradd")
      */
-    public function inscription(Request $request, ObjectManager $manager,
+    public function inscription(Personne $personne=null, Request $request, ObjectManager $manager,
     UserPasswordEncoderInterface $encoder )
     {
+        if($personne){
+            $session = new Session();
+            $session->start();
+            $session->set('serviceuser', $personne->getServices());
+        }else{
         $personne = new Personne();
+        }
         $formUser = $this->createForm(AjouUserType::class, $personne);
         $formUser->handleRequest($request);
         if( $formUser->isSubmitted() &&  $formUser->isValid()){
@@ -42,15 +52,44 @@ class SecurityController extends AbstractController
     /**
      * @Route("/security/login", name="user_login")
      */
-    public function login(){
-        return $this->render('security/login.html.twig');
+    public function login(AuthenticationUtils $helper, Personne $personne=null): Response{
+       // legacy application configures session
+       // ini_set('session.save_handler', 'files');
+       // ini_set('session.save_path', '/tmp');
+      //  session_start();
+
+        // Get Symfony to interface with this existing session
+        $session = new Session(new PhpBridgeSessionStorage());
+
+        // symfony will now interface with the existing PHP session
+        $session->start();
+
+            if($personne){
+                $session->start();  
+                $session->set('service', $personne->getServices());
+            }
+                    return $this->render('security/login.html.twig', [
+            // dernier username saisi (si il y en a un)
+            'last_username' => $helper->getLastUsername(),
+            // La derniere erreur de connexion (si il y en a une)
+            'error' => $helper->getLastAuthenticationError(),
+        ]);
+
+    }
+    
+    /**
+     * @Route("/admin/acceuil/menu", name="user_menu")
+     */
+    public function usermenu(){
+       // $session->clear();
+        return $this->render('sgb/admin/acceuil/menu.html.twig');
 
     }
     
    
     
     /**
-     * @Route("/security/administration", name="admin_formimportrubrique")
+     * @Route("security/administration", name="admin_formimportrubrique")
      */
     public function importRubrique(Request $request){
         $formrubrique = $this->createFormBuilder(null)
@@ -118,5 +157,7 @@ class SecurityController extends AbstractController
      /**
      * @Route("/security/logout", name="user_logout")
      */
-    public function logout(){    }
+    public function logout(): void{  
+        throw new \Exception('This should never be reached!');
+      }
 }

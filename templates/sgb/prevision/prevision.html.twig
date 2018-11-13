@@ -79,10 +79,10 @@
                     {% for prevision in previsions %}
                         <tr>
                             <th scope="row">{{prevision.id}}</th>
-                            <td>{{prevision.sousrubrique.nom}}</td>
-                            <td>{{prevision.lignebudgetprevision.intituleLigne}}</td>
-                            <td>{{prevision.service.designation}}</td>
-                            <td>{{prevision.anneebudgetprevision.anneebudget}}</td>
+                            <td>{{prevision.nom}}</td>
+                            <td>{{prevision.intituleLigne}}</td>
+                            <td>{{prevision.designation}}</td>
+                            <td>{{prevision.anneebudget}}</td>
                             <td>{{prevision.montantprevision}}</td>
                             
                            <td>
