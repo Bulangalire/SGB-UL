@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+{% form_theme formRecette 'bootstrap_4_layout.html.twig' %}
+{% block body %}
+    <h3>Recette
+    </h3>
+    <table>
+        <tbody>
+
+            <tr>
+                <td>
+
+                    {{ form_start(formRecette)}}
+                    {{ form_row(formRecette.libelle)}}
+
+                </td>
+
+                <td>
+
+                    {{ form_row(formRecette.lignebudgetrecette)}}
+
+                </td>
+
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+  {{ form_row(formRecette.utilisateur, {'attfrs;':{'selected=selected':"Bulangalire"}})}}
+
+                   
+                </td>
+                <td>
+
+                    {{ form_row(formRecette.description)}}
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    {{ form_row(formRecette.montantrecette, {'attr' :{'required':'required'}})}}
+
+                </td>
+                <td>
+                    <button type="submit" name="send" class="btn btn-success">
+                        Sauvegarder</button>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+
+            {{ form_end(formRecette)}}
+
+            <tr>
+                <td colspan='3'></td>
+            </tr>
+        </tbody>
+    </table>
+{% endblock %}

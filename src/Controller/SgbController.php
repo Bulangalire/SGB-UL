@@ -2,12 +2,15 @@
 
 namespace App\Controller;
 
+use App\Entity\Depense;
+use App\Entity\Recette;
 use App\Entity\Service;
 use App\Entity\Personne;
 use App\Entity\SousRubrique;
 use App\Entity\Anneebudgetaire;
 use App\Entity\LigneBudgetaire;
 use App\Entity\Previsionbudget;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Twig\AppVariable;
 use App\Repository\DepenseRepository;
 use App\Repository\ServiceRepository;
@@ -24,6 +27,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class SgbController extends AbstractController
 {
@@ -56,6 +60,9 @@ class SgbController extends AbstractController
      */
     public function lignebudgetaireoverview(LigneBudgetaireRepository $repository, Request $request)
     {
+        if($this->getUser()===null) {              
+            return $this->redirectToRoute('user_login');
+           }
         //Remplacer par l'injection de dependence en parametre
         //$repository = $this->getDoctrine()->getRepository(LigneBudgetaire::class);
         // Trouver une Ligne portant cette Intitule
@@ -84,6 +91,7 @@ class SgbController extends AbstractController
      * @Route("sgb/LigneBudgetaire/importligne", name="sgb_excelimport")
      */
     public function importligne(Request $request){
+       
            $formimportligne= $this->createFormBuilder( null)
                     ->add('attachment', FileType::class)
                     ->getForm();
@@ -153,7 +161,9 @@ class SgbController extends AbstractController
      * @Route("/sgb/LigneBudgetaire/{id}/edit", name="sgb_edit")
      */
     public function form(LigneBudgetaire $uneLigne = null, Request $request, ObjectManager $manager){
-       
+        if($this->getUser()===null) {              
+            return $this->redirectToRoute('user_login');
+           }
         if(!$uneLigne){
         $uneLigne= new LigneBudgetaire();
     }
@@ -218,7 +228,9 @@ class SgbController extends AbstractController
      * 
      */
     public function formservice(ServiceRepository $serviceRepository, Service $unservice = null, Request $request, ObjectManager $manager){
-       
+        if($this->getUser()===null) {              
+            return $this->redirectToRoute('user_login');
+           }
         if(!$unservice){
         $unservice= new Service();
     }
@@ -274,8 +286,10 @@ class SgbController extends AbstractController
      * @Route("/sgb/personne/{id}/edit", name="personne_edit")
      * @Route("/sgb/personne/{id}/filtrer", name="personne_by_service")
      */
-    public function formpersonne($id=null, PersonneRepository $personneRepository, Personne $unePersonne = null, Request $request, ObjectManager $manager){
-       
+    public function formpersonne(UserPasswordEncoderInterface $encoder, $id=null, PersonneRepository $personneRepository, Personne $unePersonne = null, Request $request, ObjectManager $manager){
+        if($this->getUser()===null) {              
+            return $this->redirectToRoute('user_login');
+           }
         if(!$unePersonne){
         $unePersonne= new Personne();
     }
@@ -300,6 +314,10 @@ class SgbController extends AbstractController
                         if($em->getRepository("\App\Entity\Personne")->findOneBy(array('nom'=>$unePersonne->getNom(), 'postnom'=>$unePersonne->getPostnom(), 'prenom'=>$unePersonne->getPrenom(), 'services'=>$unePersonne->getServices()->getDesignation())) && $unePersonne->getId()!==null){
                            echo '<h2 style="color:red;"> la Personne existe déjà </h2>';
                         }else{
+
+                            $hash = $encoder->encodePassword($unePersonne, $unePersonne->getPassword());
+                            $unePersonne->setPassword($hash);
+
                             $manager->persist($unePersonne);
                             $manager->flush(); 
                             //return $this->redirectToRoute('sgb_show', ['id' => $uneLigne->getId()]);
@@ -340,40 +358,32 @@ class SgbController extends AbstractController
 
 
    /**
-     * @Route("/sgb/depense/new/{errordelete}", name="errordeletedepense")
-     * @Route("/sgb/depense/new", name="depense_create")
-     * @Route("/sgb/depense/{id}/edit", name="depense_edit")
-     * 
+     * @Route("/sgb/depense/depense/{errordelete}", name="errordeletedepense1")
+     * @Route("/sgb/depense/depense/new", name="depense_create1")
+     * @Route("/sgb/depense/depense/{id}/edit", name="depense_edit1")
      */
-    public function formDepense(DepenseRepository $depenseRepository, Depense $unedepense = null, Request $request, ObjectManager $manager){
-       
+    public function formDepense(Depense $unedepense = null, Request $request){
+        if($this->getUser()===null) {              
+            return $this->redirectToRoute('user_login');
+           }
         if(!$unedepense){
         $unedepense= new Depense();
     }
-    $em = $this->getDoctrine()->getManager();
+    
         $frmDepense= $this->createFormBuilder( $unedepense)
                     ->add('libele')
+                    ->add('createAt')
                     ->add('montantdepense')
-                    ->add('description')
+                    ->add('utilisateurdepense')
                     ->getForm();
        
                     $frmDepense->handleRequest($request);
 
-                    if( $frmservice->isSubmitted() &&  $frmDepense->isValid()){
-                        if($em->getRepository("\App\Entity\Depense")->find($unedepense->getId()!==null)){
-                           echo '<h2 style="color:red;"> le service existe déjà </h2>';
-                        }else{
-                            $manager->persist($unedepense);
-                            $manager->flush(); 
-                            //return $this->redirectToRoute('sgb_show', ['id' => $uneLigne->getId()]);
-                        }
+                    if( $frmDepense->isSubmitted() &&  $frmDepense->isValid()){
+                        
                     } 
-                    $lesServices = $serviceRepository->findAll();        
-            return $this->render('sgb/service/service.html.twig', [
-            'formService'=> $frmservice->createView(),
-           'editMode'=> $unservice->getId()!==null,
-            'lesServices'=>$lesServices
-        ]);
+                           
+            return $this->render('sgb/depense/depense.html.twig');
      }
 
 
@@ -383,7 +393,9 @@ class SgbController extends AbstractController
      */
     public function prevision(Request $request, PersonneRepository $personneRepository,Previsionbudget $prevision=null,  ObjectManager $manager){
         
-       
+        if($this->getUser()===null) {              
+            return $this->redirectToRoute('user_login');
+           }
       if(!$prevision){
         $prevision = new Previsionbudget();
     }
@@ -433,9 +445,11 @@ class SgbController extends AbstractController
                             }
                     }
                     $previsions = $em->getRepository(Previsionbudget::class)->findAll();
-                  
-                    $serviceuser=$this->getUser()->getServices()->getId();
-                  
+                    
+                   if($this->getUser()===null) {              
+                    return $this->redirectToRoute('user_login');
+                   }
+                   $serviceuser=$this->getUser()->getServices()->getId();
                     $queryLigneParService= $em->createQuery(
                         '
                         SELECT
@@ -498,11 +512,90 @@ class SgbController extends AbstractController
         return $this->render('sgb/prevision/prevision.html.twig', [
                          'formPrevision'=>$formPrevision->createView(),
                          'previsions'=>$resultatLigneParService ]);
+       
     }
 
 
+    
 
+    /**
+     * @Route("/sgb/recette/recette", name="recette_create")
+     */
+    public function recette(Recette $recette=null, Request $request){
+            if(!$recette){
+                $recette= new Recette(); 
+            }
+            $formRecette= $this->createFormBuilder($recette)
+                            ->add('libelle')
+                            ->add('montantrecette')
+                            ->add('createAt')
+                            ->add('description')
+                            ->add('utilisateur', EntityType::class, array(
+                                'class'  => Personne::class,
+                                'query_builder'=>function(EntityRepository $er){
+                                    return $er->createQueryBuilder('u')
+                                                ->where('u.nom=:actuUser')
+                                                ->setParameter('actuUser',$this->getUser()->getNom());
+                                },
+                                'choice_label'=>'nom'
+                                ))
+                            ->add('lignebudgetrecette', EntityType::class, array(
+                                'class'=>Previsionbudget::class,
+                                'query_builder'=>function(EntityRepository $er){
+                                    $idUser=$this->getUser()->getServices()->getId();
+                                    return $er->createQueryBuilder('p')
+                                            ->select('l','p','s')
+                                            ->from(LigneBudgetaire::class, 'l')
+                                            ->from(Service::class, 's')
+                                            ->leftJoin(LigneBudgetaire::class, 'l')
+                                             ->addSelect('l')
+                                             ->addSelect('s')
+                                              ->where('l.categorieLigne=:larecette')
+                                              ->andWhere('p.service=:sonService')
+                                              ->setParameter('larecette','Recette')
+                                              ->setParameter('sonService',$idUser);
+                                },
+                                'choice_label'=>'intituleLigne'
+                            ))
+                            ->getForm();
+                            //$formRecette->handleRequest($request);
 
+/*
+                            $serviceuser=$this->getUser()->getServices()->getId();
+                            $serviceuser=$this->getUser()->getServices()->getId();
+                            $queryLigneParService= $em->createQuery(
+                                '
+                                SELECT
+                                            r.libelle,
+                                            p.nom,
+                                            p.prenom,
+                                            p.prenom,
+                                            r.createAt,
+                                            l.intituleLigne,
+                                            a.anneebudget,
+                                            r.id,
+                                            r.montantrecette,
+                                            r.description
+                                FROM
+                           
+                                        App\Entity\Recette r
+                                LEFT JOIN  App\Entity\Personne p WITH r.utilisateur = p.id
+                                LEFT JOIN  App\Entity\LigneBudgetaire l WITH r.lignebudgetrecette = l.id
+                                RI JOIN  App\Entity\Anneebudgetaire a WITH p.anneebudgetprevision = a.id
+                                WHERE
+                                        p.service= :serviceuser
+                                '
+                                 )->setParameter('serviceuser', $serviceuser );
+                            $resultatLigneParService = $queryLigneParService->execute(); 
+                            'nosRecetteAnnuelles'=> $nosRecetteAnnuelles,
+
+*/
+
+        return $this->render('sgb/recette/recette.html.twig',[
+            
+            'formRecette'=>$formRecette->createView()
+        ]);
+    }
 
     /**
      * @Route("/bootstrap.css", name="boots")

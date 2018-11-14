@@ -1,37 +1,41 @@
 {% extends 'base.html.twig' %}
 
-
 {% block body %}
-<link rel="stylesheet" href="assets/css/custom-themes.css">
-<link rel="shortcut icon" type="image/png" href="assets/img/favicon.png" />
-       <div class="page-wrapper chiller-theme sidebar-bg bg1 toggled">
+    <link rel="stylesheet" href="assets/css/custom-themes.css">
+    <link rel="shortcut icon" type="image/png" href="assets/img/favicon.png"/>
+    <div class="page-wrapper chiller-theme sidebar-bg bg1 toggled">
         <a id="show-sidebar" class="btn btn-sm btn-dark" href="#">
             <i class="fas fa-bars"></i>
         </a>
         <nav id="sidebar" class="sidebar-wrapper">
             <div class="sidebar-content">
                 <div class="sidebar-brand">
-                    <a href="#"> </a>
+                    <a href="#"></a>
                     <div id="close-sidebar">
                         <i class="fas fa-times"></i>
                     </div>
                 </div>
                 <div class="sidebar-header">
+                 {% if app.user %}
                     <div class="user-pic">
                         <img class="img-responsive img-rounded" src="assets/img/user.jpg" alt="User picture">
                     </div>
                     <div class="user-info">
-                        <span class="user-name">Jhon
-                            <strong>Smith</strong>
+                   
+                        <span class="user-name">{{app.user.prenom}}
+                            <strong>{{app.user.nom}}</strong>
                         </span>
-                        <span class="user-role">Administrator</span>
+                        <span class="user-role">{{app.user.services.designation}}</span>
                         <span class="user-status">
                             <i class="fa fa-circle"></i>
                             <span>Online</span>
                         </span>
+                        
                     </div>
+                    {% endif %}
                 </div>
-                <!-- sidebar-header  -->
+                
+                <!-- sidebar-header
                 <div class="sidebar-search">
                     <div>
                         <div class="input-group">
@@ -43,53 +47,55 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <!-- sidebar-search  -->
+                </div> -->
+                <!-- sidebar-search --> 
                 <div class="sidebar-menu">
                     <ul>
-                        <li class="header-menu">
-                            <span>General</span>
-                        </li>
+                        
                         <li class="sidebar-dropdown">
                             <a href="#">
                                 <i class="fa fa-tachometer-alt"></i>
-                                <span>Dashboard</span>
-                                <span class="badge badge-pill badge-danger">New</span>
+                                <span>Ligne Budgetaire</span>
+                                <span class="badge badge-pill badge-danger">Nouveau</span>
                             </a>
                             <div class="sidebar-submenu">
                                 <ul>
                                     <li>
-                                        <a href="#">Dashboard 1
-                                            <span class="badge badge-pill badge-success">Pro</span>
+                                        <a href="#">Ligne Budgetaire
+                                            <span class="badge badge-pill badge-success">Prévision</span>
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="#">Dashboard 2</a>
+                                        <a href="#">Depense</a>
                                     </li>
                                     <li>
-                                        <a href="#">Dashboard 3</a>
+                                        <a href="#">Recette</a>
                                     </li>
+                                    <li>
+                                        <a href="#">Ligne</a>
+                                    </li>
+
                                 </ul>
                             </div>
                         </li>
                         <li class="sidebar-dropdown">
                             <a href="#">
                                 <i class="fa fa-shopping-cart"></i>
-                                <span>E-commerce</span>
+                                <span>Statistiques</span>
                                 <span class="badge badge-pill badge-primary">3</span>
                             </a>
                             <div class="sidebar-submenu">
                                 <ul>
                                     <li>
-                                        <a href="#">Products
+                                        <a href="#">Sur Recette
 
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="#">Orders</a>
+                                        <a href="#">Sur Depense</a>
                                     </li>
                                     <li>
-                                        <a href="#">Credit cart</a>
+                                        <a href="#">Deficite</a>
                                     </li>
                                 </ul>
                             </div>
@@ -97,24 +103,30 @@
                         <li class="sidebar-dropdown">
                             <a href="#">
                                 <i class="far fa-gem"></i>
-                                <span>Components</span>
+                                <span>Administration</span>
                             </a>
                             <div class="sidebar-submenu">
                                 <ul>
                                     <li>
-                                        <a href="#">General</a>
+                                        <a href="#">Personne</a>
                                     </li>
                                     <li>
-                                        <a href="#">Panels</a>
+                                        <a href="#">Utilisateur</a>
                                     </li>
                                     <li>
-                                        <a href="#">Tables</a>
+                                        <a href="#">Service</a>
                                     </li>
                                     <li>
-                                        <a href="#">Icons</a>
+                                        <a href="#">Année</a>
                                     </li>
                                     <li>
-                                        <a href="#">Forms</a>
+                                        <a href="#">Rôle</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Fonction</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Rubrique</a>
                                     </li>
                                 </ul>
                             </div>
@@ -122,54 +134,39 @@
                         <li class="sidebar-dropdown">
                             <a href="#">
                                 <i class="fa fa-chart-line"></i>
-                                <span>Charts</span>
+                                <span>Graphique</span>
                             </a>
                             <div class="sidebar-submenu">
                                 <ul>
                                     <li>
-                                        <a href="#">Pie chart</a>
+                                        <a href="#">Recette</a>
                                     </li>
                                     <li>
-                                        <a href="#">Line chart</a>
+                                        <a href="#">Depenses</a>
                                     </li>
                                     <li>
-                                        <a href="#">Bar chart</a>
+                                        <a href="#">Prevision</a>
                                     </li>
                                     <li>
-                                        <a href="#">Histogram</a>
+                                        <a href="#">Deficite</a>
                                     </li>
                                 </ul>
                             </div>
                         </li>
-                        <li class="sidebar-dropdown">
-                            <a href="#">
-                                <i class="fa fa-globe"></i>
-                                <span>Maps</span>
-                            </a>
-                            <div class="sidebar-submenu">
-                                <ul>
-                                    <li>
-                                        <a href="#">Google maps</a>
-                                    </li>
-                                    <li>
-                                        <a href="#">Open street map</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
+
                         <li class="header-menu">
-                            <span>Extra</span>
+                            <span>Autres</span>
                         </li>
                         <li>
                             <a href="#">
                                 <i class="fa fa-calendar"></i>
-                                <span>Calendar</span>
+                                <span>Inventaires</span>
                             </a>
                         </li>
                         <li>
                             <a href="#">
                                 <i class="fa fa-folder"></i>
-                                <span>Examples</span>
+                                <span>Service</span>
                             </a>
                         </li>
                         <li>
@@ -180,9 +177,9 @@
                         </li>
                     </ul>
                 </div>
-                <!-- sidebar-menu  -->
+                <!-- sidebar-menu -->
             </div>
-            <!-- sidebar-content  -->
+            <!-- sidebar-content -->
             <div class="sidebar-footer">
                 <div class="dropdown">
 
@@ -257,7 +254,8 @@
                                 </div>
                                 <div class="content">
                                     <div class="message-title">
-                                        <strong> Jhon doe</strong>
+                                        <strong>
+                                            Jhon doe</strong>
                                     </div>
                                     <div class="message-detail">Lorem ipsum dolor sit amet consectetur adipisicing elit. In totam explicabo</div>
                                 </div>
@@ -271,7 +269,8 @@
                                 </div>
                                 <div class="content">
                                     <div class="message-title">
-                                        <strong> Jhon doe</strong>
+                                        <strong>
+                                            Jhon doe</strong>
                                     </div>
                                     <div class="message-detail">Lorem ipsum dolor sit amet consectetur adipisicing elit. In totam explicabo</div>
                                 </div>
@@ -285,7 +284,8 @@
                                 </div>
                                 <div class="content">
                                     <div class="message-title">
-                                        <strong> Jhon doe</strong>
+                                        <strong>
+                                            Jhon doe</strong>
                                     </div>
                                     <div class="message-detail">Lorem ipsum dolor sit amet consectetur adipisicing elit. In totam explicabo</div>
                                 </div>
@@ -314,8 +314,9 @@
                 </div>
             </div>
         </nav>
-        <!-- sidebar-wrapper  -->
+        <!-- sidebar-wrapper -->
         <main class="page-content">
+            <!-- 
             <div class="container-fluid">
                 <div class="row">
                     <div class="form-group col-md-12">
@@ -337,10 +338,11 @@
                         <a href="#" data-theme="chiller-theme" class="theme chiller-theme selected"></a>
                         <a href="#" data-theme="ice-theme" class="theme ice-theme"></a>
                         <a href="#" data-theme="cool-theme" class="theme cool-theme"></a>
-                        <a href="#" data-theme="light-theme" class="theme light-theme"></a>                       
+                        <a href="#" data-theme="light-theme" class="theme light-theme"></a>
                     </div>
                     <div class="form-group col-md-12">
-                        <p>You can also use background image </p>
+                        <p>You can also use background image
+                        </p>
                     </div>
                     <div class="form-group col-md-12">
                         <a href="#" data-bg="bg1" class="theme theme-bg selected"></a>
@@ -349,29 +351,31 @@
                         <a href="#" data-bg="bg4" class="theme theme-bg"></a>
                     </div>
                     <div class="form-group col-md-12">
-                       <div class="form-check">
-                         <label class="form-check-label">
-                           <input type="checkbox" class="form-check-input" name="" id="toggle-bg" checked>
-                            Background image
-                         </label>
-                       </div>
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" name="" id="toggle-bg" checked="checked">
+                                Background image
+                            </label>
+                        </div>
                     </div>
-                   
+
                 </div>
 
                 <hr>
                 <div class="row">
                     <div class="form-group col-md-12">
                         <a href="" class="btn btn-dark" target="_blank">
-                            <i class="fab fa-github"></i> View source</a>
+                            <i class="fab fa-github"></i>
+                            View source</a>
                         <a href="" class="btn btn-outline-dark" target="_blank">
-                            <i class="fa fa-download"></i> Download</a>
+                            <i class="fa fa-download"></i>
+                            Download</a>
                     </div>
                 </div>
             </div>
+            -->
         </main>
         <!-- page-content" -->
     </div>
     <!-- page-wrapper -->
-    {% endblock %} 
-   
+{% endblock %}

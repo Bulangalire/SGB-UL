@@ -28,13 +28,11 @@ class SecurityController extends AbstractController
     public function inscription(Personne $personne=null, Request $request, ObjectManager $manager,
     UserPasswordEncoderInterface $encoder )
     {
-        if($personne){
-            $session = new Session();
-            $session->start();
-            $session->set('serviceuser', $personne->getServices());
-        }else{
+        if($this->getUser()===null) {              
+            return $this->redirectToRoute('user_login');
+           }
         $personne = new Personne();
-        }
+        
         $formUser = $this->createForm(AjouUserType::class, $personne);
         $formUser->handleRequest($request);
         if( $formUser->isSubmitted() &&  $formUser->isValid()){
@@ -52,7 +50,7 @@ class SecurityController extends AbstractController
     /**
      * @Route("/security/login", name="user_login")
      */
-    public function login(AuthenticationUtils $helper, Personne $personne=null): Response{
+    public function login(AuthenticationUtils $helper): Response{
        // legacy application configures session
        // ini_set('session.save_handler', 'files');
        // ini_set('session.save_path', '/tmp');
@@ -61,13 +59,7 @@ class SecurityController extends AbstractController
         // Get Symfony to interface with this existing session
         $session = new Session(new PhpBridgeSessionStorage());
 
-        // symfony will now interface with the existing PHP session
-        $session->start();
-
-            if($personne){
-                $session->start();  
-                $session->set('service', $personne->getServices());
-            }
+         
                     return $this->render('security/login.html.twig', [
             // dernier username saisi (si il y en a un)
             'last_username' => $helper->getLastUsername(),
@@ -92,6 +84,9 @@ class SecurityController extends AbstractController
      * @Route("security/administration", name="admin_formimportrubrique")
      */
     public function importRubrique(Request $request){
+        if($this->getUser()===null) {              
+            return $this->redirectToRoute('user_login');
+           }
         $formrubrique = $this->createFormBuilder(null)
                  ->add('radio', ChoiceType::class,[
                           'choices'=>array(
@@ -143,10 +138,7 @@ class SecurityController extends AbstractController
                                         $em->persist($sousRubrique);
                                         $em->flush();
                                         } 
-                                     }elseif(!$formrubrique['radio']->getData()==null && $formrubrique['radio']->getData()=='SousRubrique'){
-   
-                                     
-                                  }
+                                     } 
                             }
                              $request->getSession()->getFlashBag()->add('success', 'Liste enregistrée.');
                              return $this->redirect($this->generateUrl('admin_formimportrubrique'));
