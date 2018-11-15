@@ -24,9 +24,8 @@
             </tr>
             <tr>
                 <td>
-  {{ form_row(formRecette.utilisateur, {'attfrs;':{'selected=selected':"Bulangalire"}})}}
+                    {{ form_row(formRecette.utilisateur, {'attr':{'disabled=':'disabled'}})}}
 
-                   
                 </td>
                 <td>
 
@@ -40,13 +39,15 @@
 
                 </td>
                 <td>
-                    <button type="submit" name="send" class="btn btn-success">
-                        Sauvegarder</button>
+                    {{ form_row(formRecette.createAt)}}
                 </td>
                 <td></td>
             </tr>
             <tr>
-                <td></td>
+                <td>
+                  <button type="submit" name="send" class="btn btn-success">
+                        Sauvegarder</button>
+                </td>
                 <td></td>
                 <td></td>
             </tr>

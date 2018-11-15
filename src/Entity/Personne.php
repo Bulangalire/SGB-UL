@@ -64,6 +64,9 @@ class Personne implements UserInterface
      */
     private $username;
 
+  
+   // private $roles;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -153,8 +156,24 @@ class Personne implements UserInterface
 
         return $this;
     }
+
+ /*
+    public function setRoles($role)
+    {
+        if(array_diff($role, array("ROLE_SUPER_ADMIN", "ROLE_ADMIN", "ROLE_USER", "ROLE_CAISSE", "ROLE_COMPTABILITE", "ROLE_RECTORAT", "ROLE_COMPTEFAC", "ROLE_DOYEN"))) {
+            throw new \InvalidArgumentException("Bad role");
+        }
+        $this->roles = $role;
+
+        return $this;
+    }
+    
     public function getRoles(){
-        return ['ROLE_USER'];
+        return $this->roles;
+    }
+*/
+    public function getRoles(){
+        return ['ROLE_ADMIN'];
     }
     public function eraseCredentials(){}
     public function getSalt(){}

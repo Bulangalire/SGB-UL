@@ -30,6 +30,8 @@ use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -298,6 +300,7 @@ class SgbController extends AbstractController
         if(!$unePersonne){
         $unePersonne= new Personne();
     }
+    dump($unePersonne);
     $em = $this->getDoctrine()->getManager();
     $service=$em->getRepository("\App\Entity\Service");
         $frmpersonne= $this->createFormBuilder( $unePersonne)
@@ -305,13 +308,12 @@ class SgbController extends AbstractController
                     ->add('postnom')
                     ->add('prenom')
                     ->add('username')
-                    ->add('password')
-                    ->add('signature')
+                    ->add('password',PasswordType::class)
                     ->add('services', EntityType::class, array(
                         'class'  => Service::class,
                         'choice_label' => 'designation'
                             ))
-                        
+                     ->add('signature')
                     ->getForm();
                    
                     $frmpersonne->handleRequest($request);
@@ -328,10 +330,10 @@ class SgbController extends AbstractController
                             //return $this->redirectToRoute('sgb_show', ['id' => $uneLigne->getId()]);
                         }
                     } 
-                    if($unePersonne->getId()==null){
+                    if($unePersonne->getId()==null && $id==null){
                         $lesPersonnes = $personneRepository->findAll();  
                     }else{
-                        if($id!=null){
+                        if($id!==null){
                         $lesPersonnes = $personneRepository->findByServices($service->findById($id)); 
                         }
                     }
@@ -476,10 +478,11 @@ class SgbController extends AbstractController
                         LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
                         LEFT JOIN  App\Entity\Anneebudgetaire a WITH p.anneebudgetprevision = a.id
                         WHERE
-                                p.service= :serviceuser AND l.categorieLigne= :catLigne
+                                p.service= :serviceuser AND l.categorieLigne= :catLigne AND p.anneebudgetprevision = :anneeprev
                         '
                          )->setParameter('serviceuser', $serviceuser )
-                         ->setParameter('catLigne', 'Recette' );
+                         ->setParameter('catLigne', 'Recette' )
+                         ->setParameter('anneeprev', $anneebudgetselect);
                     $resultatLigneRecetteParService = $queryLigneRecetteParService->execute(); 
 
 
@@ -502,10 +505,11 @@ class SgbController extends AbstractController
                         LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
                         LEFT JOIN  App\Entity\Anneebudgetaire a WITH p.anneebudgetprevision = a.id
                         WHERE
-                                p.service= :serviceuser AND l.categorieLigne= :catLigne
+                                p.service= :serviceuser AND l.categorieLigne= :catLigne AND p.anneebudgetprevision = :anneeprev
                         '
                          )->setParameter('serviceuser', $serviceuser )
-                         ->setParameter('catLigne', 'Depense' );
+                         ->setParameter('catLigne', 'Depense' )
+                         ->setParameter('anneeprev', $anneebudgetselect);
                     $resultatLigneDepenseParService = $queryLigneDepenseParService->execute(); 
                    // echo 'Service :'. $session->get('serviceuser');
                    
@@ -552,7 +556,21 @@ class SgbController extends AbstractController
        
     }
 
-
+/**
+     * @Route("/sgb/prevision/prevision{id}/delete", name="delete_prevision")
+     */
+    public function deleteprevision(Previsionbudget $prevision = null, Request $request, ObjectManager $manager){
+        if(!$prevision){ 
+          exit;
+       } 
+                       try{
+                           $manager->remove($prevision);
+                           $manager->flush(); 
+                           return $this->redirectToRoute('sgb_prevision');  
+                       }catch(\Exception $e){
+                           return $this->redirectToRoute('sgb_prevision');  
+                       }
+   }
     
 
     /**
@@ -571,7 +589,8 @@ class SgbController extends AbstractController
             $formRecette= $this->createFormBuilder($recette)
                             ->add('libelle')
                             ->add('montantrecette')
-                            ->add('createAt')
+                            ->add('createAt',DateTimeType::class,array(
+                            'data'=> new \ DateTime()))
                             ->add('description')
                             ->add('utilisateur', EntityType::class, array(
                                 'class'  => Personne::class,
@@ -662,6 +681,16 @@ public function fillYears(){
     $em = $this->getDoctrine()->getManager();
     $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
     return $this->render('sgb/recette/selectparameters.html.twig',[
+                    'annees'=>$annees
+    ]);
+}
+/**
+ * @Route("/sgb/prevision/selectparprev", name="selectparPrev")
+ */
+public function fillYearsPrev(){
+    $em = $this->getDoctrine()->getManager();
+    $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
+    return $this->render('sgb/prevision/selectparaprev.html.twig',[
                     'annees'=>$annees
     ]);
 }
