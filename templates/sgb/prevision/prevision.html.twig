@@ -5,17 +5,17 @@
     </h3>
     <table>
         <tbody>
-           
+
             <tr>
                 <td>
 
-                     {{ form_start(formPrevision)}}
-                      {{ form_row(formPrevision.sousrubrique)}}
+                    {{ form_start(formPrevision)}}
+                    {{ form_row(formPrevision.sousrubrique)}}
 
                 </td>
 
                 <td>
-                    
+
                     {{ form_row(formPrevision.service, {'attr': {'selected':'{{ app.user.services.designation }}' }})}}
 
                 </td>
@@ -24,18 +24,18 @@
             </tr>
             <tr>
                 <td>
-                   
+
                     {{ form_row(formPrevision.lignebudgetprevision)}}
                 </td>
                 <td>
-                    
+
                     {{ form_row(formPrevision.anneebudgetprevision)}}
                 </td>
                 <td></td>
             </tr>
             <tr>
                 <td>
-                  
+
                     {{ form_row(formPrevision.iscentraliser)}}
                 </td>
                 <td>
@@ -55,58 +55,129 @@
                 <td></td>
             </tr>
 
-
-
             {{ form_end(formPrevision)}}
 
             <tr>
-            <td colspan='3'>
-             <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Rubrique</th>
-                        <th scope="col">Ligne</th>
-                        <th scope="col">Service</th>
-                        <th scope="col">Année</th>
-                        <th scope="col">Montant</th>
-                        <th scope="col">Action</th>
-                            
-                       
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for prevision in previsions %}
-                        <tr>
-                            <th scope="row">{{prevision.id}}</th>
-                            <td>{{prevision.nom}}</td>
-                            <td>{{prevision.intituleLigne}}</td>
-                            <td>{{prevision.designation}}</td>
-                            <td>{{prevision.anneebudget}}</td>
-                            <td>{{prevision.montantprevision}}</td>
-                            
-                           <td>
-                                <a href="{{path('prevision_edit', {'id':prevision.id})}}"><img src="{{path('edit_button')}}" /></a> 
-                                &nbsp; &nbsp; 
-                                <a href="{{path('sgb_prevision', {'id':prevision.id})}}"> <img src="{{path('delete_button')}}" /></a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    <tr class="table-primary">
-                        <th scope="row"></th>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
+                <td colspan='3'>
+                    <table class="table table-hover">
 
-                </tbody>
-            </table>
-            
-            
-            </td>
+                        <thead>
+                            <tr class="table-primary" >
+                                <th colspan='6'>
+                                    Les previsions budgetaire des Recettes</th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                
+                            </tr>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Rubrique</th>
+                                <th scope="col">Ligne</th>
+                                <th scope="col">Service</th>
+                                <th scope="col">Année</th>
+                                <th scope="col">Montant</th>
+                                <th scope="col">Action</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prevision in previsionsRecette %}
+                                <tr>
+                                    <th scope="row">{{prevision.id}}</th>
+                                    <td>{{prevision.nom}}</td>
+                                    <td>{{prevision.intituleLigne}}</td>
+                                    <td>{{prevision.designation}}</td>
+                                    <td>{{prevision.anneebudget}}</td>
+                                    <td>{{prevision.montantprevision}}</td>
+
+                                    <td>
+                                        <a href="{{path('prevision_edit', {'id':prevision.id})}}"><img src="{{path('edit_button')}}"/></a>
+                                        &nbsp; &nbsp;
+                                        <a href="{{path('sgb_prevision', {'id':prevision.id})}}">
+                                            <img src="{{path('delete_button')}}"/></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                <td ></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </td>
             </tr>
+
+            <tr>
+                <td colspan='3'>
+                    <table class="table table-hover">
+                       
+                        <thead>
+                         <tr class="table-primary" >
+                                <th colspan='6'>
+                                    Les previsions budgetaire des Depenses</th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                
+                            </tr>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Rubrique</th>
+                                <th scope="col">Ligne</th>
+                                <th scope="col">Service</th>
+                                <th scope="col">Année</th>
+                                <th scope="col">Montant</th>
+                                <th scope="col">Action</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prevision in previsionsDepense %}
+                                <tr>
+                                    <th scope="row">{{prevision.id}}</th>
+                                    <td>{{prevision.nom}}</td>
+                                    <td>{{prevision.intituleLigne}}</td>
+                                    <td>{{prevision.designation}}</td>
+                                    <td>{{prevision.anneebudget}}</td>
+                                    <td>{{prevision.montantprevision}}</td>
+
+                                    <td>
+                                        <a href="{{path('prevision_edit', {'id':prevision.id})}}"><img src="{{path('edit_button')}}"/></a>
+                                        &nbsp; &nbsp;
+                                        <a href="{{path('sgb_prevision', {'id':prevision.id})}}">
+                                            <img src="{{path('delete_button')}}"/></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                <th ></th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                 <td></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
         </tbody>
     </table>
 {% endblock %}
