@@ -14,8 +14,10 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Twig\AppVariable;
 use App\Repository\DepenseRepository;
+use App\Repository\RecetteRepository;
 use App\Repository\ServiceRepository;
 use App\Repository\PersonneRepository;
+use Symfony\Component\HttpFoundation\Session\Session;
 use App\Repository\LigneBudgetaireRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
@@ -300,7 +302,7 @@ class SgbController extends AbstractController
         if(!$unePersonne){
         $unePersonne= new Personne();
     }
-    dump($unePersonne);
+    
     $em = $this->getDoctrine()->getManager();
     $service=$em->getRepository("\App\Entity\Service");
         $frmpersonne= $this->createFormBuilder( $unePersonne)
@@ -576,7 +578,7 @@ class SgbController extends AbstractController
     /**
      * @Route("/sgb/recette/recette", name="recette_create")
      */
-    public function recette(Recette $recette=null, Request $request){
+    public function recette(Session $session, RecetteRepository $recetterepository, Recette $recette=null, Request $request, ObjectManager $manager){
        
         if($this->getUser()===null) {              
             return $this->redirectToRoute('user_login');
@@ -585,7 +587,14 @@ class SgbController extends AbstractController
             if(!$recette){
                 $recette= new Recette(); 
             }
-            $anneebudgetselect= $request->request->get('annees');
+            $em = $this->getDoctrine()->getManager();
+            $idUser=$this->getUser()->getServices()->getId();
+           
+            if($request->request->get('annees')!=null){
+             $session->set('anneeselect',$request->request->get('annees') );
+            }
+           $anneebudgetselect= $session->get('anneeselect');
+            dump( $anneebudgetselect);
             $formRecette= $this->createFormBuilder($recette)
                             ->add('libelle')
                             ->add('montantrecette')
@@ -596,15 +605,16 @@ class SgbController extends AbstractController
                                 'class'  => Personne::class,
                                 'query_builder'=>function(EntityRepository $er){
                                     return $er->createQueryBuilder('u')
-                                                ->where('u.nom=:actuUser')
-                                                ->setParameter('actuUser',$this->getUser()->getNom());
+                                                ->where('u.id=:id')
+                                                ->setParameter('id',$this->getUser()->getId());
                                 },
                                 'choice_label'=>'nom'
+                                
                                 ))
                                 ->add('lignebudgetrecette', EntityType::class, array(
                                     'class'=>Previsionbudget::class,
-                                    'query_builder'=>function(EntityRepository $er)use ($anneebudgetselect) {
-                                        $idUser=$this->getUser()->getServices()->getId();
+                                    'query_builder'=>function(EntityRepository $er)use ($anneebudgetselect, $idUser) {
+                                        
                                         return $er->createQueryBuilder('p') 
                                                     //->from(Previsionbudget::class, 'p')
                                                     ->select("p, l")
@@ -615,8 +625,12 @@ class SgbController extends AbstractController
                                                     ->setParameter('larecette','Recette')
                                                     ->setParameter('annnebudget', $anneebudgetselect);
                                                 },
-                                                    'choice_label'=>'lignebudgetprevision.intituleLigne'))   
-
+                                                    'choice_label'=>'lignebudgetprevision.intituleLigne',
+                                                    )) 
+                                                    ->add('sauvegarder', SubmitType::class,[
+                                                        'label'=>'Sauvegarder'
+                                                    ])  
+                                                    ->getForm();
                           /*  ->add('lignebudgetrecette', EntityType::class, array(
                                 'class'=>Previsionbudget::class,
                                 'query_builder'=>function(EntityRepository $er){
@@ -634,50 +648,81 @@ class SgbController extends AbstractController
                                 },
                                 'choice_label'=>'lignebudgetprevision'
                             ))*/
-                            ->getForm();
-                            //$formRecette->handleRequest($request);
-
-/*
+                             
+                            $formRecette->handleRequest($request);
+                           
+                            if( $formRecette->isSubmitted() &&  $formRecette->isValid()){
+                               
+                                if($em->getRepository("\App\Entity\Recette")->findOneBy(
+                                    array('lignebudgetrecette'=>$recette->getLignebudgetrecette(), 
+                                    'montantrecette'=>$recette->getMontantrecette() 
+                                ) 
+                                    )&& $recette->getId()!==null){
+                                        echo '<h2 style="color:red;"> la recette existe déjà </h2>';
+                                    }else{
+                                       
+                                      /* $recette->setUtilisateur($this.getUser());
+                                        $recette->setLignebudgetrecette($this.getUser());
+                                        $recette->setUtilisateur($this.getUser());
+                                        $recette->setUtilisateur($this.getUser());
+                                        $recette->setUtilisateur($this.getUser());*/
+                                        $manager->persist($recette);
+                                        $manager->flush();
+                                        return $this->redirectToRoute('recette_create');
+        
+                                    }
+                            }
                             $serviceuser=$this->getUser()->getServices()->getId();
-                            $serviceuser=$this->getUser()->getServices()->getId();
-                            $queryLigneParService= $em->createQuery(
+                            $queryplanDeTresorerie= $em->createQuery(
                                 '
                                 SELECT
-                                            r.libelle,
-                                            p.nom,
-                                            p.prenom,
-                                            p.prenom,
+                                            r.id,
+                                            u.nom,
+                                            u.prenom,
+                                            u.prenom,
                                             r.createAt,
                                             l.intituleLigne,
                                             a.anneebudget,
-                                            r.id,
+                                            l.compteLigne,
                                             r.montantrecette,
-                                            r.description
+                                            p.montantprevision
                                 FROM
                            
                                         App\Entity\Recette r
-                                LEFT JOIN  App\Entity\Personne p WITH r.utilisateur = p.id
-                                LEFT JOIN  App\Entity\LigneBudgetaire l WITH r.lignebudgetrecette = l.id
-                                RI JOIN  App\Entity\Anneebudgetaire a WITH p.anneebudgetprevision = a.id
+                                LEFT JOIN  App\Entity\Personne u WITH r.utilisateur = u.id
+                                LEFT JOIN  App\Entity\Previsionbudget p WITH r.lignebudgetrecette = p.id
+                                LEFT JOIN   App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision=l.id
+                                LEFT JOIN  App\Entity\Anneebudgetaire a WITH p.anneebudgetprevision = a.id
                                 WHERE
-                                        p.service= :serviceuser
-                                '
-                                 )->setParameter('serviceuser', $serviceuser );
-                            $resultatLigneParService = $queryLigneParService->execute(); 
-                            'nosRecetteAnnuelles'=> $nosRecetteAnnuelles,
+                                        p.service= :serviceuser AND
+                                        a.anneebudget=:anneebudget 
 
-*/
+                                '
+                                 )->setParameter('serviceuser', $serviceuser )
+                                 ->setParameter('anneebudget', $anneebudgetselect );
+                            $resultatplanDeTresorerie = $queryplanDeTresorerie->execute(); 
+                            
+
+dump($resultatplanDeTresorerie );
+
 
         return $this->render('sgb/recette/recette.html.twig',[
             
-            'formRecette'=>$formRecette->createView()
+            'formRecette'=>$formRecette->createView(), 'planDeTresoreries'=> $resultatplanDeTresorerie
         ]);
     }
 
 /**
  * @Route("/sgb/recette/selectparameters", name="selectparameters")
  */
-public function fillYears(){
+public function fillYears(Request $request){
+    
+    $session = new Session();
+   // $session->start();
+   
+   // $select=$session->get('anneeselect');
+  //  echo $select;
+   // dump($request);
     $em = $this->getDoctrine()->getManager();
     $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
     return $this->render('sgb/recette/selectparameters.html.twig',[

@@ -20,11 +20,66 @@
 
                 </td>
 
-                <td></td>
+                <td rowspan="4">
+
+                    <table class="table table-hover">
+
+                        <thead>
+                            <tr class="table-primary">
+                                <th colspan='8'>
+                                    Plan de trésorerie pour l'année :</th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+
+                            </tr>
+                            <tr>
+                                <th scope="col">Code</th>
+                                <th scope="col">Compte</th>
+                                <th scope="col">Ligne </th>
+                                <th scope="col">Prévisions</th>
+                                <th scope="col">Réalisations</th>
+                                <th scope="col">Date</th>
+                               
+                               
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for previsionRealisation in planDeTresoreries %}
+                                <tr>
+                                    <th scope="row">{{previsionRealisation.id}}</th>
+                                   
+                                    <td>{{previsionRealisation.montantprevision}}</td>
+                                    <td>{{previsionRealisation.montantrecette}}</td>
+                                    <td>{{previsionRealisation.createAt | date('d/m/Y')}}</td>
+                                   
+                                    
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                <td ></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                              
+                              
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </td>
             </tr>
             <tr>
                 <td>
-                    {{ form_row(formRecette.utilisateur, {'attr':{'disabled=':'disabled'}})}}
+                    {{ form_row(formRecette.utilisateur)}}
 
                 </td>
                 <td>
@@ -45,8 +100,8 @@
             </tr>
             <tr>
                 <td>
-                  <button type="submit" name="send" class="btn btn-success">
-                        Sauvegarder</button>
+                     {{ form_row(formRecette.sauvegarder)}}
+                    
                 </td>
                 <td></td>
                 <td></td>

@@ -2,8 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -28,31 +26,31 @@ class Recette
      */
     private $montantrecette;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Previsionbudget")
-     */
-    private $lignebudgetrecette;
+
 
     /**
      * @ORM\Column(type="datetime")
      */
     private $createAt;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Personne")
-     */
-    private $utilisateur;
+ 
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $description;
 
-    public function __construct()
-    {
-        $this->lignebudgetrecette = new ArrayCollection();
-        $this->utilisateur = new ArrayCollection();
-    }
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Personne")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $utilisateur;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Previsionbudget")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $lignebudgetrecette;
 
     public function getId(): ?int
     {
@@ -83,32 +81,7 @@ class Recette
         return $this;
     }
 
-    /**
-     * @return Collection|Previsionbudget[]
-     */
-    public function getLignebudgetrecette(): Collection
-    {
-        return $this->lignebudgetrecette;
-    }
-
-    public function addLignebudgetrecette(Previsionbudget $lignebudgetrecette): self
-    {
-        if (!$this->lignebudgetrecette->contains($lignebudgetrecette)) {
-            $this->lignebudgetrecette[] = $lignebudgetrecette;
-        }
-
-        return $this;
-    }
-
-    public function removeLignebudgetrecette(Previsionbudget $lignebudgetrecette): self
-    {
-        if ($this->lignebudgetrecette->contains($lignebudgetrecette)) {
-            $this->lignebudgetrecette->removeElement($lignebudgetrecette);
-        }
-
-        return $this;
-    }
-
+    
     public function getCreateAt(): ?\DateTimeInterface
     {
         return $this->createAt;
@@ -121,33 +94,7 @@ class Recette
         return $this;
     }
 
-    /**
-     * @return Collection|Personne[]
-     */
-    public function getUtilisateur(): Collection
-    {
-        return $this->utilisateur;
-    }
-
-    public function addUtilisateur(Personne $utilisateur): self
-    {
-        if (!$this->utilisateur->contains($utilisateur)) {
-            $this->utilisateur[] = $utilisateur;
-        }
-
-        return $this;
-    }
-
-    public function removeUtilisateur(Personne $utilisateur): self
-    {
-        if ($this->utilisateur->contains($utilisateur)) {
-            $this->utilisateur->removeElement($utilisateur);
-        }
-
-        return $this;
-    }
-
-    public function getDescription(): ?string
+      public function getDescription(): ?string
     {
         return $this->description;
     }
@@ -155,6 +102,30 @@ class Recette
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getUtilisateur(): ?Personne
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Personne $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+
+        return $this;
+    }
+
+    public function getLignebudgetrecette(): ?Previsionbudget
+    {
+        return $this->lignebudgetrecette;
+    }
+
+    public function setLignebudgetrecette(?Previsionbudget $lignebudgetrecette): self
+    {
+        $this->lignebudgetrecette = $lignebudgetrecette;
 
         return $this;
     }
