@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -53,6 +55,16 @@ class Previsionbudget
      * @ORM\ManyToOne(targetEntity="App\Entity\SousRubrique")
      */
     private $sousrubrique;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Recette", mappedBy="lignebudgetrecette")
+     */
+    private $recettes;
+
+    public function __construct()
+    {
+        $this->recettes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -127,6 +139,38 @@ class Previsionbudget
     public function setSousrubrique(?SousRubrique $sousrubrique): self
     {
         $this->sousrubrique = $sousrubrique;
+
+        return $this;
+    }
+
+   
+    public function getRecettes() : ?float
+    {
+        $totalRecette=0;
+        foreach($this->recettes as $recette)
+        $totalRecette+= $recette->getMontantrecette();
+        return $totalRecette;
+    }
+
+    public function addRecette(Recette $recette): self
+    {
+        if (!$this->recettes->contains($recette)) {
+            $this->recettes[] = $recette;
+            $recette->setLignebudgetrecette($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRecette(Recette $recette): self
+    {
+        if ($this->recettes->contains($recette)) {
+            $this->recettes->removeElement($recette);
+            // set the owning side to null (unless already changed)
+            if ($recette->getLignebudgetrecette() === $this) {
+                $recette->setLignebudgetrecette(null);
+            }
+        }
 
         return $this;
     }

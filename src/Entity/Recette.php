@@ -47,11 +47,17 @@ class Recette
     private $utilisateur;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Previsionbudget")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Previsionbudget", inversedBy="recettes")
      * @ORM\JoinColumn(nullable=false)
      */
     private $lignebudgetrecette;
 
+
+    public function __construct(){
+        $this->createAt= new \Datetime();
+    }
+
+   
     public function getId(): ?int
     {
         return $this->id;
@@ -129,4 +135,7 @@ class Recette
 
         return $this;
     }
+
+   
+   
 }

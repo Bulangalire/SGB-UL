@@ -43,24 +43,44 @@
                                 <th scope="col">Ligne </th>
                                 <th scope="col">Prévisions</th>
                                 <th scope="col">Réalisations</th>
-                                <th scope="col">Date</th>
+                              
                                
                                
                             </tr>
                         </thead>
                         <tbody>
-
-                            {% for previsionRealisation in planDeTresoreries %}
-                                <tr>
-                                    <th scope="row">{{previsionRealisation.id}}</th>
-                                   
-                                    <td>{{previsionRealisation.montantprevision}}</td>
-                                    <td>{{previsionRealisation.montantrecette}}</td>
-                                    <td>{{previsionRealisation.createAt | date('d/m/Y')}}</td>
-                                   
-                                    
-                                </tr>
-                            {% endfor %}
+                          <!--recette.createAt | date('d/m/Y')-->
+                          {% set i=0 %}
+                       
+                                 {%  for recette in planDeTresoreries  %} 
+                                 <tr>
+                                 <td>
+                                        {{ i+1 }} 
+                                 </td>
+                                 <td>
+                                      {{recette.lignebudgetrecette.lignebudgetprevision.compteLigne}} 
+                                 </td>
+                                 <td>
+                                      {{recette.lignebudgetrecette.lignebudgetprevision.intituleLigne}} 
+                                 </td>
+                                 <td>
+                                         {{recette.lignebudgetrecette.montantprevision}}  
+                                 </td>
+                                 </tr>
+                               
+                                  {% endfor %}
+                                     {%  for p in plan %} 
+                                 <td>
+                                          {{p}} 
+                                 </td>
+                                    {% endfor %}
+                                 <td>
+                                       </tr> 
+                                 </td>
+                                  
+                                 
+                            
+                
                             <tr>
                                 <td ></td>
                                 <td></td>
@@ -94,7 +114,8 @@
 
                 </td>
                 <td>
-                    {{ form_row(formRecette.createAt)}}
+                
+
                 </td>
                 <td></td>
             </tr>
