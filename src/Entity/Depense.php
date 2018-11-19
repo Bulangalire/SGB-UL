@@ -39,6 +39,10 @@ class Depense
      * @ORM\JoinColumn(nullable=false)
      */
     private $utilisateurdepense;
+    
+    public function __construct(){
+        $this->createAt= new \Datetime();
+    }
 
      public function getId(): ?int
     {

@@ -378,21 +378,43 @@ class SgbController extends AbstractController
         if(!$unedepense){
         $unedepense= new Depense();
     }
-    
+    $userServ = $this->getUser()->getServices();
+    $user=$this->getUser();
         $frmDepense= $this->createFormBuilder( $unedepense)
                     ->add('libele')
-                    ->add('createAt')
                     ->add('montantdepense')
-                    ->add('utilisateurdepense')
+                    ->add('utilisateurdepense', EntityType::class, array(
+                        'class'  => Personne::class,
+
+                        'query_builder'=>function(EntityRepository $er){
+                            return $er->createQueryBuilder('u')
+                                        ->where('u.services=:id')
+                                        ->setParameter('id',$this->getUser()->getServices());
+                        },
+                        'choice_label'=>'nom'
+                    ))
                     ->getForm();
        
                     $frmDepense->handleRequest($request);
-
+                    $em = $this->getDoctrine()->getManager();
+                    $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense FROM   App\Entity\Detaildepense d JOIN d.lignebudgetsource p JOIN d.depenseId dd WHERE dd.utilisateurdepense =:user AND p.service=:userservice group by d.lignebudgetsource ORDER BY d.lignebudgetsource DESC');
+                    $queryDepense->setParameters(array('user'=> $user, 'userservice' => $userServ));
+                    $queryDepenseGlobale = $queryDepense->getResult();
+                   // dump($queryDepenseGlobale);
+                    $queryRecette = $em->createQuery('SELECT rr as mesrecettes, sum(rr.montantrecette) as montantrecette, pp FROM  App\Entity\Recette rr JOIN rr.lignebudgetrecette pp  WHERE rr.utilisateur =:user AND pp.service=:userservice group by pp.lignebudgetprevision');
+                    $queryRecette->setParameters(array('user'=> $user, 'userservice' => $userServ));
+                    $queryRecetteGlobale = $queryRecette->getResult();
+                     
+                    $fussion = array_merge( $queryDepenseGlobale,   $queryRecetteGlobale );
+                    dump( $fussion);
                     if( $frmDepense->isSubmitted() &&  $frmDepense->isValid()){
                         
                     } 
                            
-            return $this->render('sgb/depense/depense.html.twig');
+            return $this->render('sgb/depense/depense.html.twig',['frmDepense' =>  $frmDepense->createView(),
+            'queryRecetteGlobale'=>$queryRecetteGlobale,
+            'queryDepenseGlobale'=>$queryDepenseGlobale,
+             'fussion'=>$fussion]);
      }
 
 
@@ -671,21 +693,26 @@ class SgbController extends AbstractController
                             $lesIntitule=$ligne[$j]->getIntituleLigne();
                         }
 
- $sql = "SELECT r, p as total FROM  \App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE r.utilisateur =:user AND p.service=:userservice group by p.lignebudgetprevision";
-$queryRecette = $em->createQuery($sql);
+           
+                        $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE r.utilisateur =:user AND p.service=:userservice group by p.lignebudgetprevision');
+                        $queryRecette->setParameters(array('user'=> $idUser, 'userservice' => $idServiceOfUser));
+                        $queryRecetteGlobale = $queryRecette->getResult();
+                        dump($queryRecetteGlobale);
+                        /*
+                        for($l=0; $l<count($queryRecetteGlobale); $l++){
+                            $t[$l]=$queryRecetteGlobale[$l]->getLignebudgetrecette()->getRecettes();
+                        }
+                        $plan= $t;
+                        // $plan= array_merge($queryRecetteGlobale,$t);
+                        dump($plan); 
 
-$queryRecette->setParameters(array('user'=> $idUser, 'userservice' => $idServiceOfUser));
-$queryRecetteGlobale = $queryRecette->getResult();
- dump($queryRecetteGlobale);
- for($l=0; $l<count($queryRecetteGlobale); $l++){
-    $t[$l]=$queryRecetteGlobale[$l]->getLignebudgetrecette()->getRecettes();
- }
- $plan= $t;
-// $plan= array_merge($queryRecetteGlobale,$t);
- dump($plan);
+ */
+
+
                            // $recetteParLigne=
                         //$resultatplanDeTresorerie=array_merge($ligne, $lesPreviosions, $lesRecettes);
                       // $resultatplanDeTresorerie =$lesRecettes;
+                     // dump($queryRecetteGlobale);
                             if( $formRecette->isSubmitted() &&  $formRecette->isValid()){
                                
                                 if($em->getRepository("\App\Entity\Recette")->findOneBy(
@@ -713,7 +740,7 @@ $queryRecetteGlobale = $queryRecette->getResult();
 
         return $this->render('sgb/recette/recette.html.twig',[
             
-            'formRecette'=>$formRecette->createView(), 'planDeTresoreries'=> $queryRecetteGlobale, 'plan'=>$plan 
+            'formRecette'=>$formRecette->createView(), 'planDeTresoreries'=> $queryRecetteGlobale 
         ]);
     }
 
