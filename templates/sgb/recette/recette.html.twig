@@ -7,20 +7,18 @@
         <tbody>
 
             <tr>
-                <td>
-
+                <td nowrap="nowrap" valign="top">
                     {{ form_start(formRecette)}}
                     {{ form_row(formRecette.libelle)}}
-
-                </td>
-
-                <td>
-
                     {{ form_row(formRecette.lignebudgetrecette)}}
-
+                    {{ form_row(formRecette.utilisateur)}}
+                    {{ form_row(formRecette.description)}}
+                    {{ form_row(formRecette.montantrecette, {'attr' :{'required':'required'}})}}
+                    {{ form_row(formRecette.sauvegarder)}}
+                    {{ form_end(formRecette)}}
                 </td>
 
-                <td rowspan="4">
+                <td valign="top">
 
                     <table class="table table-hover">
 
@@ -28,65 +26,61 @@
                             <tr class="table-primary">
                                 <th colspan='8'>
                                     Plan de trésorerie pour l'année :</th>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-
+                               
                             </tr>
                             <tr>
                                 <th scope="col">Code</th>
                                 <th scope="col">Compte</th>
-                                <th style="width:400;" scope="col">Ligne Budgetaire  </th>
+                                <th style="width:400;" scope="col">Ligne Budgetaire
+                                </th>
                                 <th scope="col">Prévisions</th>
                                 <th scope="col">Réalisations</th>
-                                <th scope="col">Ecarts </th>
-                                <th scope="col">Taux de réalisation  </th>
+                                <th scope="col">Ecarts
+                                </th>
+                                <th scope="col">Taux de réalisation
+                                </th>
 
                             </tr>
                         </thead>
                         <tbody>
                             <!--recette.createAt | date('d/m/Y')-->
-                            {% set totalPrevision =0 %}
-                            {% set num =0 %}
-                            {% set totalRecette =0 %}
+                            {% set totalPrevision = 0 %}
+                            {% set num = 0 %}
+                            {% set totalRecette = 0 %}
                             {% for recette in planDeTresoreries %}
                                 <tr>
                                     <td>
-                                          {% set num = num + 1 %}
-                                    {{num}}
+                                        {% set num = num + 1 %}
+                                        {{num}}
                                     </td>
                                     <td>
                                         {{ recette.mesrecettes.lignebudgetrecette.lignebudgetprevision.compteLigne }}
                                     </td>
-                                    <td  style="width:400;">
-                                         {{recette.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}} 
+                                    <td style="width:400;">
+                                        {{recette.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
                                     </td>
                                     <td>
-                                     {% set totalPrevision = totalPrevision + recette.mesrecettes.lignebudgetrecette.montantprevision  %}
-                                      {{recette.mesrecettes.lignebudgetrecette.montantprevision}}
+                                        {% set totalPrevision = totalPrevision + recette.mesrecettes.lignebudgetrecette.montantprevision %}
+                                        {{recette.mesrecettes.lignebudgetrecette.montantprevision}}
                                     </td>
                                     <td>
-                                    {% set totalRecette = totalRecette + recette.montantrecette  %}
-                                         {{recette.montantrecette}}
-                                    </td>
-
-                                    <td>
-                                    {{recette.mesrecettes.lignebudgetrecette.montantprevision - recette.montantrecette}}
+                                        {% set totalRecette = totalRecette + recette.montantrecette %}
+                                        {{recette.montantrecette}}
                                     </td>
 
                                     <td>
-                                    {{((recette.montantrecette / recette.mesrecettes.lignebudgetrecette.montantprevision) * 100 )|number_format(2, '.', ',') }}%
+                                        {{recette.mesrecettes.lignebudgetrecette.montantprevision - recette.montantrecette}}
+                                    </td>
+
+                                    <td>
+                                        {{((recette.montantrecette / recette.mesrecettes.lignebudgetrecette.montantprevision) * 100 )|number_format(2, '.', ',') }}%
                                     </td>
 
                                 </tr>
                             {% endfor %}
 
                             <tr class="table-primary">
-                                <td>TOTAUX RECETTES</td>
+                                <td>Totaux</td>
                                 <td></td>
                                 <td></td>
                                 <td>{{totalPrevision}}</td>
@@ -94,47 +88,17 @@
                                 </td>
                                 <td>{{totalPrevision - totalRecette}}</td>
                                 <td>{{( ( totalRecette / totalPrevision) * 100) |number_format(2, '.', ',')  }}%</td>
-
+                                <td></td>
+                                
                             </tr>
 
                         </tbody>
                     </table>
 
                 </td>
-            </tr>
-            <tr>
-                <td>
-                    {{ form_row(formRecette.utilisateur)}}
 
-                </td>
-                <td>
-
-                    {{ form_row(formRecette.description)}}
-                </td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>
-                    {{ form_row(formRecette.montantrecette, {'attr' :{'required':'required'}})}}
-
-                </td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>
-                    {{ form_row(formRecette.sauvegarder)}}
-
-                </td>
-                <td></td>
-                <td></td>
             </tr>
 
-            {{ form_end(formRecette)}}
-
-            <tr>
-                <td colspan='3'></td>
-            </tr>
         </tbody>
     </table>
 {% endblock %}

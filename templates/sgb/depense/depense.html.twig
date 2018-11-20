@@ -1,5 +1,5 @@
 {% extends 'base.html.twig' %}
- {% form_theme frmDepense 'bootstrap_4_layout.html.twig' %}
+{% form_theme frmDepense 'bootstrap_4_layout.html.twig' %}
 {% block body %}
 
     <table>
@@ -9,122 +9,94 @@
 
                     <h3>Depense
                     </h3>
-                     {{ form_start(frmDepense)}}
+                    {{ form_start(frmDepense)}}
                     {{ form_widget(frmDepense)}}
-                      {{ form_end(frmDepense)}}
-
-                </td>
-                <td></tr>
-                <tr>
-                    <td>
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th scope="col">ID</th>
-                                    <th scope="col">Ligne</th>
-                                    <th scope="col">E-mail</th>
-                                    <th scope="col">Description</th>
-                                    <th scope="col">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% set numRecette =0 %}
-                                {% for res in queryRecetteGlobale %}
-                                <tr>
-                                    <th scope="row">
-                                    {% set numRecette =  numRecette + 1 %}
-                                    {{ numRecette }}
-                                    </th>
-                                    <td>{{res.montantrecette}}</td>
-                                   <td>{{res.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}</td>
-                                    <td></td>
-                                    <td>
-                                        
-                                    </td>
-                                </tr>
-                                 {% endfor %}
-                            <tr class="table-primary">
-                                <th scope="row"></th>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-
-                        </tbody>
-                    </table>
+                    {{ form_end(frmDepense)}}
 
                 </td>
                 <td>
-                 <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th scope="col">ID</th>
-                                    <th scope="col">ligne budgetaire</th>
-                                    <th scope="col">E-mail</th>
-                                    <th scope="col">Description</th>
-                                    <th scope="col">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {% set numDepense =0 %}
-                                {% for dep in queryDepenseGlobale %}
+                    <table class="table table-hover">
+                        <thead>
+                            <tr class="table-primary">
+                                <th scope="col">ID</th>
+                                <th scope="col">Libelé depense</th>
+                                <th scope="col">Libelé recette</th>
+                                <th scope="col">Débit</th>
+                                <th scope="col">Crédit</th>
+                                <th scope="col">Solde</th>
+                                <th scope="col">Observation</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set numDepense = 0 %}
+                            {% set totaleEntree = 0 %}
+                            {% set totaleSortie = 0 %}
+                            {% set SoldeGlobal = 0 %}
+                            {% for dep in queryDepenseGlobale %}
                                 <tr>
                                     <th scope="row">
-                                     {% set numDepense =  numDepense + 1 %}
-                                    {{ numDepense }}
+                                        {% set numDepense = numDepense + 1 %}
+                                        {{ numDepense }}
                                     </th>
+                                    <td>{{dep.mesdep.lignebudgetdepense.lignebudgetprevision.intituleLigne}}</td>
+
+                                    <td>{{dep.mesdep.lignebudgetsource.lignebudgetprevision.intituleLigne}}</td>
+                                    <td>
+                                        {{dep.mesdep.lignebudgetsource.recettes}}
+                                        {% set totaleEntree = totaleEntree + dep.mesdep.lignebudgetsource.recettes %}
+                                    </td>
                                     <td>{{dep.sommedepense}}</td>
-                                   <td>{{dep.mesdep.lignebudgetdepense.lignebudgetprevision.intituleLigne}}</td>
-                                     <td>{{dep.mesdep.lignebudgetsource.lignebudgetprevision.intituleLigne}}</td>
+                                    {% set totaleSortie = totaleSortie + dep.sommedepense %}
                                     <td>
-                                        
+                                        {% set solde = dep.mesdep.lignebudgetsource.recettes - dep.sommedepense %}
+                                        {% set SoldeGlobal = SoldeGlobal + solde %}
+                                        {% if solde <= 0 %}
+                                            <h5 style="color:red;">
+                                                {{solde }}
+                                            </h5>
+                                        {% else %}
+                                            <h5 style="color:black;">
+                                                {{solde }}
+                                            </h5>
+                                        {% endif %}
                                     </td>
                                 </tr>
-                                 {% endfor %}
+                            {% endfor %}
                             <tr class="table-primary">
                                 <th scope="row"></th>
                                 <td></td>
                                 <td></td>
-                                <td></td>
-                                <td></td>
+                                <td>
+                                    {{totaleEntree}}
+                                </td>
+                                <td>
+                                    {{totaleSortie}}
+                                </td>
+                                <td>
+                                    {% if SoldeGlobal <= 0 %}
+                                        <h5 style="color:red;">
+                                            {{SoldeGlobal }}
+                                        </h5>
+                                    {% else %}
+                                        <h5 style="color:black;">
+                                            {{SoldeGlobal }}
+                                        </h5>
+                                    {% endif %}
+                                </td>
                                 <td></td>
                             </tr>
 
                         </tbody>
                     </table>
 
-                    <td>
-                     <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th scope="col">ID</th>
-                                    <th scope="col">ligne budgetaire</th>
-                                  
-                                </tr>
-                            </thead>
-                            <tbody>
-                          
-                                {% for solde in fussion %}
-                                <tr>
-                                    <th scope="row">
-                                       
-                                    </th>
-                                   
-                                    <td>
-                                       
-                                    </td>
-                                </tr>
-                                 {% endfor %}
-                            <tr class="table-primary">
-                                <th scope="row"></th>
-                                <td></td>
-                            </tr>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
 
-                        </tbody>
-                    </table>
-                    </td>
+                    <td></td>
                 </td>
             </tr>
 

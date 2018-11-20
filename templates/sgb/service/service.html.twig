@@ -33,7 +33,7 @@
 
             <table class="table table-hover">
                 <thead>
-                    <tr>
+                    <tr class="table-primary">
                         <th scope="col">ID</th>
                         <th scope="col">Designation</th>
                         <th scope="col">E-mail</th>
@@ -55,7 +55,7 @@
                                 &nbsp; &nbsp; 
                                 <a href="{{path('service_delete', {'id':service.id})}}"> <img src="{{path('delete_button')}}" /></a>
                       
-                                <a href="{{path('personne_by_service', {'id':service.id})}}" class="btn btn-primary">Personnes</a>
+                                <a href="{{path('personne_by_service', {'id':service.id})}}"> <img src="{{path('personne_button')}}" /></a>
                             </td>
                         </tr>
                     {% endfor %}
