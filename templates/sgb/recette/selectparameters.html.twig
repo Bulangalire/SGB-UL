@@ -1,30 +1,61 @@
 <link rel="stylesheet" href="{{path('boots')}}">
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <style>
+        .example-wrapper {
+            margin: 1em auto;
+            max-width: 800px;
+            width: 95%;
+            font: 18px/1.5 sans-serif;
+        }
+        .example-wrapper code {
+            background: #F5F5F5;
+            padding: 2px 6px;
+        }
+    </style>
 
-<div class="example-wrapper">
-    <h1>Choix année budgetaire</h1> 
- 
-   <form action="{{ path('recette_create') }}" method ="post">
-        <div class="form-group">
-            <select required  name="annees" class="form-control">
-            <option value="">--Choisir une année budgetaire </option>
-            {% for annee in annees %}
-              <option value="{{annee.id}}">{{annee.anneebudget}}</option>
-              {% endfor %}
-            </select>
-            
-        </div>
-       
-        <div class="form-group">
-            <button type="submit" class="btn btn-success"> Continuer </button>
-            
-        </div>
-        
-   </form>
-    
-</div>
+    <div class="example-wrapper">
+        <h1>Choix année budgetaire</h1>
+
+        <form action="{{ path('recette_create') }}" method="post">
+            <div class="form-group">
+                <select required="required" name="annees" class="form-control">
+                    <option value="">--Choisir une année budgetaire
+                    </option>
+                    {% for annee in annees %}
+                        <option value="{{annee.id}}">{{annee.anneebudget}}</option>
+                    {% endfor %}
+                </select>
+
+            </div>
+
+            <div class="form-group">
+                <select required="required" name="services" class="form-control">
+                    <option value="">--Choisir un service
+                    </option>
+                    {% for service in services %}
+                        <option value="{{service.id}}">{{service.designation}}</option>
+                    {% endfor %}
+                </select>
+
+            </div>
+
+            <div class="form-group">
+                <label >Date début période</label>
+                <input type="date" name="datedebut" max="3000-12-31" min="1000-01-01" class="form-control">
+            </div>
+            <div class="form-group">
+                <label >Date fin période</label>
+                <input type="date" name="datefin" min="1000-01-01" max="3000-12-31" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">
+                    Continuer
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
 {% endblock %}

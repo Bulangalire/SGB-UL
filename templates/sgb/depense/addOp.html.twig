@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+{% form_theme frmAddOp 'bootstrap_4_layout.html.twig' %}
+{% block body %}
+
+    <table>
+        <tbody>
+            <tr>
+                <td>
+
+                    <h3>Ordre de Paiement
+                    </h3>
+
+                    {{ form_start(frmAddOp)}}
+                    {{ form_widget(frmAddOp)}}
+                    {{ form_end(frmAddOp)}}
+                </td>
+                <td>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr class="table-primary">
+                                <th scope="col">ID</th>
+                                <th scope="col">Libelé depense</th>
+                                <th scope="col">Libelé recette</th>
+                                <th scope="col">Débit</th>
+                                <th scope="col">Crédit</th>
+                                <th scope="col">Solde</th>
+                                <th scope="col">Observation</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <tr>
+                                <th scope="row"></th>
+                                <td></td>
+
+                                <td></td>
+                                <td></td>
+                                <td></td>
+
+                                <td></td>
+                            </tr>
+
+                            <tr class="table-primary">
+                                <th scope="row"></th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+
+                    <td></td>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+
+{% endblock %}

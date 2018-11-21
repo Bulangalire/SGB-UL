@@ -36,11 +36,17 @@ class Service
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Personne", mappedBy="services")
      */
-    private $personnes; 
+    private $personnes;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Depense", mappedBy="service", orphanRemoval=true)
+     */
+    private $depenses; 
 
     public function __construct()
     {
         $this->personnes = new ArrayCollection();
+        $this->depenses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -109,6 +115,37 @@ class Service
             // set the owning side to null (unless already changed)
             if ($personne->getServices() === $this) {
                 $personne->setServices(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Depense[]
+     */
+    public function getDepenses(): Collection
+    {
+        return $this->depenses;
+    }
+
+    public function addDepense(Depense $depense): self
+    {
+        if (!$this->depenses->contains($depense)) {
+            $this->depenses[] = $depense;
+            $depense->setService($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDepense(Depense $depense): self
+    {
+        if ($this->depenses->contains($depense)) {
+            $this->depenses->removeElement($depense);
+            // set the owning side to null (unless already changed)
+            if ($depense->getService() === $this) {
+                $depense->setService(null);
             }
         }
 

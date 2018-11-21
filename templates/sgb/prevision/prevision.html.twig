@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 {% form_theme formPrevision 'bootstrap_4_layout.html.twig' %}
 {% block body %}
-    <h3>Prevision
+    <h3>Prevision pour : app.s
     </h3>
     <table>
         <tbody>
@@ -24,8 +24,8 @@
             </tr>
             <tr>
                 <td>
-
-                    {{ form_row(formPrevision.lignebudgetprevision)}}
+                {{ form_row(formPrevision.lignebudgetprevision)}}
+                   
                 </td>
                 <td>
 
@@ -33,6 +33,7 @@
                 </td>
                 <td></td>
             </tr>
+            
             <tr>
                 <td>
 
@@ -64,7 +65,7 @@
                         <thead>
                             <tr class="table-primary" >
                                 <th colspan='7'>
-                                    Les previsions budgetaire des Recettes</th>
+                                    Les previsions budgetaire </th>
                              
                                 
                             </tr>
@@ -80,7 +81,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for prevision in previsionsRecette %}
+                            {% for prevision in previsions %}
                                 <tr>
                                     <th scope="row">{{prevision.id}}</th>
                                     <td>{{prevision.nom}}</td>
@@ -115,56 +116,7 @@
 
             <tr>
                 <td colspan='3'>
-                    <table class="table table-hover">
-                       
-                        <thead>
-                         <tr class="table-primary" >
-                                <th colspan='7'>
-                                    Les previsions budgetaire des Depenses</th>
-                                
-                                
-                            </tr>
-                            <tr>
-                                <th scope="col">ID</th>
-                                <th scope="col">Rubrique</th>
-                                <th scope="col">Ligne</th>
-                                <th scope="col">Service</th>
-                                <th scope="col">Année</th>
-                                <th scope="col">Montant</th>
-                                <th scope="col">Action</th>
-
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for prevision in previsionsDepense %}
-                                <tr>
-                                    <th scope="row">{{prevision.id}}</th>
-                                    <td>{{prevision.nom}}</td>
-                                    <td>{{prevision.intituleLigne}}</td>
-                                    <td>{{prevision.designation}}</td>
-                                    <td>{{prevision.anneebudget}}</td>
-                                    <td>{{prevision.montantprevision}}</td>
-
-                                    <td>
-                                        <a href="{{path('prevision_edit', {'id':prevision.id})}}"><img src="{{path('edit_button')}}"/></a>
-                                        &nbsp; &nbsp;
-                                        <a href="{{path('sgb_prevision', {'id':prevision.id})}}">
-                                            <img src="{{path('delete_button')}}"/></a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                            <tr>
-                                <th ></th>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                 <td></td>
-                            </tr>
-
-                        </tbody>
-                    </table>
+                   
                 </td>
             </tr>
 

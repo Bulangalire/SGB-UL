@@ -63,9 +63,7 @@ class Previsionbudget
      */
     private $recettes;
 
-    private $categorieLigne;
-    
-
+ 
     public function __construct()
     {
         $this->recettes = new ArrayCollection();
@@ -135,7 +133,7 @@ class Previsionbudget
 
         return $this;
     }
-
+    
     public function getSousrubrique(): ?SousRubrique
     {
         return $this->sousrubrique;
