@@ -6,12 +6,14 @@ use App\Entity\Depense;
 use App\Entity\Service;
 use App\Entity\Personne;
 use App\Entity\Etatbesoin;
+use App\Entity\Previsionbudget;
 use Doctrine\ORM\EntityRepository;
 use App\Repository\EtatbesoinRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -21,20 +23,33 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
 
-
 class DepenseController extends AbstractController{
 
 /**
  * @Route("/sgb/depense/addOp", name="depense_create")
  * @Route("/sgb/depense/addOp/{id}/edit", name="depense_edit")
  */
-public function frmOp(Depense $unedepense = null, Request $request, ObjectManager $manager){
+public function frmOp(Session $session, Depense $unedepense = null, Request $request, ObjectManager $manager){
 if($this->getUser()===null) {              
     return $this->redirectToRoute('user_login');
    }
 if(!$unedepense){
 $unedepense= new Depense();
 }
+
+    // Service
+    if($request->request->get('services')!=null || $request->request->get('services') <> $session->get('servicesselect') ){
+        $session->set('servicesselect',$request->request->get('services') );
+       }
+    $service= $session->get('servicesselect');
+
+  // Année budgetaire
+  if($request->request->get('annees')!=null || $request->request->get('annees') <> $session->get('anneeselect') ){
+    $session->set('anneeselect',$request->request->get('annees') );
+   }
+  $anneebudgetselect= $session->get('anneeselect');
+  dump( $anneebudgetselect);
+  dump($service);
 $userServ = $this->getUser()->getServices();
 $user=$this->getUser();
 $frmDepense= $this->createFormBuilder( $unedepense)
@@ -93,10 +108,20 @@ $frmDepense= $this->createFormBuilder( $unedepense)
                 'label'=>'Service'
                 ))
             ->add('ligneBudgetaire', EntityType::class, array(
-                'class'  => ligneBudgetaire::class,
-                'choice_label' => 'Designation',
-                'label'=>'Service'
-                ))
+                'class'=>Previsionbudget::class,
+                'query_builder'=>function(EntityRepository $er)use ($anneebudgetselect, $service) {
+                    
+                    return $er->createQueryBuilder('p') 
+                                ->select("p, l")
+                                ->join("p.lignebudgetprevision", 'l')
+                                ->join("p.anneebudgetprevision", 'a')
+                                ->where("p.service=:userservice AND l.categorieLigne = :ladepense AND a.id = :annnebudget")
+                                ->setParameter('userservice',$service)
+                                ->setParameter('ladepense','Depense')
+                                ->setParameter('annnebudget', $anneebudgetselect);
+                            },
+                                'choice_label'=>'lignebudgetprevision.intituleLigne',
+                                )) 
 
             ->getForm();
 dump($frmDepense->getData()->getId());

@@ -446,7 +446,7 @@ class SgbController extends AbstractController
 
      // Service
      if($request->request->get('services')!=null || $request->request->get('services') <> $session->get('servicesselect') ){
-        $session->set('servicesselect',$request->request->get('categorie') );
+        $session->set('servicesselect',$request->request->get('services') );
        }
     $service= $session->get('servicesselect');
 
@@ -768,6 +768,23 @@ public function fillYears(Request $request){
                     'services'=> $services
     ]);
 }
+
+/**
+ * @Route("/sgb/depense/selectparametersdepense", name="selectparametersdepense")
+ */
+public function fillYearsDepense(Request $request){
+    
+    $session = new Session();
+   
+    $em = $this->getDoctrine()->getManager();
+    $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
+    $services = $em->getRepository(Service::class)->findAll();
+    return $this->render('sgb/depense/selectparametersdepense.html.twig',[
+                    'annees'=>$annees,
+                    'services'=> $services
+    ]);
+}
+
 /**
  * @Route("/sgb/prevision/selectparprev", name="selectparPrev")
  */
