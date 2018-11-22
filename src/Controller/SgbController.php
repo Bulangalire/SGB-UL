@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Nuts;
 use App\Entity\Depense;
 use App\Entity\Recette;
 use App\Entity\Service;
@@ -370,6 +371,7 @@ class SgbController extends AbstractController
         if(!$unedepense){
         $unedepense= new Depense();
     }
+   
     $userServ = $this->getUser()->getServices();
     $user=$this->getUser();
         $frmDepense= $this->createFormBuilder( $unedepense)
@@ -388,7 +390,7 @@ class SgbController extends AbstractController
                     ->getForm();
        
                     $frmDepense->handleRequest($request);
-                    
+
                     $em = $this->getDoctrine()->getManager();
              
                     $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense FROM   App\Entity\Detaildepense d JOIN d.lignebudgetsource p JOIN d.depenseId dd WHERE dd.utilisateurdepense =:user AND p.service=:userservice group by d.lignebudgetsource ORDER BY d.lignebudgetsource DESC');
@@ -781,6 +783,7 @@ public function fillYearsPrev(){
                     'services'=> $services
     ]);
 }
+
 
 
     /**

@@ -52,11 +52,25 @@
                                         {% set SoldeGlobal = SoldeGlobal + solde %}
                                         {% if solde <= 0 %}
                                             <h5 style="color:red;">
-                                                {{solde }}
+                                               {{solde}}
                                             </h5>
                                         {% else %}
                                             <h5 style="color:black;">
-                                                {{solde }}
+                                            
+                                                {{ solde }}
+                                            </h5>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% set solde = dep.mesdep.lignebudgetsource.recettes - dep.sommedepense %}
+                                           {% if solde <= 0 %}
+                                            <h5 style="color:red;">
+                                               {{ converssion(solde, "USD") }}
+                                            </h5>
+                                        {% else %}
+                                            <h5 style="color:black;">
+                                            
+                                                {{ converssion(solde, "USD") }}
                                             </h5>
                                         {% endif %}
                                     </td>

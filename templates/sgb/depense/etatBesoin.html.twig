@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+{% form_theme frmEtatbesoin 'bootstrap_4_layout.html.twig' %}
+{% block body %}
+    <h3>Ordre de Paiement
+    </h3>
+    <table>
+        <tbody>
+         <tr class="table-primary">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+               
+            </tr>
+            <tr>
+                <td>
+                    {{ form_start(frmEtatbesoin)}}
+                    {{ form_row(frmEtatbesoin.designation) }}
+                </td>
+                <td>
+                    {{ form_row(frmEtatbesoin.quantite)}}
+                </td>
+                <td>
+                    {{form_row(frmEtatbesoin.prixunitaire) }}
+                </td>
+                <td>
+                 {{form_row(frmEtatbesoin.prixtotal) }}
+                </td>
+            </tr>
+            <tr class="table-primary">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <br>
+                    <button type="submit" class="btn btn-success">
+                        Enregistrer
+                    </button>
+                </td>
+                <td>
+                    <br>
+                   
+                   {% if frmEtatbesoin.vars.value.depense is null %}
+                 
+                    <a class="btn btn-success" href="{{path('depense_edit', {'id': id })}}">Retour à l'OP</a>
+                    {% else %}
+                          {% set depense = frmEtatbesoin.vars.value.depense.id   %}
+                           <a class="btn btn-success" href="{{path('depense_edit', {'id': depense })}}">Retour à l'OP</a>
+                    {% endif %}
+
+                </td>
+                
+            </tr>
+
+            {{ form_end(frmEtatbesoin)}}
+        </tbody>
+    </table>
+
+{% endblock %}

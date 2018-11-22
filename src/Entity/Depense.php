@@ -6,9 +6,15 @@ use App\Entity\Personne;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\DepenseRepository")
+ * @UniqueEntity(
+ * fields={"numOp"},
+ * message="Ce numéro est déjà Utiliser !"
+ * )
  */
 class Depense
 {
@@ -40,11 +46,6 @@ class Depense
      */
     private $utilisateurdepense;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Service", inversedBy="depenses")
-     * @ORM\JoinColumn(nullable=true)
-     */
-    private $service;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Etatbesoin", mappedBy="depense", orphanRemoval=true)
@@ -75,10 +76,42 @@ class Depense
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $recteurOuDelegue;
-    
-    public function __construct(){
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $dateEmission;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $visaCompotable;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $modePaiement;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $numOp;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $service;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $ligneBudgetaire;
+
+
+      public function __construct(){
         $this->createAt= new \Datetime();
         $this->etatbesoins = new ArrayCollection();
+      
     }
 
      public function getId(): ?int
@@ -134,17 +167,7 @@ class Depense
         return $this;
     }
 
-    public function getService(): ?Service
-    {
-        return $this->service;
-    }
-
-    public function setService(?Service $service): self
-    {
-        $this->service = $service;
-
-        return $this;
-    }
+    
 
     /**
      * @return Collection|Etatbesoin[]
@@ -236,5 +259,81 @@ class Depense
 
         return $this;
     }
+
+    public function getDateEmission(): ?\DateTimeInterface
+    {
+        return $this->dateEmission;
+    }
+
+    public function setDateEmission(\DateTimeInterface $dateEmission): self
+    {
+        $this->dateEmission = $dateEmission;
+
+        return $this;
+    }
+
+    public function getVisaCompotable(): ?string
+    {
+        return $this->visaCompotable;
+    }
+
+    public function setVisaCompotable(?string $visaCompotable): self
+    {
+        $this->visaCompotable = $visaCompotable;
+
+        return $this;
+    }
+
+    public function getModePaiement(): ?string
+    {
+        return $this->modePaiement;
+    }
+
+    public function setModePaiement(?string $modePaiement): self
+    {
+        $this->modePaiement = $modePaiement;
+
+        return $this;
+    }
+
+    public function getNumOp(): ?string
+    {
+        return $this->numOp;
+    }
+
+    public function setNumOp(?string $numOp): self
+    {
+        $this->numOp = $numOp;
+
+        return $this;
+    }
+
+    public function getService(): ?int
+    {
+        return $this->service;
+    }
+
+    public function setService(int $service): self
+    {
+        $this->service = $service;
+
+        return $this;
+    }
+
+    public function getLigneBudgetaire(): ?int
+    {
+        return $this->ligneBudgetaire;
+    }
+
+    public function setLigneBudgetaire(int $ligneBudgetaire): self
+    {
+        $this->ligneBudgetaire = $ligneBudgetaire;
+
+        return $this;
+    }
+
+
+
+
    
 }

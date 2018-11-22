@@ -42,12 +42,6 @@ class Etatbesoin
      */
     private $depense;
 
-    public function __construct(){
-
-        $this->$prixtotal= $this->$prixunitaire * $quantite;
-        
-    }
-
     public function getId(): ?int
     {
         return $this->id;
@@ -91,7 +85,7 @@ class Etatbesoin
 
     public function getPrixtotal(): ?float
     {
-        return $this->prixtotal;
+        return $this->prixunitaire * $this->quantite;
     }
 
     public function setPrixtotal(float $prixtotal): self

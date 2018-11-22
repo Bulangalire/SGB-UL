@@ -1,69 +1,138 @@
 {% extends 'base.html.twig' %}
 {% form_theme frmAddOp 'bootstrap_4_layout.html.twig' %}
 {% block body %}
-
+    <h3>Ordre de Paiement
+    </h3>
     <table>
         <tbody>
             <tr>
                 <td>
 
-                    <h3>Ordre de Paiement
-                    </h3>
-
                     {{ form_start(frmAddOp)}}
-                    {{ form_widget(frmAddOp)}}
-                    {{ form_end(frmAddOp)}}
+                    {{ form_row(frmAddOp.numOp) }}
+
                 </td>
                 <td>
-                    <table class="table table-hover">
-                        <thead>
-                            <tr class="table-primary">
-                                <th scope="col">ID</th>
-                                <th scope="col">Libelé depense</th>
-                                <th scope="col">Libelé recette</th>
-                                <th scope="col">Débit</th>
-                                <th scope="col">Crédit</th>
-                                <th scope="col">Solde</th>
-                                <th scope="col">Observation</th>
 
-                            </tr>
-                        </thead>
-                        <tbody>
-
-                            <tr>
-                                <th scope="row"></th>
-                                <td></td>
-
-                                <td></td>
-                                <td></td>
-                                <td></td>
-
-                                <td></td>
-                            </tr>
-
-                            <tr class="table-primary">
-                                <th scope="row"></th>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-
-                        </tbody>
-                    </table>
+                    {{ form_row(frmAddOp.utilisateurdepense)}}
 
                 </td>
+                <td>
+
+                    {{form_row(frmAddOp.dateEmission) }}
+
+                </td>
+                <td></td>
+                <td></td>
+
+            </tr>
+            <tr class="table-primary">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
             </tr>
             <tr>
-                <td></td>
                 <td>
+                    {{ form_row(frmAddOp.createAt)}}
+                </td>
+                <td>
+                    {{ form_row(frmAddOp.beneficiaire)}}
+                </td>
 
-                    <td></td>
+                <td>
+                    {{ form_row( frmAddOp.modePaiement)}}
+                </td>
+                <td></td>
+                <td></td>
+
+            </tr>
+            <tr class="table-primary">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td >
+                    {{ form_row(frmAddOp.libele)}}
+                </td>
+                <td>
+                    {{ form_row(frmAddOp.montantdepense)}}
+                </td>
+                <td>
+                    {{ converssion(frmAddOp.vars.value.montantdepense, "USD") }}
+                </td>
+                <td></td>
+                <td></td>
+
+            </tr>
+            <tr class="table-primary">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td>
+                    {{ form_row(frmAddOp.chefDepartement)}}
+                </td>
+                <td>
+                    {{ form_row(frmAddOp.secGeneralConcerne)}}
+                </td>
+
+                <td>
+                    {{ form_row(frmAddOp.abOuDelegue)}}
+                </td>
+                <td>
+                    {{ form_row(frmAddOp.recteurOuDelegue)}}
+                </td>
+                <td></td>
+            </tr>
+
+            <tr class="table-primary">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <br>
+                    <button type="submit" class="btn btn-success">
+                        Enregistrer
+                    </button>
+
+                </td>
+                <td>
+                    <br>
+                    {% set idDepense = frmAddOp.vars.value.id %}
+                    {% if idDepense is not null  %}
+                    <a class="btn btn-success" href="{{path('etatBesoin_par_op', {'id':idDepense})}}">Son Etat de besoin</a>
+                    {% endif %}
+                </td>
+                <td>
+                    <br>
+                    <a class="btn btn-success" href="{{path('admin_formimportrubrique')}}">Voir les OP partiellement payé</a>
+                </td>
+                <td>
+                    <br>
+                    <a class="btn btn-success" href="{{path('admin_formimportrubrique')}}">Voir les OP en attente
+                    </a>
+                </td>
+                <td>
+                    <br>
+                    <a class="btn btn-success" href="{{path('admin_formimportrubrique')}}">Voir les OP réfusés
+                    </a>
                 </td>
             </tr>
 
+            {{ form_end(frmAddOp)}}
         </tbody>
     </table>
 
