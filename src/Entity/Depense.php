@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\Personne;
+use App\Entity\Previsionbudget;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -98,14 +99,16 @@ class Depense
     private $numOp;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\ManyToOne(targetEntity="App\Entity\Service")
      */
     private $service;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\ManyToOne(targetEntity="App\Entity\Previsionbudget")
      */
     private $ligneBudgetaire;
+
+ 
 
 
       public function __construct(){
@@ -308,29 +311,31 @@ class Depense
         return $this;
     }
 
-    public function getService(): ?int
+    public function getService(): ?Service
     {
         return $this->service;
     }
 
-    public function setService(int $service): self
+    public function setService(?Service $service): self
     {
         $this->service = $service;
 
         return $this;
     }
 
-    public function getLigneBudgetaire(): ?int
+    public function getLigneBudgetaire(): ?Previsionbudget
     {
         return $this->ligneBudgetaire;
     }
 
-    public function setLigneBudgetaire(int $ligneBudgetaire): self
+    public function setLigneBudgetaire(?Previsionbudget $ligneBudgetaire): self
     {
         $this->ligneBudgetaire = $ligneBudgetaire;
 
         return $this;
     }
+
+
 
 
 

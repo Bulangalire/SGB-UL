@@ -9,6 +9,7 @@
                 <td>
 
                     {{ form_start(frmAddOp)}}
+                   
                     {{ form_row(frmAddOp.numOp) }}
 
                 </td>
@@ -23,7 +24,7 @@
 
                 </td>
                 <td>
-                 {{ form_row(frmAddOp.service)}}
+                     {{form_row(frmAddOp.service) }}
                 </td>
                 <td></td>
 
@@ -63,10 +64,10 @@
                 <td >
                     {{ form_row(frmAddOp.libele)}}
                 </td>
-                <td>
+                <td id="montant">
                     {{ form_row(frmAddOp.montantdepense)}}
                 </td>
-                <td>
+                <td id="enlettre">
                     {{ converssion(frmAddOp.vars.value.montantdepense, "USD") }}
                 </td>
                 <td></td>
@@ -110,7 +111,7 @@
             <tr>
                 <td>
                     <br>
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-success" formnovalidate>
                         Enregistrer
                     </button>
 
@@ -124,7 +125,7 @@
                 </td>
                 <td>
                     <br>
-                    <a class="btn btn-success" href="{{path('admin_formimportrubrique')}}">Voir les OP partiellement payé</a>
+                    <a class="btn btn-success" href="{{path('op_partiellement')}}">Voir les OP partiellement payé</a>
                 </td>
                 <td>
                     <br>
@@ -142,4 +143,14 @@
         </tbody>
     </table>
 
+{% endblock %}
+{% block javascripts %}
+    <script>
+        $(document).ready(function(){
+            $('#montant').onChange(function() {
+                     alert("tesr");
+                }
+        });
+        });
+    </script>
 {% endblock %}

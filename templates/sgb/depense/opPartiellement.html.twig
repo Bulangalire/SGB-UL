@@ -1,0 +1,136 @@
+{% extends 'base.html.twig' %}
+{% form_theme formRecette 'bootstrap_4_layout.html.twig' %}
+{% block body %}
+    <h3>{{ title }} Recette
+    </h3>
+    <table>
+        <tbody>
+
+            <tr>
+                <td nowrap="nowrap" valign="top">
+                <form action="{{path('op_partiellement')}}" method="post">
+                     <div class="form-group">
+                <label >Date début période</label>
+                <input type="date" name="datedebut" max="3000-12-31" min="1000-01-01" class="form-control">
+            </div>
+            <div class="form-group">
+                <label >Date fin période</label>
+                <input type="date" name="datefin" min="1000-01-01" max="3000-12-31" class="form-control">
+            </div>
+                 <div class="form-group">
+                <select required="required" name="services" class="form-control">
+                    <option value="">--Choisir un service
+                    </option>
+                    {% for service in services %}
+                        <option value="{{service.id}}">{{service.designation}}</option>
+                    {% endfor %}
+                </select>
+
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">
+                    Continuer
+                </button>
+
+            </div>
+           </form>
+                </td>
+
+                <td valign="top">
+
+                    <table class="table table-hover">
+
+                        <thead>
+                            <tr class="table-primary">
+                                <th colspan='8'>
+                                {% set datedebut = now|date('d/m/Y') %}
+                                {% set datefin = now|date('d/m/Y') %}
+                                  Les ordres de paiement partiellement réglés pour la période de : {{ datedebut }} au   {{ datefin }} </th>
+                               
+                            </tr>
+                            <tr>
+                                    <th scope="col">Numéro Op</th>
+                                    <th scope="col">Date emission</th>
+                                    <th >Service  </th>
+                                    <th scope="col">Bénéficiaire</th>
+                                    <th scope="col">Ligne budgétaire</th>
+                                    <th scope="col">libelé   </th>
+                                    <th scope="col">Montant  </th>
+                                    <th scope="col">Chef de servive   </th>
+                                     <th scope="col">SG Concerné  </th>
+                                      <th scope="col">AB       </th>
+                                       <th scope="col">Recetur    </th>
+                                       <th scope="col">Etat caisse </th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!--recette.createAt | date('d/m/Y')-->
+                            {% set totalPrevision = 0 %}
+                            {% set num = 0 %}
+                            {% set totalRecette = 0 %}
+                            {% for recette in planDeTresoreries %}
+                                <tr>
+                                    <td>
+                                        {% set num = num + 1 %}
+                                        {{num}}
+                                    </td>
+                                    <td>
+                                        {{ recette.mesrecettes.lignebudgetrecette.lignebudgetprevision.compteLigne }}
+                                    </td>
+                                    <td style="width:400;">
+                                        {{recette.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
+                                    </td>
+                                    <td>
+                                        {% set totalPrevision = totalPrevision + recette.mesrecettes.lignebudgetrecette.montantprevision %}
+                                        {{recette.mesrecettes.lignebudgetrecette.montantprevision}}
+                                    </td>
+                                    <td>
+                                        {% set totalRecette = totalRecette + recette.montantrecette %}
+                                        {{recette.montantrecette}}
+                                    </td>
+
+                                    <td>
+                                        {{recette.mesrecettes.lignebudgetrecette.montantprevision - recette.montantrecette}}
+                                    </td>
+
+                                    <td>
+                                         {% if recette.mesrecettes.lignebudgetrecette.montantprevision > 0 %}
+                                         
+                                        {{((recette.montantrecette / recette.mesrecettes.lignebudgetrecette.montantprevision ) * 100 )|number_format(2, '.', ',') }}%
+
+                                        {% endif %}
+                                    </td>
+
+                                </tr>
+                            {% endfor %}
+
+                            <tr class="table-primary">
+                                <td>Totaux</td>
+                                <td></td>
+                                <td></td>
+                                <td>{{totalPrevision}}</td>
+                                <td>{{totalRecette}}
+                                </td>
+                                <td>{{totalPrevision - totalRecette}}</td>
+                             
+                                <td>
+                                {% if totalPrevision > 0 %}
+                                {{( ( totalRecette / totalPrevision) * 100) |number_format(2, '.', ',')  }}%
+                                   {% endif %}
+                                </td>
+
+                                <td></td>
+                                
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </td>
+
+            </tr>
+
+        </tbody>
+    </table>
+{% endblock %}

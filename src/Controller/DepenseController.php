@@ -6,6 +6,7 @@ use App\Entity\Depense;
 use App\Entity\Service;
 use App\Entity\Personne;
 use App\Entity\Etatbesoin;
+use App\Entity\Anneebudgetaire;
 use App\Entity\Previsionbudget;
 use Doctrine\ORM\EntityRepository;
 use App\Repository\EtatbesoinRepository;
@@ -37,23 +38,26 @@ if(!$unedepense){
 $unedepense= new Depense();
 }
 
+
     // Service
-    if($request->request->get('services')!=null || $request->request->get('services') <> $session->get('servicesselect') ){
-        $session->set('servicesselect',$request->request->get('services') );
+    if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselectOp') ){
+        $session->set('servicesselectOp', $request->request->get('services') );
        }
-    $service= $session->get('servicesselect');
+    $service= $session->get('servicesselectOp');
 
   // Année budgetaire
-  if($request->request->get('annees')!=null || $request->request->get('annees') <> $session->get('anneeselect') ){
-    $session->set('anneeselect',$request->request->get('annees') );
+  if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselectOp') ){
+    $session->set('anneeselectOp', $request->request->get('annees') );
    }
-  $anneebudgetselect= $session->get('anneeselect');
-  dump( $anneebudgetselect);
-  dump($service);
-$userServ = $this->getUser()->getServices();
-$user=$this->getUser();
+  $anneebudgetselect= $session->get('anneeselectOp');
+
+  
+ dump($this->get('session'));
+
 $frmDepense= $this->createFormBuilder( $unedepense)
-            ->add('id', HiddenType::class)
+            
+            ->add('id', HiddenType::class
+                ,['mapped'=> false])
             ->add('libele')
             ->add('createAt', DateType::class)
             ->add('montantdepense')
@@ -85,28 +89,28 @@ $frmDepense= $this->createFormBuilder( $unedepense)
             ])
             ->add('chefDepartement', TextType::class, [
                 'attr'=>[
-                'placeholder'=>'Chef de Service',
+                'placeholder'=>'Chef de Service', 
+                'required'=> false,
                 ]
             ])
             ->add('secGeneralConcerne', TextType::class, [
                 'attr'=>[
                 'placeholder'=>'Secrétaire Gén. Concerné',
+               
                 ]
             ])
             ->add('abOuDelegue', TextType::class, [
                 'attr'=>[
                 'placeholder'=>'AB ou son délégué',
-                ]
+               
+                ],  'required'=> false,
             ])
             ->add('recteurOuDelegue', TextType::class, [
                 'attr'=>[
                 'placeholder'=>'Recteur ou son délégué',
+                'required'=> false,
                 ]
-            ])->add('service', EntityType::class, array(
-                'class'  => Service::class,
-                'choice_label' => 'Designation',
-                'label'=>'Service'
-                ))
+            ])
             ->add('ligneBudgetaire', EntityType::class, array(
                 'class'=>Previsionbudget::class,
                 'query_builder'=>function(EntityRepository $er)use ($anneebudgetselect, $service) {
@@ -122,29 +126,38 @@ $frmDepense= $this->createFormBuilder( $unedepense)
                             },
                                 'choice_label'=>'lignebudgetprevision.intituleLigne',
                                 )) 
+            ->add('service', EntityType::class, array(
+                'class'  => Service::class,
+                'choice_label' => 'designation',
+                'data' => $this->getUser()->getServices(),
+                
+            ))
 
             ->getForm();
-dump($frmDepense->getData()->getId());
-            $frmDepense->handleRequest($request);
-            if( $frmDepense->isSubmitted() &&  $frmDepense->isValid()){
+           $frmDepense->handleRequest($request);
+            if( $frmDepense->isSubmitted() && $frmDepense->isValid() ){
+                dump($request->request->get('ligneBudgetaire'));
 
                     $em = $this->getDoctrine()->getManager();
                     if($em->getRepository("\App\Entity\Depense")->findOneBy(
                         array('numOp'=>$unedepense->getNumOp(), 
                         'beneficiaire'=>$unedepense->getBeneficiaire(), 
-                        'montantdepense'=>$unedepense->getMontantdepense()) 
-                        )&& $unedepense->getId()!==null){
+                        'montantdepense'=>$unedepense->getMontantdepense(), 
+                        'ligneBudgetaire'=>$unedepense->getLigneBudgetaire(),
+                        'service'=>$unedepense->getService()
+                        ) 
+                        )&& $unedepense->getId()==null){
                             echo '<h2 style="color:red;"> Cet ordre de paiement existe déjà </h2>';
                         }else{
-                            if($unedepense->getUtilisateurdepense()==null && $user !=null ){
-                                $unedepense->setUtilisateurdepense($user);
-                             }
-                          
+                                                        
+                            //$unedepense->setLigneBudgetaire($request->request->get('ligneBudgetaire'));
                             $manager->persist($unedepense);
                             $manager->flush();
-                            return $this->render('sgb/depense/addOp.html.twig',['frmAddOp' =>  $frmDepense->createView()]);
+                            return $this->redirectToRoute('depense_edit', [
+                                'id'=>$unedepense->getid()]);
                         }
                 }
+            
                         
             
                   
@@ -200,7 +213,7 @@ public function frmEtatBesoin(EtatbesoinRepository $repositoryEtatbesoin, Etatbe
                         if($em->getRepository("\App\Entity\Etatbesoin")->findOneBy(
                             array('depense'=>$etatbesoin->getDepense(), 
                             'designation'=>$etatbesoin->getDesignation()) 
-                            )&& $etatbesoin->getId()!==null){
+                            )&& $etatbesoin->getId()==null){
                                 echo '<h2 style="color:red;"> Cet etat de besoin existe déjà </h2>';
                             }else{
                                 
@@ -219,4 +232,40 @@ public function frmEtatBesoin(EtatbesoinRepository $repositoryEtatbesoin, Etatbe
                 return $this->render('sgb/depense/etatBesoin.html.twig',['frmEtatbesoin' =>  $frmEtatbesoin->createView(), 'id'=>$id ]);
          }
 
+         /**
+          * @Route("/sgb/depense/opPartiellement", name="op_partiellement")
+          */
+         public function op_partiellement(Request $request, ObjectManager $manager, Depense $unDepense ){
+            $em = $this->getDoctrine()->getManager();
+            // Service
+    if($request->request->get('services')!=null || $request->request->get('services') <> $session->get('servicesselect') ){
+        $session->set('servicesselect',$request->request->get('services') );
+       }
+    $service= $session->get('servicesselect');
+
+  // Année budgetaire
+  if($request->request->get('annees')!=null || $request->request->get('annees') <> $session->get('anneeselect') ){
+    $session->set('anneeselect',$request->request->get('annees') );
+   }
+  $anneebudgetselect= $session->get('anneeselect');
+
+  //$queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision');
+  //$queryRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+ // $queryRecetteGlobale = $queryRecette->getResult();
+
+
+
+           // $session = new Session();
+   
+           
+            $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
+            $services = $em->getRepository(Service::class)->findAll();
+            return $this->render('sgb/depense/opPartiellement.html.twig',[
+                            'annees'=>$annees,
+                            'services'=> $services
+            ]);
+
+         }
+
         }
+        

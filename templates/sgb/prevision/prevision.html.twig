@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 {% form_theme formPrevision 'bootstrap_4_layout.html.twig' %}
 {% block body %}
-    <h3>Prevision pour : app.s
+    <h3>Prevision pour : {{app.session.get('anneeselect')}}
     </h3>
     <table>
         <tbody>

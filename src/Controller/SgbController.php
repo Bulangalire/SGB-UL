@@ -9,6 +9,7 @@ use App\Entity\Service;
 use App\Entity\Personne;
 use App\Entity\SousRubrique;
 use App\Controller\SGBHelper;
+use App\Entity\Detaildepense;
 use App\Entity\Anneebudgetaire;
 use App\Entity\LigneBudgetaire;
 use App\Entity\Previsionbudget;
@@ -21,11 +22,13 @@ use App\Repository\ServiceRepository;
 use Symfony\Component\Form\FormEvent;
 use App\Repository\PersonneRepository;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\AbstractType;
 use App\Repository\LigneBudgetaireRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Input\InputInterface;
@@ -36,8 +39,6 @@ use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -245,7 +246,7 @@ class SgbController extends AbstractController
        
                     $frmservice->handleRequest($request);
                     if( $frmservice->isSubmitted() &&  $frmservice->isValid()){
-                        if($em->getRepository("\App\Entity\Service")->findOneBy(array('designation'=>$unservice->getDesignation(), 'emailservice'=>$unservice->getEmailservice(), 'description'=>$unservice->getDescription())) && $unservice->getId()!==null){
+                        if($em->getRepository("\App\Entity\Service")->findOneBy(array('designation'=>$unservice->getDesignation(), 'emailservice'=>$unservice->getEmailservice(), 'description'=>$unservice->getDescription())) && $unservice->getId()==null){
                            echo '<h2 style="color:red;"> le service existe déjà </h2>';
                         }else{
                             $manager->persist($unservice);
@@ -313,7 +314,7 @@ class SgbController extends AbstractController
                    
                     $frmpersonne->handleRequest($request);
                     if( $frmpersonne->isSubmitted() &&  $frmpersonne->isValid()){
-                        if($em->getRepository("\App\Entity\Personne")->findOneBy(array('nom'=>$unePersonne->getNom(), 'postnom'=>$unePersonne->getPostnom(), 'prenom'=>$unePersonne->getPrenom(), 'services'=>$unePersonne->getServices()->getDesignation())) && $unePersonne->getId()!==null){
+                        if($em->getRepository("\App\Entity\Personne")->findOneBy(array('nom'=>$unePersonne->getNom(), 'postnom'=>$unePersonne->getPostnom(), 'prenom'=>$unePersonne->getPrenom(), 'services'=>$unePersonne->getServices()->getDesignation())) && $unePersonne->getId()==null){
                            echo '<h2 style="color:red;"> la Personne existe déjà </h2>';
                         }else{
 
@@ -433,19 +434,19 @@ class SgbController extends AbstractController
     $em = $this->getDoctrine()->getManager();
     //Creation de variable de session pour les parametres des requêtes
     // Année budgetaire
-    if($request->request->get('annees')!=null || $request->request->get('annees') <> $session->get('anneeselect') ){
+    if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
         $session->set('anneeselect',$request->request->get('annees') );
        }
     $anneebudgetselect =  $session->get('anneeselect');
 
      // Catégorie
-    if($request->request->get('categorie')!=null || $request->request->get('categorie') <> $session->get('categorieselect') ){
+    if($request->request->get('categorie')!==null && $request->request->get('categorie') <> $session->get('categorieselect') ){
         $session->set('categorieselect',$request->request->get('categorie') );
        }
     $categorie= $session->get('categorieselect');
 
      // Service
-     if($request->request->get('services')!=null || $request->request->get('services') <> $session->get('servicesselect') ){
+     if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
         $session->set('servicesselect',$request->request->get('services') );
        }
     $service= $session->get('servicesselect');
@@ -520,6 +521,7 @@ class SgbController extends AbstractController
             }
         );*/
        ->getForm();
+       dump($session->get('categorieselect'));
      $formPrevision->handleRequest($request);
                    // $formPrevision;
                     if( $formPrevision->isSubmitted() &&  $formPrevision->isValid()){
@@ -527,7 +529,7 @@ class SgbController extends AbstractController
                             array('service'=>$prevision->getService(), 
                             'anneebudgetprevision'=>$prevision->getAnneebudgetprevision(), 
                             'lignebudgetprevision'=>$prevision->getLignebudgetprevision()) 
-                            )&& $prevision->getId()!==null){
+                            )&& $prevision->getId()==null){
                                 echo '<h2 style="color:red;"> la prevision existe déjà </h2>';
                             }else{
                                 if($prevision->getService()==null && $user->getServices() !=null ){
@@ -637,7 +639,7 @@ dump($anneebudgetselect);
      * @Route("/sgb/recette/recette", name="recette_create")
      *  @Route("/sgb/recette/recette/{id}/edit", name="recette_edit")
      */
-    public function recette(Session $session, RecetteRepository $recetterepository, Recette $recette=null, Request $request, ObjectManager $manager){
+    public function recette( RecetteRepository $recetterepository, Recette $recette=null, Request $request, ObjectManager $manager){
        
         if($this->getUser()===null) {              
             return $this->redirectToRoute('user_login');
@@ -650,30 +652,33 @@ dump($anneebudgetselect);
             $idServiceOfUser=$this->getUser()->getServices()->getId();
             $idUser=$this->getUser();
            
-           
-
+       
+          $session = $request->getSession();
+         
         // Creation de variable de session pour les parametres des requêtes
         // Année budgetaire
-        if($request->request->get('annees')!=null || $request->request->get('annees') <> $session->get('anneeselect') ){
+        if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
+         
             $session->set('anneeselect',$request->request->get('annees') );
            }
           $anneebudgetselect= $session->get('anneeselect');
         
         // Service
-        if($request->request->get('services')!=null || $request->request->get('services') <> $session->get('servicesselect') ){
+        if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
+           
             $session->set('servicesselect',$request->request->get('services') );
         }
         $service= $session->get('servicesselect');
         
         // Période  
         // Début periode
-        if($request->request->get('datedebut')!=null || $request->request->get('datedebut') <> $session->get('datedebutselect') ){
+        if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
             $session->set('datedebutselect',$request->request->get('datedebut') );
         }
         $datedebut = $session->get('datedebutselect');
 
         // Fin période
-        if($request->request->get('datefin')!=null || $request->request->get('datefin') <> $session->get('datefinselect') ){
+        if($request->request->get('datefin')!==null && $request->request->get('datefin') <> $session->get('datefinselect') ){
             $session->set('datefinselect',$request->request->get('datefin') );
         }
         $datefin =  $session->get('datefinselect');
@@ -733,7 +738,7 @@ dump($anneebudgetselect);
                                     array('lignebudgetrecette'=>$recette->getLignebudgetrecette(), 
                                     'montantrecette'=>$recette->getMontantrecette() 
                                 ) 
-                                    )&& $recette->getId()!==null){
+                                    )&& $recette->getId()==null){
                                         echo '<h2 style="color:red;"> la recette existe déjà </h2>';
                                     }else{
                                        
@@ -758,7 +763,7 @@ dump($anneebudgetselect);
  */
 public function fillYears(Request $request){
     
-    $session = new Session();
+    //$session = new Session();
    
     $em = $this->getDoctrine()->getManager();
     $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
@@ -774,7 +779,7 @@ public function fillYears(Request $request){
  */
 public function fillYearsDepense(Request $request){
     
-    $session = new Session();
+   // $session = new Session();
    
     $em = $this->getDoctrine()->getManager();
     $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
@@ -790,7 +795,7 @@ public function fillYearsDepense(Request $request){
  */
 public function fillYearsPrev(){
 
-    $session = new Session();
+   // $session = new Session();
 
     $em = $this->getDoctrine()->getManager();
     $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
@@ -873,6 +878,14 @@ public function fillYearsPrev(){
     public function setPersonne_button(){
 
         return $this->render('/resources/images/delete.png');
+    }
+
+    /**
+     * @Route("/resources/images/add.jpg", name="add_button")
+     */
+    public function setAjout_button(){
+
+        return $this->render('/resources/images/add.jpg');
     }
 
 

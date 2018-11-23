@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+
+    <table>
+        <tbody>
+            <tr>
+                <td></td>
+                <td>
+                    <h3>Les ordres de paiement non réglés
+                    </h3>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr class="table-primary">
+                                <th scope="col">ID</th>
+                                <th scope="col">Bénéficiaire</th>
+                                <th scope="col">Service</th>
+                                <th scope="col">Date émission</th>
+                                <th scope="col">Ligne de depense</th>
+                                <th scope="col">Montant OP</th>
+                                <th scope="col">Déjà décaisser</th>
+                                <th scope="col">Solde</th>
+                                <th scope="col">Décaisser</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set numDepense = 0 %}
+
+                            {% for op in queryListOpDejaPaye %}
+                                <tr>
+                                    <th scope="row">
+                                        {% set numDepense = numDepense + 1 %}
+                                        {{ numDepense }}
+                                    </th>
+                                    <td>{{op.lesdetails.depenseid.beneficiaire}}</td>
+                                    <td>
+                                        {{op.lesdetails.depenseid.service.designation}}
+                                    </td>
+
+                                    <td>{{op.lesdetails.depenseid.dateEmission |date('d/m/Y') }}</td>
+                                    <td>
+                                        {{op.lesdetails.depenseid.ligneBudgetaire.lignebudgetprevision.intituleLigne}}
+                                    </td>
+                                    <td>
+                                        {{op.lesdetails.depenseid.montantdepense}}
+                                    </td>
+
+                                    <td>
+                                        {{op.dejaPayer}}
+                                    </td>
+                                    <td>
+                                        {{op.lesdetails.depenseid.montantdepense - op.dejaPayer}}
+                                    </td>
+                                    <td>
+                                        <a href="{{path('add_decaisser', {'id':op.lesdetails.id})}}">
+                                            <img src="{{path('add_button')}}"/></a>
+                                    </td>
+
+                                </tr>
+                            {% endfor %}
+                            <tr class="table-primary">
+                                <th scope="row"></th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                 <td></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+
+                    <td>
+                    </td>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+
+{% endblock %}
