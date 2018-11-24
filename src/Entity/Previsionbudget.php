@@ -62,11 +62,16 @@ class Previsionbudget
      * @ORM\OneToMany(targetEntity="App\Entity\Recette", mappedBy="lignebudgetrecette")
      */
     private $recettes;
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Detaildepense", mappedBy="lignebudgetsource")
+     */
+    private $recettesUtiliseesEnDepenses;
 
  
     public function __construct()
     {
         $this->recettes = new ArrayCollection();
+        $this->recettesUtiliseesEnDepenses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -153,6 +158,13 @@ class Previsionbudget
         foreach($this->recettes as $recette)
         $totalRecette+= $recette->getMontantrecette();
         return $totalRecette;
+    }
+    public function getRecettesUtiliseesEnDepenses(){
+        $totalRecetteUtilisee=0;
+        foreach($this->recettesUtiliseesEnDepenses as $recettesUtiliseesEnDepense)
+        
+        $totalRecetteUtilisee += $recettesUtiliseesEnDepense->getMontantdetail();
+        return $totalRecetteUtilisee;
     }
 
     public function addRecette(Recette $recette): self

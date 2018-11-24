@@ -40,20 +40,26 @@ class Detaildepense
     private $lignebudgetdepense;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Previsionbudget")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Previsionbudget" , inversedBy="recettesUtiliseesEnDepenses")
      * @ORM\JoinColumn(nullable=false)
      */
     private $lignebudgetsource;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Depense")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Depense", inversedBy="detaildepenses")
      * @ORM\JoinColumn(nullable=false)
      */
     private $depenseId;
 
- 
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $createAt;
 
-    public function getId(): ?int
+    public function __construct(){
+        $this->createAt = new \DateTime();
+    }
+      public function getId(): ?int
     {
         return $this->id;
     }
@@ -129,6 +135,15 @@ class Detaildepense
 
         return $this;
     }
+
+    public function getCreateAt(): ?\DateTimeInterface
+    {
+        return $this->createAt;
+    }
+
+    
+
+    
 
     
 }

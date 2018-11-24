@@ -108,12 +108,15 @@ class Depense
      */
     private $ligneBudgetaire;
 
+     /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Detaildepense", mappedBy="depenseId")
+     */
+    private $detaildepenses;
  
-
-
       public function __construct(){
         $this->createAt= new \Datetime();
         $this->etatbesoins = new ArrayCollection();
+        $this->detaildepenses = new ArrayCollection();
       
     }
 
@@ -335,6 +338,21 @@ class Depense
         return $this;
     }
 
+
+
+   
+    public function getDetaildepenses() : ?float
+    {
+        $totalDepense=0;
+        foreach($this->detaildepenses as $detaildepense)
+        $totalDepense += $detaildepense->getMontantdetail();
+        return $totalDepense;
+    }
+
+    public function getSoldeDepense(): ? float
+    {
+        return $this->getMontantdepense()- $this->getDetaildepenses();
+    }
 
 
 
