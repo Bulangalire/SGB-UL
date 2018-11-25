@@ -27,7 +27,8 @@ class Depense
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\Length(min=2, minMessage="Votre libelé doit être comprehenssive.")
      */
     private $libele;
 
@@ -112,6 +113,26 @@ class Depense
      * @ORM\OneToMany(targetEntity="App\Entity\Detaildepense", mappedBy="depenseId")
      */
     private $detaildepenses;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $autoriserChefService;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $autoriserSG;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $autoriserAB;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $autoriserRecteur;
  
       public function __construct(){
         $this->createAt= new \Datetime();
@@ -352,6 +373,54 @@ class Depense
     public function getSoldeDepense(): ? float
     {
         return $this->getMontantdepense()- $this->getDetaildepenses();
+    }
+
+    public function getAutoriserChefService(): ?bool
+    {
+        return $this->autoriserChefService;
+    }
+
+    public function setAutoriserChefService(?bool $autoriserChefService): self
+    {
+        $this->autoriserChefService = $autoriserChefService;
+
+        return $this;
+    }
+
+    public function getAutoriserSG(): ?bool
+    {
+        return $this->autoriserSG;
+    }
+
+    public function setAutoriserSG(?bool $autoriserSG): self
+    {
+        $this->autoriserSG = $autoriserSG;
+
+        return $this;
+    }
+
+    public function getAutoriserAB(): ?bool
+    {
+        return $this->autoriserAB;
+    }
+
+    public function setAutoriserAB(?bool $autoriserAB): self
+    {
+        $this->autoriserAB = $autoriserAB;
+
+        return $this;
+    }
+
+    public function getAutoriserRecteur(): ?bool
+    {
+        return $this->autoriserRecteur;
+    }
+
+    public function setAutoriserRecteur(?bool $autoriserRecteur): self
+    {
+        $this->autoriserRecteur = $autoriserRecteur;
+
+        return $this;
     }
 
 

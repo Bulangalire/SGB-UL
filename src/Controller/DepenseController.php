@@ -19,6 +19,7 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -31,30 +32,25 @@ class DepenseController extends AbstractController{
  * @Route("/sgb/depense/addOp/{id}/edit", name="depense_edit")
  */
 public function frmOp(Session $session, Depense $unedepense = null, Request $request, ObjectManager $manager){
-if($this->getUser()===null) {              
-    return $this->redirectToRoute('user_login');
-   }
-if(!$unedepense){
-$unedepense= new Depense();
-}
-
-
+    if($this->getUser()===null) {              
+        return $this->redirectToRoute('user_login');
+    }
+    if(!$unedepense){
+        $unedepense= new Depense();
+    }
     // Service
     if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselectOp') ){
         $session->set('servicesselectOp', $request->request->get('services') );
        }
     $service= $session->get('servicesselectOp');
 
-  // Année budgetaire
-  if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselectOp') ){
-    $session->set('anneeselectOp', $request->request->get('annees') );
-   }
-  $anneebudgetselect= $session->get('anneeselectOp');
+    // Année budgetaire
+    if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselectOp') ){
+        $session->set('anneeselectOp', $request->request->get('annees') );
+    }
+    $anneebudgetselect= $session->get('anneeselectOp');
 
-  
- dump($this->get('session'));
-
-$frmDepense= $this->createFormBuilder( $unedepense)
+    $frmDepense= $this->createFormBuilder( $unedepense)
             
             ->add('id', HiddenType::class
                 ,['mapped'=> false])
@@ -111,34 +107,62 @@ $frmDepense= $this->createFormBuilder( $unedepense)
                 'required'=> false,
                 ]
             ])
+
+            ->add('autoriserChefService', CheckboxType::class, [
+                'attr'=>[
+                'label'=>'Autorisation du Chef de Service',
+                 ]
+            ])
+            ->add('autoriserSG', CheckboxType::class, [
+                'attr'=>[
+                'label'=>'Autorisation du SG',
+                 ]
+            ])
+            ->add('autoriserAB', CheckboxType::class, [
+                'attr'=>[
+                'label'=>'Autorisation de l\'AB',
+                 ]
+            ])
+            ->add('autoriserRecteur', CheckboxType::class, [
+                'attr'=>[
+                'label'=>'Autorisation du Recteur',
+                 ]
+            ])
+
             ->add('ligneBudgetaire', EntityType::class, array(
                 'class'=>Previsionbudget::class,
                 'query_builder'=>function(EntityRepository $er)use ($anneebudgetselect, $service) {
-                    
-                    return $er->createQueryBuilder('p') 
-                                ->select("p, l")
-                                ->join("p.lignebudgetprevision", 'l')
-                                ->join("p.anneebudgetprevision", 'a')
-                                ->where("p.service=:userservice AND l.categorieLigne = :ladepense AND a.id = :annnebudget")
-                                ->setParameter('userservice',$service)
-                                ->setParameter('ladepense','Depense')
-                                ->setParameter('annnebudget', $anneebudgetselect);
+                 return $er->createQueryBuilder('p') 
+                            ->select("p, l")
+                            ->join("p.lignebudgetprevision", 'l')
+                            ->join("p.anneebudgetprevision", 'a')
+                            ->where("p.service=:userservice AND l.categorieLigne = :ladepense AND a.id = :annnebudget")
+                            ->setParameter('userservice',$service)
+                            ->setParameter('ladepense','Depense')
+                            ->setParameter('annnebudget', $anneebudgetselect);
                             },
-                                'choice_label'=>'lignebudgetprevision.intituleLigne',
-                                )) 
+                            'choice_label'=>'lignebudgetprevision.intituleLigne',
+                            )) 
             ->add('service', EntityType::class, array(
                 'class'  => Service::class,
                 'choice_label' => 'designation',
                 'data' => $this->getUser()->getServices(),
-                
             ))
-
             ->getForm();
+           
            $frmDepense->handleRequest($request);
-            if( $frmDepense->isSubmitted() && $frmDepense->isValid() ){
-                dump($request->request->get('ligneBudgetaire'));
+           $em = $this->getDoctrine()->getManager();
 
-                    $em = $this->getDoctrine()->getManager();
+           $sqlOpNonSigne="SELECT d as listOp  FROM 
+           App\Entity\Depense d
+           WHERE d.autoriserChefService=false
+           AND d.autoriserSG=false
+           AND d.autoriserAB=false
+           AND d.autoriserRecteur=false";
+           $queryOpNonSigne = $em->createQuery($sqlOpNonSigne);
+           $resutatListOpNonSigne = $queryOpNonSigne->getResult();
+                dump(  $resutatListOpNonSigne);
+            if( $frmDepense->isSubmitted() && $frmDepense->isValid() ){
                     if($em->getRepository("\App\Entity\Depense")->findOneBy(
                         array('numOp'=>$unedepense->getNumOp(), 
                         'beneficiaire'=>$unedepense->getBeneficiaire(), 
@@ -149,20 +173,37 @@ $frmDepense= $this->createFormBuilder( $unedepense)
                         )&& $unedepense->getId()==null){
                             echo '<h2 style="color:red;"> Cet ordre de paiement existe déjà </h2>';
                         }else{
-                                                        
-                            //$unedepense->setLigneBudgetaire($request->request->get('ligneBudgetaire'));
-                            $manager->persist($unedepense);
-                            $manager->flush();
-                            return $this->redirectToRoute('depense_edit', [
-                                'id'=>$unedepense->getid()]);
+
+                            $sql="SELECT SUM(d.montantdepense) as totalDepense FROM 
+                            App\Entity\Depense d WHERE d.ligneBudgetaire=:ligne ";
+                            $queryTotalDepense = $em->createQuery($sql);
+                            $queryTotalDepense->setParameters(array('ligne'=> $unedepense->getLigneBudgetaire()));
+                            $resutatTotalDepense = $queryTotalDepense->getResult();
+                            $totaleDepenseParLigne=$resutatTotalDepense[0]['totalDepense'];
+                            $SoldeADepense =( $unedepense->getLigneBudgetaire()->getMontantprevision()) - $totaleDepenseParLigne;
+                                
+                            if($SoldeADepense >= $unedepense->getMontantdepense() ){
+                               //$unedepense->setLigneBudgetaire($request->request->get('ligneBudgetaire'));
+                               if($unedepense->getLibele()==null){
+                                $unedepense->setLibele($unedepense->getLigneBudgetaire()->getLignebudgetprevision()->getIntituleLigne());
+                            }
+                               $manager->persist($unedepense);
+                                $manager->flush();
+                                return $this->render('sgb/depense/addOp.html.twig', ['frmAddOp' =>  $frmDepense->createView(),
+                                'resutatListOpNonSigne'=>$resutatListOpNonSigne]);
+                            }else{
+                              echo $errorMessage= '<h5 style="color:red;">Le montant de depense depasse le solde à depenser pour cette ligne. reste est de :'.$SoldeADepense .' </h5>';
+                               return $this->render('sgb/depense/addOp.html.twig',['frmAddOp' =>  $frmDepense->createView(),
+                               'resutatListOpNonSigne'=>$resutatListOpNonSigne]);
+                            }
                         }
                 }
             
-                        
+               
             
-                  
          
-            return $this->render('sgb/depense/addOp.html.twig',['frmAddOp' =>  $frmDepense->createView()]);
+            return $this->render('sgb/depense/addOp.html.twig',['frmAddOp' =>  $frmDepense->createView(),
+            'resutatListOpNonSigne'=>$resutatListOpNonSigne]);
      }
 
 
