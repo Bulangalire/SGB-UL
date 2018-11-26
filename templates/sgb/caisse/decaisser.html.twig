@@ -4,91 +4,101 @@
     <table>
         <tbody>
             <tr>
-                <td>
-                  {{form_start(frmDecaisser)}}
-                   {{form_row(frmDecaisser.lignebudgetdepense)}} 
-                   {{form_row(frmDecaisser.lignebudgetsource)}} 
-                   {{form_row(frmDecaisser.montantdetail)}} 
-                   {{form_end(frmDecaisser)}}
-                   
+                <td valign="top">
+                    {{form_start(frmDecaisser)}}
+                    {{form_row(frmDecaisser.lignebudgetdepense)}}
+                    {{form_row(frmDecaisser.lignebudgetsource)}}
+                    {{form_row(frmDecaisser.montantdetail)}}
+                    <br>
+                    <button type="submit" class="btn btn-success">
+                        Enregistrer
+                    </button>
+                    {{form_end(frmDecaisser)}}
 
                 </td>
-                <td>
-                <h3>Les paiement des OP
+                <td valign="top">
+                    <h3>Les paiement des OP
                     </h3>
                     <table class="table table-hover">
                         <thead>
                             <tr class="table-primary">
                                 <th scope="col">ID</th>
-                                <th scope="col">Ligne recette</th>
-                                <th scope="col">date opération</th>
-                                 <th scope="col">Montant</th>
-                                  </tr>
+                                <th scope="col">recette</th>
+                                <th scope="col">date</th>
+                                <th scope="col">montant</th>
+                            </tr>
                         </thead>
                         <tbody>
                             {% set numDepense = 0 %}
                             {% set totalDetail = 0 %}
-                        {% for resutatDejeDecaisser in resutatDejeDecaissers %}
+                            {% for resutatDejeDecaisser in resutatDejeDecaissers %}
                                 <tr>
                                     <th scope="row">
                                         {% set numDepense = numDepense + 1 %}
                                         {{ numDepense }}
                                     </th>
-                                    <td>{{resutatDejeDecaisser.lesdetailsDesDepenses.lignebudgetsource.lignebudgetprevision.intituleLigne}} </td>
-                                    <td>{{resutatDejeDecaisser.lesdetailsDesDepenses.createAt}} </td>
-                                     {% set totalDetail = totalDetail + resutatDejeDecaisser.lesdetailsDesDepenses.montantdetail %}
-                                    <td>{{resutatDejeDecaisser.lesdetailsDesDepenses.montantdetail}} </td>
-                                        
+                                    <td>{{resutatDejeDecaisser.lesdetailsDesDepenses.lignebudgetsource.lignebudgetprevision.intituleLigne}}
+                                    </td>
+                                    <td>{{resutatDejeDecaisser.lesdetailsDesDepenses.createAt}}
+                                    </td>
+                                    {% set totalDetail = totalDetail + resutatDejeDecaisser.lesdetailsDesDepenses.montantdetail %}
+                                    <td>{{resutatDejeDecaisser.lesdetailsDesDepenses.montantdetail}}
+                                    </td>
+
                                 </tr>
-                           {% endfor %}
+                            {% endfor %}
                             <tr class="table-primary">
                                 <th scope="row"></th>
                                 <td></td>
                                 <td></td>
-                                <td></td>
-                                <td> {{totalDetail}} </td>
+                                <td>
+                                    {{totalDetail}}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </td>
                 <td>
-                
- <h3>La situation de caisse pour ce service 
+
+                    <h3>La situation de la caisse
                     </h3>
                     <table class="table table-hover">
                         <thead>
                             <tr class="table-primary">
                                 <th scope="col">ID</th>
                                 <th scope="col">Ligne recette</th>
+                                <th scope="col">Service</th>
                                 <th scope="col">Solde</th>
-                                 
-                                  </tr>
+
+                            </tr>
                         </thead>
                         <tbody>
                             {% set numDepense = 0 %}
-                             
+                            {% for soldeParLigne in tblCaisse %}
+
                                 <tr>
                                     <th scope="row">
                                         {% set numDepense = numDepense + 1 %}
                                         {{ numDepense }}
                                     </th>
-                                    <td> </td>
+                                    <td>
+                                        {{soldeParLigne.maCaisse.lignebudgetprevision.intituleLigne}}</td>
+                                    <td>
+                                        {{soldeParLigne.maCaisse.service.designation}}</td>
+                                    <td>{{soldeParLigne.maCaisse.leSolde}}</td>
+
                                     <td></td>
-                                     
-                                    <td> </td>
-                                        
+
                                 </tr>
-                            
+                            {% endfor %}
                             <tr class="table-primary">
                                 <th scope="row"></th>
                                 <td></td>
-                                <td>   </td>
+                                <td></td>
+                                <td></td>
                             </tr>
                         </tbody>
                     </table>
-
-
-
 
                 </td>
             </tr>

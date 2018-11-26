@@ -67,7 +67,6 @@ class Previsionbudget
      */
     private $recettesUtiliseesEnDepenses;
 
- 
     public function __construct()
     {
         $this->recettes = new ArrayCollection();
@@ -188,5 +187,8 @@ class Previsionbudget
         }
 
         return $this;
+    }
+    public function getLeSolde(){
+        return $this->getRecettes()-$this->getRecettesUtiliseesEnDepenses();
     }
 }

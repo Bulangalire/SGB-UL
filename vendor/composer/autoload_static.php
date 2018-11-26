@@ -98,6 +98,10 @@ class ComposerStaticInit951113f29838caf8622a5ab65fb03540
             'PhpCsFixer\\' => 11,
             'PackageVersions\\' => 16,
         ),
+        'O' => 
+        array (
+            'Omines\\DataTablesBundle\\' => 24,
+        ),
         'M' => 
         array (
             'Monolog\\' => 8,
@@ -399,6 +403,10 @@ class ComposerStaticInit951113f29838caf8622a5ab65fb03540
         'PackageVersions\\' => 
         array (
             0 => __DIR__ . '/..' . '/ocramius/package-versions/src/PackageVersions',
+        ),
+        'Omines\\DataTablesBundle\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/omines/datatables-bundle/src',
         ),
         'Monolog\\' => 
         array (

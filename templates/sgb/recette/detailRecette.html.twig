@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+{% form_theme formDetailRecette 'bootstrap_4_layout.html.twig' %}
+{% block body %}
+    <h3>{{ title }} Recette
+    </h3>
+    <table>
+        <tbody>
+
+            <tr>
+                <td nowrap="nowrap" valign="top">
+                    {{ form_start(formDetailRecette)}}
+                    {{ form_row(formDetailRecette.libelle)}}
+                    {{ form_row(formDetailRecette.lignebudgetrecette)}}
+                    {{ form_row(formDetailRecette.utilisateur)}}
+                    {{ form_row(formDetailRecette.description)}}
+                    {{ form_row(formDetailRecette.montantrecette, {'attr' :{'required':'required'}})}}
+                    {{ form_row(formDetailRecette.sauvegarder)}}
+                    {{ form_end(formDetailRecette)}}
+                </td>
+
+                <td valign="top">
+
+                    <table class="table table-hover">
+
+                        <thead>
+                            <tr class="table-primary">
+                                <th colspan='8'>
+                                    Detail de la ligne  : {{ resultatDetailRecette[0].mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne }} &nbsp; &nbsp; total : {{ resultatDetailRecette[0].mesrecettes.lignebudgetrecette.recettes }} ( {{converssion(resultatDetailRecette[0].mesrecettes.lignebudgetrecette.recettes ,"USD")}})</th>
+                            </tr>
+                            <tr>
+                                <th scope="col">Code</th>
+                                <th scope="col">Libelé</th>
+                                 <th scope="col">Competable</th>
+                                <th scope="col">Date </th>
+                                <th scope="col">Montant</th>
+                               
+                            </tr>
+                        </thead>
+                        <tbody>
+                    
+                            {% set num = 0 %}
+                            {% for recette in resultatDetailRecette %}
+                                <tr>
+                                    <td>
+                                        {% set num = num + 1 %}
+                                        {{num}}
+                                    </td>
+                                    <td>
+                                        {{ recette.mesrecettes.libelle }}
+                                    </td>
+                                   
+                                    <td>
+                                         {{recette.mesrecettes.utilisateur.nom}}
+                                       
+                                    </td>
+                                    <td>
+                                        {{recette.mesrecettes.createAt |date('d/m/Y')}}
+                                       
+                                    </td>
+
+                                    <td>
+                                       {{recette.mesrecettes.montantrecette}}
+                                    </td>
+
+                                    <td>
+                                                                                  
+                                          <a href="{{path('edit_recette', {'id':recette.mesrecettes.id})}}"><img src="{{path('edit_button')}}" /></a> 
+                                
+
+                                    </td>
+
+                                </tr>
+                            {% endfor %}
+
+                            <tr class="table-primary">
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </td>
+
+            </tr>
+
+        </tbody>
+    </table>
+{% endblock %}

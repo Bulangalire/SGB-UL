@@ -31,9 +31,7 @@ class Etatbesoin
      */
     private $prixunitaire;
 
-    /**
-     * @ORM\Column(type="float")
-     */
+    
     private $prixtotal;
 
     /**
@@ -85,14 +83,7 @@ class Etatbesoin
 
     public function getPrixtotal(): ?float
     {
-        return $this->prixunitaire * $this->quantite;
-    }
-
-    public function setPrixtotal(float $prixtotal): self
-    {
-        $this->prixtotal = $prixtotal;
-
-        return $this;
+        return  $this->prixunitaire * $this->quantite;
     }
 
     public function getDepense(): ?Depense

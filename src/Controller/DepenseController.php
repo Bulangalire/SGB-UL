@@ -8,6 +8,7 @@ use App\Entity\Personne;
 use App\Entity\Etatbesoin;
 use App\Entity\Anneebudgetaire;
 use App\Entity\Previsionbudget;
+use Doctrine\DBAL\Types\FloatType;
 use Doctrine\ORM\EntityRepository;
 use App\Repository\EtatbesoinRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,11 +20,10 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
-
 
 class DepenseController extends AbstractController{
 
@@ -228,7 +228,6 @@ public function frmEtatBesoin(EtatbesoinRepository $repositoryEtatbesoin, Etatbe
                 ->add('designation')
                 ->add('quantite')
                 ->add('prixunitaire')
-                ->add('prixtotal')
                 ->add('depense', EntityType::class, array(
                     'class'  => Depense::class,
                     'query_builder'=>function(EntityRepository $er) use ($id){
@@ -261,7 +260,8 @@ public function frmEtatBesoin(EtatbesoinRepository $repositoryEtatbesoin, Etatbe
                               
                                 $manager->persist($etatbesoin);
                                 $manager->flush();
-                                return $this->render('sgb/depense/etatBesoin.html.twig',['frmEtatbesoin' =>  $frmEtatbesoin->createView(),
+                                return $this->render('sgb/depense/etatBesoin.html.twig',
+                                ['frmEtatbesoin' =>  $frmEtatbesoin->createView(),
                                 'lesEtatDeBesoins'=>$lesEtatDeBesoins, 'id'=>$id ]);
                             }
                     }

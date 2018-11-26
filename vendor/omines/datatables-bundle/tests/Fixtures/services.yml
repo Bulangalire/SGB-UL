@@ -1,0 +1,4 @@
+services:
+    Tests\Fixtures\AppBundle\DataTable\Type\ServicePersonTableType:
+        autowire: true
+        autoconfigure: true

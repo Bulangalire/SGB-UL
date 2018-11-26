@@ -1,0 +1,39 @@
+imports:
+    - { resource: services.yml }
+
+framework:
+    secret: '1234567890'
+    router:
+        resource: '%kernel.project_dir%/routing.yml'
+        strict_requirements: ~
+    default_locale: 'en'
+    fragments: ~
+    translator: { fallbacks: [en] }
+    http_method_override: true
+    test: ~
+    profiler:
+        collect: false
+
+doctrine:
+    dbal:
+        driver: pdo_sqlite
+        path: '%kernel.root_dir%/data.sqlite'
+
+    orm:
+        auto_generate_proxy_classes: '%kernel.debug%'
+        naming_strategy: doctrine.orm.naming_strategy.underscore
+        auto_mapping: true
+
+twig:
+    debug: '%kernel.debug%'
+    strict_variables: '%kernel.debug%'
+
+datatables:
+    options:
+        pagingType: 'simple_numbers'
+        lengthMenu : [10, 25, 50, 100, 250, 500, 1000, 2500, -1]
+        pageLength: 50
+        dom: "<'row' <'col-sm-12' tr>><'row' <'col-sm-6'l><'col-sm-6 text-right'pi>>"
+
+    template_parameters:
+        class_name: 'table table-striped data-table'

@@ -25,7 +25,7 @@
                         <thead>
                             <tr class="table-primary">
                                 <th colspan='8'>
-                                    Plan de trésorerie pour l'année :{{ app.session.get('anneeselect') }}</th>
+                                    Plan de trésorerie du : {{ app.session.get('datedebutselect')|localizeddate('none', 'none', null, null, 'd MMMM Y') }} au {{ app.session.get('datefinselect')|localizeddate('none', 'none', null, null, 'd MMMM Y') }}  </th>
                                
                             </tr>
                             <tr>
@@ -44,6 +44,7 @@
                         </thead>
                         <tbody>
                             <!--recette.createAt | date('d/m/Y')-->
+                           
                             {% set totalPrevision = 0 %}
                             {% set num = 0 %}
                             {% set totalRecette = 0 %}
@@ -79,6 +80,10 @@
 
                                         {% endif %}
                                     </td>
+                                    <td>
+                                     <a href="{{path('detail_recette', {'id':recette.mesrecettes.id})}}">
+                                            <img src="{{path('detail_button')}}"/></a>
+                                    </td>
 
                                 </tr>
                             {% endfor %}
@@ -98,7 +103,9 @@
                                    {% endif %}
                                 </td>
 
-                                <td></td>
+                                <td>
+                                
+                                 </td>
                                 
                             </tr>
 

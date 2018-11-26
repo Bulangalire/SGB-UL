@@ -37,7 +37,7 @@
             </div>
             <div class="form-group">
                 <select required="required" name="services" class="form-control">
-                    <option value="">--Choisir un service
+                    <option value="{{app.user.services.id}}">{{app.user.services.designation}}
                     </option>
                     {% for service in services %}
                         <option value="{{service.id}}">{{service.designation}}</option>
