@@ -69,19 +69,33 @@ class CaisseController extends AbstractController{
     
         
     /**
-     * @Route("/sgb/caisse/decaisser", name="add_decaisser")
+     * @Route("/sgb/caisse/decaisser/new", name="add_decaisser")
      * @Route("/sgb/caisse/decaisser/{id}", name="edit_decaisser")
      */
     public function getOpDecaisser( Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
         if($this->getUser()===null) {              
             return $this->redirectToRoute('user_login');
-           }
-           dump($detaildepense);
-           if(!$detaildepense){
-            $detaildepense= new Detaildepense();
-           }
-         
-           if($detaildepense->getId()!==null){
+        }
+        if(!$detaildepense){
+        $detaildepense= new Detaildepense();
+        }
+
+        // Service
+        if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselectOp') ){
+            $session->set('servicesselectOp', $request->request->get('services') );
+        }
+        $service= $session->get('servicesselectOp');
+
+        // Année budgetaire
+        if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselectOp') ){
+            $session->set('anneeselectOp', $request->request->get('annees') );
+        }
+
+        $em = $this->getDoctrine()->getManager();
+        $anneebudgetselect= $session->get('anneeselectOp');
+        
+        if($detaildepense->getId()!==null){
+
             $frmDecaisser = $this->createFormBuilder($detaildepense)
             ->add('lignebudgetdepense', EntityType::class, array(
                 'class'  => Previsionbudget::class,
@@ -95,98 +109,130 @@ class CaisseController extends AbstractController{
                 'choice_label'=>'lignebudgetprevision.intituleLigne',
                 ))
 
-                ->add('lignebudgetsource', EntityType::class, array(
-                    'class'  => Previsionbudget::class,
-                    'placeholder'=>'Choisissez une ligne de Recette',
-                    'query_builder'=>function(EntityRepository $er)use ($detaildepense){
-                        return $er->createQueryBuilder('p')
-                                    ->join('p.lignebudgetprevision', 'l')
-                                    ->where('l.categorieLigne=:thisCat')
-                                   // ->andWhere('p.service=:ceService')
-                                      ->groupBy('p.service')
-                                      //->having('p.leSolde > 0')
-                                    ->setParameter('thisCat', 'Recette');
-                                   // ->setParameter('ceService', $detaildepense->getDepenseId()->getService());
-                    },
-                    'choice_label'=>'lignebudgetprevision.intituleLigne'))
+            ->add('lignebudgetsource', EntityType::class, array(
+                'class'  => Previsionbudget::class,
+                'placeholder'=>'Choisissez une ligne de Recette',
+                'query_builder'=>function(EntityRepository $er)use ($detaildepense){
+                    return $er->createQueryBuilder('p')
+                                ->join('p.lignebudgetprevision', 'l')
+                                ->where('l.categorieLigne=:thisCat')
+                                // ->andWhere('p.service=:ceService')
+                                    ->groupBy('p.service')
+                                    //->having('p.leSolde > 0')
+                                ->setParameter('thisCat', 'Recette');
+                                // ->setParameter('ceService', $detaildepense->getDepenseId()->getService());
+                },
+                'choice_label'=>'lignebudgetprevision.intituleLigne'))
             
-    ->add('montantdetail', IntegerType::class, [
-        'data'=> $detaildepense->getDepenseId()->getSoldeDepense(),
-    ])
-    ->add('descriptiondetaildepense')
-    ->getForm();
-    dump($detaildepense->getLignebudgetsource()->getRecettesUtiliseesEnDepenses());
-            //->andWhere('p.recettesUtiliseesEnDepenses < p.recettes')
-           }else{
+            ->add('montantdetail', IntegerType::class, [
+                'data'=> $detaildepense->getDepenseId()->getSoldeDepense(),
+            ])
+            ->add('descriptiondetaildepense')
+            ->add('modepayement', ChoiceType::class,[
+                'choices'=>[
+                    'CHEQUE'=>'CHEQUE',
+                    'CASH'=>'CASH',
+                    'VIREMENT'=>'VIREMENT'
+                ]
+            ])
+            ->getForm();
+             $frmDecaisser->handleRequest($request);
+
+             $queryOPDejePaye = $em->createQuery('SELECT dop as lesdetails, sum(dop.montantdetail) as dejaPayer, p, d 
+             FROM  App\Entity\Detaildepense dop 
+             LEFT JOIN dop.depenseId d 
+             LEFT JOIN dop.lignebudgetdepense p
+             WHERE d.id=:depense
+             HAVING sum(dop.montantdetail) < d.montantdepense ');
+            $queryOPDejePaye->setParameters(array('depense'=> $detaildepense->getDepenseId()->getId()));
+            $queryListOpDejaPaye = $queryOPDejePaye->getResult();
+ 
+ 
+            $queryDejeDecaisser = $em->createQuery('SELECT dop as lesdetailsDesDepenses , p, d 
+            FROM  App\Entity\Detaildepense dop 
+            JOIN dop.depenseId d 
+            JOIN dop.lignebudgetdepense p
+            WHERE dop.depenseId=:depense
+            ');
+           $queryDejeDecaisser->setParameters(array('depense'=> $detaildepense->getDepenseId()->getId()));
+           $resutatDejeDecaissers = $queryDejeDecaisser->getResult();
+           $queryMaCaisse = $em->createQuery('SELECT p as maCaisse , l 
+           FROM  App\Entity\Previsionbudget p 
+           JOIN p.lignebudgetprevision l
+           WHERE  p.anneebudgetprevision=:anneeselect
+             GROUP BY  p.service
+                       ');
+          $queryMaCaisse->setParameters(array('anneeselect'=> $anneebudgetselect));
+          $maCaisse = $queryMaCaisse->getResult();
+         
+         
+            if( $frmDecaisser->isSubmitted() &&  $frmDecaisser->isValid()){
+
+                if($detaildepense->getMontantdetail() > $detaildepense->getDepenseId()->getSoldeDepense() ){
+
+                  echo "les montants est superiere à celui qui reste !!!" ;
+
+                }else{
+
+                
+                $manager->persist($detaildepense);
+                $manager->flush(); 
+            }
+            }         
+          
+            return $this->render('sgb/caisse/decaisser.html.twig',[
+                'frmDecaisser'=> $frmDecaisser->createView() ,
+                'resutatDejeDecaissers'=>$resutatDejeDecaissers,
+                'tblCaisse'=>$maCaisse
+              ]);  
+        
+        }else{
            $frmDecaisser = $this->createFormBuilder($detaildepense)
-                                        ->add('lignebudgetdepense', EntityType::class, array(
-                                            'class'  => Previsionbudget::class,
-                                            'placeholder'=>'Choisissez une ligne de depense',
-                                            'query_builder'=>function(EntityRepository $er){
-                                                return $er->createQueryBuilder('p')
-                                                            ->leftJoin('p.lignebudgetprevision', 'l')
-                                                            ->where('l.categorieLigne=:thisCat')
-                                                            ->setParameter('thisCat', 'Depense');
-                                            },
-                                            'choice_label'=>'intituleLigne'))
-                                            ->add('lignebudgetsource', EntityType::class, array(
-                                                'class'  => Previsionbudget::class,
-                                                'placeholder'=>'Choisissez une ligne de Recette',
-                                                'query_builder'=>function(EntityRepository $er){
-                                                    return $er->createQueryBuilder('p')
-                                                                ->leftJoin('p.lignebudgetprevision', 'l')
-                                                                ->where('l.categorieLigne=:thisCat')
-                                                                //->andWhere('p.detaildepenses < p.recettes')
-                                                                ->setParameter('thisCat', 'Recette');
-                                                },                                                
-                                                'choice_label'=>'lignebudgetprevision.intituleLigne'))
+                            ->add('lignebudgetdepense', EntityType::class, array(
+                                'class'  => Previsionbudget::class,
+                                'placeholder'=>'Choisissez une ligne de depense',
+                                'query_builder'=>function(EntityRepository $er){
+                                    return $er->createQueryBuilder('p')
+                                                ->leftJoin('p.lignebudgetprevision', 'l')
+                                                ->where('l.categorieLigne=:thisCat')
+                                                ->setParameter('thisCat', 'Depense');
+                                },
+                                'choice_label'=>'intituleLigne'))
+                                ->add('lignebudgetsource', EntityType::class, array(
+                                    'class'  => Previsionbudget::class,
+                                    'placeholder'=>'Choisissez une ligne de Recette',
+                                    'query_builder'=>function(EntityRepository $er){
+                                        return $er->createQueryBuilder('p')
+                                                    ->leftJoin('p.lignebudgetprevision', 'l')
+                                                    ->where('l.categorieLigne=:thisCat')
+                                                    //->andWhere('p.detaildepenses < p.recettes')
+                                                    ->setParameter('thisCat', 'Recette');
+                                    },                                                
+                                    'choice_label'=>'lignebudgetprevision.intituleLigne'))
                                         
                                 ->add('montantdetail')
                                 ->add('descriptiondetaildepense')
+                                ->add('modepayement')
                                 ->getForm();
-                            }
+                            
                                 $frmDecaisser->handleRequest($request);
                                 if( $frmDecaisser->isSubmitted() &&  $frmDecaisser->isValid()){
                                    // $detaildepense->setDepenseId($id);
-
-
 
                                     $manager->persist($detaildepense);
                                     $manager->flush(); 
                                   
                                 }         
-                                $em = $this->getDoctrine()->getManager();
-                                $queryOPDejePaye = $em->createQuery('SELECT dop as lesdetails, sum(dop.montantdetail) as dejaPayer, p, d 
-                                FROM  App\Entity\Detaildepense dop 
-                                JOIN dop.depenseId d 
-                                JOIN dop.lignebudgetdepense p
-                                WHERE d.id=:depense
-                                HAVING sum(dop.montantdetail) < d.montantdepense ');
-                               $queryOPDejePaye->setParameters(array('depense'=> $detaildepense->getDepenseId()->getId()));
-                               $queryListOpDejaPaye = $queryOPDejePaye->getResult();
-
-
-                               $queryDejeDecaisser = $em->createQuery('SELECT dop as lesdetailsDesDepenses , p, d 
-                               FROM  App\Entity\Detaildepense dop 
-                               JOIN dop.depenseId d 
-                               JOIN dop.lignebudgetdepense p
-                               WHERE dop.depenseId=:depense
-                               ');
-                              $queryDejeDecaisser->setParameters(array('depense'=> $detaildepense->getDepenseId()->getId()));
-                              $resutatDejeDecaissers = $queryDejeDecaisser->getResult();
-
+                                
+                             
                               $queryMaCaisse = $em->createQuery('SELECT p as maCaisse , l 
                               FROM  App\Entity\Previsionbudget p 
                               JOIN p.lignebudgetprevision l
                               WHERE  p.anneebudgetprevision=:anneeselect
                                 GROUP BY  p.service
                                           ');
-                             $queryMaCaisse->setParameters(array('anneeselect'=> 1));
+                             $queryMaCaisse->setParameters(array('anneeselect'=> $anneebudgetselect));
                              $maCaisse = $queryMaCaisse->getResult();
-                                dump($maCaisse);
-                                /*$queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision');
-                                $queryRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
-                                $queryRecetteGlobale = $queryRecette->getResult();*/
           return $this->render('sgb/caisse/decaisser.html.twig',[
             'frmDecaisser'=> $frmDecaisser->createView(),
             'editMode'=> $detaildepense->getId()!==null,
@@ -194,6 +240,7 @@ class CaisseController extends AbstractController{
             'tblCaisse'=>$maCaisse
           ]);
         }
+    }
     
 
 
