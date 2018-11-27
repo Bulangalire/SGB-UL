@@ -70,11 +70,11 @@ class SecurityController extends AbstractController
     }
     
     /**
-     * @Route("/admin/acceuil/menu", name="user_menu")
+     * @Route("/sgb/menu", name="user_menu")
      */
     public function usermenu(){
        // $session->clear();
-        return $this->render('sgb/admin/acceuil/menu.html.twig');
+        return $this->render('sgb/menu/menu.html.twig');
 
     }
     

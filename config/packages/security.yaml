@@ -49,5 +49,9 @@ security:
     # Là dans ce cas seul les utilisateurs ayant le rôle ROLE_ADMIN
     # peuvent acceder à toutes les pages commençant par /admin
     access_control:
-         #- { path: ^/admin, roles: ROLE_ADMIN }
-         #- { path: ^/profile, roles: ROLE_USER }
+         - { path: ^/admin, roles: ROLE_ADMIN }
+         - { path: ^/sgb/personne, roles: ROLE_ADMIN }
+         - { path: ^/sgb/caisse, roles: ROLE_CAISSE }
+         - { path: ^/sgb/depense, roles: ROLE_COMPTABILITE }
+         - { path: ^/sgb/LigneBudgetaire, roles: ROLE_COMPTABILITE }
+         - { path: ^/sgb/prevision, roles: ROLE_COMPTABILITE }

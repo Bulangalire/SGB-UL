@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Serializable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -14,7 +15,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * message="Ce login est déjà Utiliser !"
  * )
  */
-class Personne implements UserInterface
+class Personne implements UserInterface, \Serializable
 { 
     /**
      * @ORM\Id()
@@ -64,8 +65,12 @@ class Personne implements UserInterface
      */
     private $username;
 
-  
-   // private $roles;
+    /**
+     * @var array
+     *
+     * @ORM\Column(type="json")
+     */
+    private $roles = [];
 
     public function getId(): ?int
     {
@@ -157,6 +162,24 @@ class Personne implements UserInterface
         return $this;
     }
 
+    /**
+     * Retourne les rôles de l'user
+     */
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+ 
+        // Afin d'être sûr qu'un user a toujours au moins 1 rôle
+        if (empty($roles)) {
+            $roles[] = 'ROLE_USER';
+        }
+ 
+        return array_unique($roles);
+    }
+    public function setRoles(array $roles): void
+    {
+        $this->roles = $roles;
+    }
  /*
     public function setRoles($role)
     {
@@ -172,9 +195,7 @@ class Personne implements UserInterface
         return $this->roles;
     }
 */
-    public function getRoles(){
-        return ['ROLE_ADMIN'];
-    }
+   
     public function eraseCredentials(){}
     public function getSalt(){}
     public function getUsername(): ?string
@@ -187,5 +208,22 @@ class Personne implements UserInterface
         $this->username = $username;
 
         return $this;
+    }
+
+
+    /**
+     * {@inheritdoc}
+     */
+    public function serialize(): string
+    {
+        return serialize([$this->id, $this->username, $this->password]);
+    }
+ 
+    /**
+     * {@inheritdoc}
+     */
+    public function unserialize($serialized): void
+    {
+        [$this->id, $this->username, $this->password] = unserialize($serialized, ['allowed_classes' => false]);
     }
 }
