@@ -308,5 +308,50 @@ public function frmEtatBesoin(EtatbesoinRepository $repositoryEtatbesoin, Etatbe
 
          }
 
+         /**
+          * @Route("/sgb/depense/opRegles" , name="les_op_deja_payer")
+          */
+         public function opDejaPaye(Request $request, ObjectManager $manager){
+
+             $session = $request->getSession();
+         
+            // Creation de variable de session pour les parametres des requêtes
+         
+            // Période  
+            // Début periode
+            if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
+                $session->set('datedebutselect',$request->request->get('datedebut') );
+            }
+            $datedebut = $session->get('datedebutselect');
+    
+            // Fin période
+            if($request->request->get('datefin')!==null && $request->request->get('datefin') <> $session->get('datefinselect') ){
+                $session->set('datefinselect',$request->request->get('datefin') );
+            }
+            $datefin =  $session->get('datefinselect');
+
+            $em = $this->getDoctrine()->getManager();
+             // Lister les op déjà paye
+           $sqlOPDejaPaye = $em->createQuery('SELECT dop as lesdetails,
+           sum(  dop.montantdetail) as dejaPayer, p, d 
+           FROM  App\Entity\Detaildepense dop 
+           JOIN dop.depenseId d 
+           JOIN dop.lignebudgetdepense p
+           WHERE 
+             dop.createAt BETWEEN :debut AND :fin 
+           GROUP BY dop.depenseId 
+           HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) = d.montantdepense )
+           ORDER BY p.service ');
+          $sqlOPDejaPaye->setParameters(array( 'debut'=> $datedebut, 'fin'=> $datefin));
+          $queryListOPDejaPaye = $sqlOPDejaPaye->getResult();
+
+          dump($queryListOPDejaPaye);
+          return $this->render('sgb/depense/opRegles.html.twig',[
+            'queryListOPDejaPaye'=>$queryListOPDejaPaye,
+            
+]);
+
+         }
+
         }
         

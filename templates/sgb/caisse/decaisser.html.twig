@@ -13,14 +13,18 @@
                     {{form_row(frmDecaisser.descriptiondetaildepense)}}
                     <br>
                     <button type="submit" class="btn btn-success">
-                        Enregistrer
+                    {% if editMode %}
+                    Modifier
+                    {% else %}
+                    Enregistrer
+                    {% endif %}
                     </button>
                     {{form_end(frmDecaisser)}}
 
                 </td>
                 <td valign="top">
-                    <h3>Les paiement des OP
-                    </h3>
+                    <h5>Les sorties pour cet OP
+                    </h5>
                     <table class="table table-hover">
                         <thead>
                             <tr class="table-primary">
@@ -28,23 +32,30 @@
                                 <th scope="col">recette</th>
                                 <th scope="col">date</th>
                                 <th scope="col">montant</th>
+                                 <th scope="col">Modifier</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% set numDepense = 0 %}
                             {% set totalDetail = 0 %}
-                            {% for resutatDejeDecaisser in resutatDejeDecaissers %}
+                            {% for uneSortie in queryListDetailSortie %}
                                 <tr>
                                     <th scope="row">
                                         {% set numDepense = numDepense + 1 %}
                                         {{ numDepense }}
                                     </th>
-                                    <td>{{resutatDejeDecaisser.lesdetailsDesDepenses.lignebudgetsource.lignebudgetprevision.intituleLigne}}
+                                    <td>{{uneSortie.lesdetails.lignebudgetsource.lignebudgetprevision.intituleLigne}}
                                     </td>
-                                    <td>{{resutatDejeDecaisser.lesdetailsDesDepenses.createAt}}
+                                    <td>{{uneSortie.lesdetails.createAt|date('d/m/Y') }}
                                     </td>
-                                    {% set totalDetail = totalDetail + resutatDejeDecaisser.lesdetailsDesDepenses.montantdetail %}
-                                    <td>{{resutatDejeDecaisser.lesdetailsDesDepenses.montantdetail}}
+                                    {% set totalDetail = totalDetail + uneSortie.lesdetails.montantdetail %}
+                                    <td>{{uneSortie.lesdetails.montantdetail}}
+                                    </td>
+                                     <td>
+                                        <a href="{{path('edit_decaisser', {'id':uneSortie.lesdetails.id})}}">
+                                            <img src="{{path('edit_button')}}"/></a>
+                                            <a href="{{path('delete_caisser', {'id':uneSortie.lesdetails.id})}}">
+                                            <img src="{{path('delete_button')}}"/></a>
                                     </td>
 
                                 </tr>
@@ -56,14 +67,15 @@
                                 <td>
                                     {{totalDetail}}
                                 </td>
+                                <td></td>
                             </tr>
                         </tbody>
                     </table>
                 </td>
-                <td>
+                <td valign="top">
 
-                    <h3>La situation de la caisse
-                    </h3>
+                    <h5>La situation de la caisse
+                    </h5>
                     <table class="table table-hover">
                         <thead>
                             <tr class="table-primary">
@@ -75,7 +87,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% set numDepense = 0 %}
+                           {% set numDepense = 0 %}
+                            {% set totalSolde = 0 %}
                             {% for soldeParLigne in tblCaisse %}
 
                                 <tr>
@@ -87,9 +100,12 @@
                                         {{soldeParLigne.maCaisse.lignebudgetprevision.intituleLigne}}</td>
                                     <td>
                                         {{soldeParLigne.maCaisse.service.designation}}</td>
-                                    <td>{{soldeParLigne.maCaisse.leSolde}}</td>
 
-                                    <td></td>
+                                    <td>
+                                    {% set totalSolde = totalSolde + soldeParLigne.maCaisse.leSolde  %}
+                                    {{soldeParLigne.maCaisse.leSolde}}</td>
+
+                                
 
                                 </tr>
                             {% endfor %}
@@ -97,7 +113,9 @@
                                 <th scope="row"></th>
                                 <td></td>
                                 <td></td>
-                                <td></td>
+                                <td>
+                                    {{totalSolde}}
+                                </td>
                             </tr>
                         </tbody>
                     </table>

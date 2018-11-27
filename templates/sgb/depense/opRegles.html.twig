@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+
+    <table>
+        <tbody>
+            <tr>
+                <td></td>
+                <td>
+                    <h5>Les ordres Déjà réglés
+                    </h5>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr class="table-primary">
+                                <th scope="col">ID</th>
+                                <th scope="col">Bénéficiaire</th>
+                                <th scope="col">Service</th>
+                                <th scope="col">Date émission</th>
+                                <th scope="col">Ligne de depense</th>
+                                <th scope="col">Montant OP</th>
+                                <th scope="col">Déjà décaisser</th>
+                                <th scope="col">Solde</th>
+                              
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set numDepense = 0 %}
+                             {% set totalSortie = 0 %}
+
+                            {% for op in queryListOPDejaPaye %}
+                                <tr>
+                                    <th scope="row">
+                                        {% set numDepense = numDepense + 1 %}
+                                        {{ numDepense }}
+                                    </th>
+                                    <td>{{op.lesdetails.depenseid.beneficiaire}}</td>
+                                    <td>
+                                        {{op.lesdetails.depenseid.service.designation}}
+                                    </td>
+
+                                    <td>{{op.lesdetails.depenseid.dateEmission |date('d/m/Y') }}</td>
+                                    <td>
+                                        {{op.lesdetails.depenseid.ligneBudgetaire.lignebudgetprevision.intituleLigne}}
+                                    </td>
+                                    <td>
+                                    {% set totalSortie = totalSortie + op.lesdetails.depenseid.montantdepense %}
+                                        {{op.lesdetails.depenseid.montantdepense}}
+                                    </td>
+
+                                    <td>
+                                        {{op.dejaPayer}}
+                                    </td>
+                                    <td>
+                                        {{op.lesdetails.depenseid.montantdepense - op.dejaPayer}}
+                                    </td>
+                                 
+
+                                </tr>
+                            {% endfor %}
+                            <tr class="table-primary">
+                                <th scope="row"></th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td >{{totalSortie}} </td>
+                                <td colspan="2">{{converssion(totalSortie, "USD")}}</td>
+
+                                
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </td>
+            </tr>
+            <tr>
+            <td>
+            
+            </td>
+           
+            </tr>
+
+        </tbody>
+    </table>
+
+{% endblock %}

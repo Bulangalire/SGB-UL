@@ -6,8 +6,8 @@
             <tr>
                 <td></td>
                 <td>
-                    <h3>Les ordres de paiement non réglés
-                    </h3>
+                    <h5>Les ordres partiellement réglés
+                    </h5>
                     <table class="table table-hover">
                         <thead>
                             <tr class="table-primary">
@@ -25,8 +25,11 @@
                         </thead>
                         <tbody>
                             {% set numDepense = 0 %}
+                            {% set totalOP = 0 %}
+                            {% set totalDejaSortie = 0 %}
+                            {% set totalSolde = 0 %}
 
-                            {% for op in queryListOpDejaPaye %}
+                            {% for op in queryListOpAPaye %}
                                 <tr>
                                     <th scope="row">
                                         {% set numDepense = numDepense + 1 %}
@@ -42,17 +45,21 @@
                                         {{op.lesdetails.depenseid.ligneBudgetaire.lignebudgetprevision.intituleLigne}}
                                     </td>
                                     <td>
+                                        {% set totalOP = totalOP + op.lesdetails.depenseid.montantdepense  %}
                                         {{op.lesdetails.depenseid.montantdepense}}
                                     </td>
 
                                     <td>
+                                    {% set totalDejaSortie = totalDejaSortie + op.dejaPayer %}
                                         {{op.dejaPayer}}
                                     </td>
                                     <td>
+                                    {% set totalSolde = totalSolde + (op.lesdetails.depenseid.montantdepense - op.dejaPayer)%}
                                         {{op.lesdetails.depenseid.montantdepense - op.dejaPayer}}
                                     </td>
                                     <td>
-                                        <a href="{{path('edit_decaisser', {'id':op.lesdetails.id})}}">
+                                   
+                                        <a href="{{path('add_decaisser', {'id':op.lesdetails.depenseid.id})}}">
                                             <img src="{{path('add_button')}}"/></a>
                                     </td>
 
@@ -64,9 +71,9 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td>{{totalOP}}</td>
+                                <td>{{totalDejaSortie}}</td>
+                                <td>{{totalSolde}}</td>
                                  <td></td>
                             </tr>
 
@@ -74,14 +81,181 @@
                     </table>
 
                 </td>
+            <td valign="top" rowspan='3'>
+            <h6> Affiche les OP Déjà payer</h6>
+            <form action="{{ path('les_op_deja_payer') }}" method="post">
+             <div class="form-group">
+                <label >du</label>
+                <input type="date" name="datedebut" max="3000-12-31" min="1000-01-01" class="form-control">
+            </div>
+            <div class="form-group">
+                <label >au</label>
+                <input type="date" name="datefin" min="1000-01-01" max="3000-12-31" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">
+                    Continuer
+                </button>
+
+            </div>
+            </form>
+            
+            
+            </td>
+
             </tr>
             <tr>
+            <td>
+            
+            
+            </td>
                 <td>
-                </td>
-                <td>
+               <table class="table table-hover">
+                        <thead>
+                        <tr>
+                        <h5>Les ordres de paiement signés mais non réglés</h5> 
+                        </tr>
+                            <tr class="table-primary">
+                                <th scope="col">ID</th>
+                                <th scope="col">Bénéficiaire</th>
+                                <th scope="col">Service</th>
+                                <th scope="col">Date émission</th>
+                                <th scope="col">Ligne de depense</th>
+                                <th scope="col">Montant OP</th>
+                                <th scope="col">Déjà décaisser</th>
+                                <th scope="col">Solde</th>
+                                <th scope="col">Décaisser</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set numDepense = 0 %}
+                             {% set totalOPSigne = 0 %}
+                           
+                            {% for opDeux in queryListOpAPayeDeux %}
+                                <tr>
+                                    <th scope="row">
+                                        {% set numDepense = numDepense + 1 %}
+                                        {{ numDepense }}
+                                    </th>
+                                    <td>{{opDeux.beneficiaire}}</td>
+                                    <td>
+                                        {{opDeux.service.designation}}
+                                    </td>
 
-                    <td>
-                    </td>
+                                    <td>{{opDeux.dateEmission |date('d/m/Y') }}</td>
+                                    <td>
+                                        {{opDeux.ligneBudgetaire.lignebudgetprevision.intituleLigne}}
+                                    </td>
+                                    <td>
+                                    {% set totalOPSigne = totalOPSigne + opDeux.montantdepense %}
+                                        {{opDeux.montantdepense}}
+                                    </td>
+
+                                    <td>
+                                        
+                                    </td>
+                                    <td>
+                                       
+                                    </td>
+                                    <td>
+                                  
+                                        <a href="{{path('add_decaisser', {'id':opDeux.id})}}">
+                                            <img src="{{path('add_button')}}"/></a>
+                                    </td>
+
+                                </tr>
+                            {% endfor %}
+                            <tr class="table-primary">
+                                <th scope="row"></th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>{{totalOPSigne}}</td>
+                                <td colspan="3">{{converssion(totalOPSigne, "USD")}}</td>
+                                <td></td>
+                                 
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </td>
+            </tr>
+
+            <tr>
+                <td></td>            
+                <td>
+                     <table class="table table-hover">
+                        <thead>
+                        <tr>
+                        <h5>Les ordres de paiement non signés</h5> 
+                        </tr>
+                            <tr class="table-primary">
+                                <th scope="col">ID</th>
+                                <th scope="col">Bénéficiaire</th>
+                                <th scope="col">Service</th>
+                                <th scope="col">Date émission</th>
+                                <th scope="col">Ligne de depense</th>
+                                <th scope="col">Montant OP</th>
+                                <th scope="col">Déjà décaisser</th>
+                                <th scope="col">Solde</th>
+                                <th scope="col"></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set numDepense = 0 %}
+                            {% set totalOpNonSigne = 0 %}
+                            {% for opNonSigne in queryListOPNonSigne %}
+                                <tr>
+                                    <th scope="row">
+                                        {% set numDepense = numDepense + 1 %}
+                                        {{ numDepense }}
+                                    </th>
+                                    <td>{{opNonSigne.beneficiaire}}</td>
+                                    <td>
+                                        {{opNonSigne.service.designation}}
+                                    </td>
+
+                                    <td>{{opNonSigne.dateEmission |date('d/m/Y') }}</td>
+                                    <td>
+                                        {{opNonSigne.ligneBudgetaire.lignebudgetprevision.intituleLigne}}
+                                    </td>
+                                    <td>
+                                        {% set totalOpNonSigne = totalOpNonSigne + opNonSigne.montantdepense %}
+                                        {{opNonSigne.montantdepense}}
+                                    </td>
+
+                                    <td>
+                                        
+                                    </td>
+                                    <td>
+                                       
+                                    </td>
+                                    <td>
+                                  
+                                    </td>
+
+                                </tr>
+                            {% endfor %}
+                            <tr class="table-primary">
+                                <th scope="row"></th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td>{{totalOpNonSigne}}</td>
+                                <td colspan="3">{{converssion(totalOpNonSigne, "USD")}}</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                
                 </td>
             </tr>
 

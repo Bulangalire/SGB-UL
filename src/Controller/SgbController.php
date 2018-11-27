@@ -643,8 +643,6 @@ dump($anneebudgetselect);
             $session->set('servicesselect',$request->request->get('services') );
         }
         $service= $session->get('servicesselect');
-        dump($service);
-        dump($anneebudgetselect);
         // Période  
         // Début periode
         if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
