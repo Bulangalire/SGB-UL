@@ -689,16 +689,6 @@ class SgbController extends AbstractController
                              
                             $formRecette->handleRequest($request);
                            
-                          /* $lesRecettes= $em->getRepository("\App\Entity\Recette")->findAll();
-                          
-                         / for($i=0; $i<count($lesRecettes);$i++){
-                           $lesPreviosions[$i]= $em->getRepository("\App\Entity\Previsionbudget")->find($lesRecettes[$i]->getLignebudgetrecette()->getId());
-                            $ligne[]=$em->getRepository("\App\Entity\LigneBudgetaire")->find($lesPreviosions[$i]->getlignebudgetprevision()->getId());
-                        }
-                        for($j=0;$j<count( $ligne);$j++){
-                            $lesIntitule=$ligne[$j]->getIntituleLigne();
-                        }*/
-           
                         $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision');
                         $queryRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
                         $queryRecetteGlobale = $queryRecette->getResult();
