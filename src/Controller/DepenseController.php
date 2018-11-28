@@ -242,12 +242,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
     
 
                 if( $frmEtatbesoin->isSubmitted() &&  $frmEtatbesoin->isValid()){
-                    /*   
-                    if($id!==null){
-                        $depense=$em->getRepository("\App\Entity\Depense");
-                        $lesEtatDeBesoins = $repositoryEtatbesoin->findByDepense($depense->findById($id)); 
-                        
-                    }*/
+                   
                         if($em->getRepository("\App\Entity\Etatbesoin")->findOneBy(
                             array('depense'=>$etatbesoin->getDepense(), 
                             'designation'=>$etatbesoin->getDesignation(), 
