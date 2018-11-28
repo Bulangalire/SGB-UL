@@ -50,8 +50,11 @@ security:
     # peuvent acceder à toutes les pages commençant par /admin
     access_control:
          - { path: ^/admin, roles: ROLE_ADMIN }
+         - { path: ^/security, roles: ROLE_ADMIN }
          - { path: ^/sgb/personne, roles: ROLE_ADMIN }
          - { path: ^/sgb/caisse, roles: ROLE_CAISSE }
          - { path: ^/sgb/depense, roles: ROLE_COMPTABILITE }
          - { path: ^/sgb/LigneBudgetaire, roles: ROLE_COMPTABILITE }
          - { path: ^/sgb/prevision, roles: ROLE_COMPTABILITE }
+         - { path: ^/sgb/recette, roles: ROLE_CAISSE }
+

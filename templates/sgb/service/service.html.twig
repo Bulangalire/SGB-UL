@@ -6,8 +6,8 @@
 
     <table>
         <tbody>
-          <tr>
-             <td nowrap valign=top>
+            <tr>
+                <td nowrap="nowrap" valign="top">
 
                     <h3>Service
                     </h3>
@@ -28,54 +28,78 @@
 
                     {{ form_end(formService)}}
 
-              </td>
-             <td rowspan=2>
+                </td>
+                <td rowspan="2">
 
-            <table class="table table-hover">
-                <thead>
-                    <tr class="table-primary">
-                        <th scope="col">ID</th>
-                        <th scope="col">Designation</th>
-                        <th scope="col">E-mail</th>
-                        <th scope="col">Description</th>
-                        <th scope="col">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for service in lesServices %}
-                        <tr>
-                            <th scope="row">{{service.id}}</th>
-                            <td>{{service.designation}}</td>
-                            <td>
-                                {{service.emailservice}}</td>
-                            <td>{{service.description}}</td>
-                            <td>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr class="table-primary">
+                                <th scope="col">ID</th>
+                                <th scope="col">Designation</th>
+                                <th scope="col">E-mail</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for service in lesServices %}
+                                <tr>
+                                    <th scope="row">{{service.id}}</th>
+                                    <td>{{service.designation}}</td>
+                                    <td>
+                                        {{service.emailservice}}</td>
+                                    <td>{{service.description}}</td>
+                                    <td>
 
-                                 <a href="{{path('service_edit', {'id':service.id})}}"><img src="{{path('edit_button')}}" /></a> 
-                                &nbsp; &nbsp; 
-                                <a href="{{path('service_delete', {'id':service.id})}}"> <img src="{{path('delete_button')}}" /></a>
-                      
-                                <a href="{{path('personne_by_service', {'id':service.id})}}"> <img src="{{path('personne_button')}}" /></a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    <tr class="table-primary">
-                        <th scope="row"></th>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
+                                        <a href="{{path('service_edit', {'id':service.id})}}"><img src="{{path('edit_button')}}"/></a>
+                                        &nbsp; &nbsp;
+                                        <a href="{{path('personne_by_service', {'id':service.id})}}">
+                                            <img src="{{path('personne_button')}}"/></a>
 
-                </tbody>
-            </table>
+                                        <a class="confirmModalLink" data-toggle="modal" href="{{path('service_delete', {'id':service.id})}}">
+                                            <i class="glyphicon glyphicon-trash"></i>
 
-        </td>
+                                            <img src="{{path('delete_button')}}"/></a>
 
-    </tr>
+                                        <div class="modal hide fade" id="confirmModal">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                        <h4 class="modal-title">Confirmation de la suppression</h4>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Etes-vous sur de vouloir supprimer ce service !
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <a href="#" class="btn btn-primary" id="confirmModalNo">Non</a>
+                                                        <a href="#" class="btn btn-primary" id="confirmModalYes">Oui</a>
 
-</tbody>
-</table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            <tr class="table-primary">
+                                <th scope="row"></th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </td>
+
+            </tr>
+
+        </tbody>
+    </table>
 
 {% endblock %}

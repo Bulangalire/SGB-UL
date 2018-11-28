@@ -215,7 +215,7 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
  * @Route("/sgb/depense/etatBesoin/{id}/edit", name="etatBesoin_edit")
  * @Route("/sgb/depense/etatBesoin/{id}/filtre", name="etatBesoin_par_op")
  */
-public function frmEtatBesoin(EtatbesoinRepository $repositoryEtatbesoin, Etatbesoin $etatbesoin = null, $id=null, Request $request, ObjectManager $manager){
+public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repositoryEtatbesoin, Etatbesoin $etatbesoin = null, $id=null, Request $request, ObjectManager $manager){
     if($this->getUser()===null) {              
         return $this->redirectToRoute('user_login');
        }
@@ -228,50 +228,70 @@ public function frmEtatBesoin(EtatbesoinRepository $repositoryEtatbesoin, Etatbe
                 ->add('designation')
                 ->add('quantite')
                 ->add('prixunitaire')
-                ->add('depense', EntityType::class, array(
-                    'class'  => Depense::class,
-                    'query_builder'=>function(EntityRepository $er) use ($id){
-                        return $er->createQueryBuilder('u')
-                                    ->where('u.id=:id')
-                                    ->setParameter('id',$id);
-                    },
-                    'choice_label'=>'numOp',
-                    'label'=>'Ordre de paiement'
-                ))
                
                 ->getForm();
+                dump($depense);
+                dump($etatbesoin);
+                dump($request);
+                $etatbesoin->setDepense( $depense);
                 $em = $this->getDoctrine()->getManager();
                 $frmEtatbesoin->handleRequest($request);
-                if( $frmEtatbesoin->isSubmitted() &&  $frmEtatbesoin->isValid()){
+                $querylesEtatDeBesoins=$em->createQuery('SELECT e FROM App\Entity\Etatbesoin e WHERE e.depense=:cetteDepense');
+                $querylesEtatDeBesoins->setParameters(array('cetteDepense'=> $depense->getId()));
+                $lesEtatDeBesoins = $querylesEtatDeBesoins->getResult();
     
-                       
+
+                if( $frmEtatbesoin->isSubmitted() &&  $frmEtatbesoin->isValid()){
+                    /*   
                     if($id!==null){
                         $depense=$em->getRepository("\App\Entity\Depense");
                         $lesEtatDeBesoins = $repositoryEtatbesoin->findByDepense($depense->findById($id)); 
                         
-                    }
+                    }*/
                         if($em->getRepository("\App\Entity\Etatbesoin")->findOneBy(
                             array('depense'=>$etatbesoin->getDepense(), 
-                            'designation'=>$etatbesoin->getDesignation()) 
+                            'designation'=>$etatbesoin->getDesignation(), 
+                            'quantite'=>$etatbesoin->getQuantite()) 
                             )&& $etatbesoin->getId()==null){
-                                echo '<h2 style="color:red;"> Cet etat de besoin existe déjà </h2>';
-                            }else{
-                                
-                              
+                                echo '<h5 style="color:red;"> Cet etat de besoin existe déjà </h5>';
+                            }elseif((($etatbesoin->getQuantite() * $etatbesoin->getPrixunitaire()) +
+                                        $etatbesoin->getDepense()->getSommeEtatbesoins())> 
+                                        $etatbesoin->getDepense()->getMontantdepense()){
+                                            echo '<h5 style="color:red;"> le montant de l\'etat de besoin ('. (($etatbesoin->getQuantite() * $etatbesoin->getPrixunitaire()) +
+                                            $etatbesoin->getDepense()->getSommeEtatbesoins()) .') est superiere à celui de l\'OP('.  $etatbesoin->getDepense()->getMontantdepense() .') </h5>';
+                              }else{
                                 $manager->persist($etatbesoin);
                                 $manager->flush();
-                                return $this->render('sgb/depense/etatBesoin.html.twig',
-                                ['frmEtatbesoin' =>  $frmEtatbesoin->createView(),
-                                'lesEtatDeBesoins'=>$lesEtatDeBesoins, 'id'=>$id ]);
+                                return $this->redirectToRoute('etatBesoin_par_op',
+                                ['id' => $etatbesoin->getDepense()->getId()]);
                             }
                     }
-                            
-                   
-                    
-                      
              
-                return $this->render('sgb/depense/etatBesoin.html.twig',['frmEtatbesoin' =>  $frmEtatbesoin->createView(), 'id'=>$id ]);
+                return $this->render('sgb/depense/etatBesoin.html.twig',['frmEtatbesoin' =>  $frmEtatbesoin->createView(), 'id'=>$id , 'lesEtatDeBesoins'=>$lesEtatDeBesoins]);
          }
+
+
+         /**
+     * @Route("/sgb/depense/{id}/delete", name="etatbesoin_delete")
+     */
+    public function deleteEtatbesoin(Depense $depense=null, Etatbesoin $etatbesoin = null, Request $request, ObjectManager $manager){
+        if(!$etatbesoin){ 
+          exit;
+       } 
+                      try{
+                           // Recuperer la depense avec de supprimer l'objet etatbesoin
+                            $session = $request->getSession();
+                            if($etatbesoin->getDepense() <> $session->get('depenseActuelle') ){
+                                $session->set('depenseActuelle',$etatbesoin->getDepense() );
+                            }
+                            $depense= $session->get('depenseActuelle');
+                           $manager->remove($etatbesoin);
+                           $manager->flush(); 
+                           return $this->redirectToRoute('etatBesoin_par_op',['id'=>$depense->getId()]);  
+                      }catch(\Exception $e){
+                          return $this->redirectToRoute('depense_create');  
+                     }
+   }
 
          /**
           * @Route("/sgb/depense/opPartiellement", name="op_partiellement")
@@ -352,6 +372,7 @@ public function frmEtatBesoin(EtatbesoinRepository $repositoryEtatbesoin, Etatbe
 ]);
 
          }
+
 
         }
         

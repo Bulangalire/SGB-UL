@@ -93,8 +93,37 @@
                                     <td>
                                         <a href="{{path('prevision_edit', {'id':prevision.id})}}"><img src="{{path('edit_button')}}"/></a>
                                         &nbsp; &nbsp;
-                                        <a href="{{path('delete_prevision', {'id':prevision.id})}}">
+                                                                            
+                                     <a class="confirmModalLink" data-toggle="modal" href="{{path('delete_prevision', {'id':prevision.id})}}">
+                                            <i class="glyphicon glyphicon-trash"></i>
+
                                             <img src="{{path('delete_button')}}"/></a>
+
+                                        <div class="modal hide fade" id="confirmModal">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                        <h4 class="modal-title">Confirmation de la suppression</h4>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Etes-vous sur de vouloir supprimer cette prevision !
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <a href="#" class="btn btn-primary" id="confirmModalNo">Non</a>
+                                                        <a href="#" class="btn btn-primary" id="confirmModalYes">Oui</a>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
+                                    
                                     </td>
                                 </tr>
                             {% endfor %}

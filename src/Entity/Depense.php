@@ -195,6 +195,13 @@ class Depense
     }
 
     
+    public function getSommeEtatbesoins(): float
+    {
+        $sommeMontant=0;
+        foreach($this->etatbesoins as $etatbesoin)
+        $sommeMontant+= $etatbesoin->getQuantite() * $etatbesoin->getPrixunitaire();
+        return $sommeMontant;
+    }
 
     /**
      * @return Collection|Etatbesoin[]

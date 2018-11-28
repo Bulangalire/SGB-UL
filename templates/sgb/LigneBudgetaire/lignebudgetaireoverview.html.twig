@@ -31,7 +31,29 @@
       <td>{{uneLigne.categorieLigne}}</td>
       <td>{{uneLigne.description}}</td>
       <td><a href="{{path('sgb_edit', {'id':uneLigne.id})}}" class="btn btn-primary">Modifier</a>
-        <a href="{{path('sgb_delete', {'id':uneLigne.id})}}" class="btn btn-primary">Supprimer</a>
+        <a class="confirmModalLink btn btn-primary" data-toggle="modal" href="{{path('sgb_delete', {'id':uneLigne.id})}}">
+        <i class="glyphicon glyphicon-trash"></i>
+        
+        Supprimer</a>
+
+  <div class="modal hide fade" id="confirmModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Confirmation de la suppression</h4>
+            </div>
+            <div class="modal-body">
+                Etes-vous sur de vouloir supprimer cette ligne !
+            </div>
+            <div class="modal-footer">
+                     <a href="#" class="btn btn-primary" id="confirmModalNo">Non</a>
+                    <a href="#" class="btn btn-primary" id="confirmModalYes">Oui</a>
+
+            </div>
+        </div>
+    </div>
+</div>
       </td>
     </tr>
 {% endfor %}
@@ -46,6 +68,9 @@
    
   </tbody>
 </table> 
+       
+   {% endblock %}
+    
 
-
-{% endblock %}
+       
+       

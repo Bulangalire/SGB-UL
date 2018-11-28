@@ -163,10 +163,15 @@ class SgbController extends AbstractController
         if(!$uneLigne){
        exit;
     }
-         
+                        try{
                         $manager->remove($uneLigne);
                         $manager->flush(); 
                         return $this->redirectToRoute('lb_overview');    
+                        }catch(\Exception  $e){
+                            return $this->redirectToRoute('lb_overview');    
+                        }
+                       
+                        
                   
     }
 
@@ -397,7 +402,6 @@ class SgbController extends AbstractController
                     $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense FROM   App\Entity\Detaildepense d JOIN d.lignebudgetsource p JOIN d.depenseId dd WHERE dd.utilisateurdepense =:user AND p.service=:userservice group by d.lignebudgetsource ORDER BY d.lignebudgetsource DESC');
                     $queryDepense->setParameters(array('user'=> $user, 'userservice' => $userServ));
                     $queryDepenseGlobale = $queryDepense->getResult();
-                   dump($queryDepenseGlobale);
                     $queryRecette = $em->createQuery('SELECT rr as mesrecettes, sum(rr.montantrecette) as montantrecette, pp FROM  App\Entity\Recette rr JOIN rr.lignebudgetrecette pp  WHERE rr.utilisateur =:user AND pp.service=:userservice group by pp.lignebudgetprevision');
                     $queryRecette->setParameters(array('user'=> $user, 'userservice' => $userServ));
                     $queryRecetteGlobale = $queryRecette->getResult();
@@ -405,8 +409,6 @@ class SgbController extends AbstractController
 
                     $fussion[] =  $queryDepenseGlobale[$i];
                 }
-               // dump( $fussion);
-                    dump(  $queryRecetteGlobale);
                     if( $frmDepense->isSubmitted() &&  $frmDepense->isValid()){
                         
                     } 

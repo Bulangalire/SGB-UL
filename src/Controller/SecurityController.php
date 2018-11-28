@@ -48,7 +48,7 @@ class SecurityController extends AbstractController
 
    
     /**
-     * @Route("/security/login", name="user_login")
+     * @Route("/sgb/login", name="user_login")
      */
     public function login(AuthenticationUtils $helper): Response{
        // legacy application configures session
@@ -60,7 +60,7 @@ class SecurityController extends AbstractController
         $session = new Session(new PhpBridgeSessionStorage());
 
          
-                    return $this->render('security/login.html.twig', [
+                    return $this->render('sgb/login.html.twig', [
             // dernier username saisi (si il y en a un)
             'last_username' => $helper->getLastUsername(),
             // La derniere erreur de connexion (si il y en a une)
@@ -147,7 +147,7 @@ class SecurityController extends AbstractController
          'formrubrique' => $formrubrique->createView()]); 
     }
      /**
-     * @Route("/security/logout", name="user_logout")
+     * @Route("/logout", name="user_logout")
      */
     public function logout(): void{  
         throw new \Exception('This should never be reached!');
