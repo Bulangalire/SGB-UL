@@ -11,7 +11,6 @@ class AppExtension extends AbstractExtension
     {
         return array(
             new TwigFunction('converssion', array($this, 'converter')),
-            new TwigFunction('frmNum', array($this, 'formatterNum'))
         );
     }
 
@@ -23,13 +22,6 @@ class AppExtension extends AbstractExtension
     
         return $enLettres;
     }
-    public function formatterNum($valeur): float{
-
-        $obj = new Nuts(floatval($valeur),"USD");
-        $enLettres = $obj->convert("fr-FR");
-        $nb  = $obj->getFormated(" ", ",");
-    
-        return $nb;
-    }
+   
     
 }
