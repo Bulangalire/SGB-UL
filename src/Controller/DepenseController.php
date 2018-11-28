@@ -310,11 +310,6 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
    }
   $anneebudgetselect= $session->get('anneeselect');
 
-  //$queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision');
-  //$queryRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
- // $queryRecetteGlobale = $queryRecette->getResult();
-
-
 
            // $session = new Session();
    
