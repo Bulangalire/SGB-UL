@@ -310,9 +310,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
    }
   $anneebudgetselect= $session->get('anneeselect');
 
-
            // $session = new Session();
-   
            
             $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
             $services = $em->getRepository(Service::class)->findAll();
