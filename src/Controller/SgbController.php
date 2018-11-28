@@ -170,13 +170,8 @@ class SgbController extends AbstractController
                         }catch(\Exception  $e){
                             return $this->redirectToRoute('lb_overview');    
                         }
-                       
-                        
                   
     }
-
-
-
     /**
      * @Route("/sgb/LigneBudgetaire/new", name="sgb_create")
      * @Route("/sgb/LigneBudgetaire/{id}/edit", name="sgb_edit")
@@ -547,41 +542,7 @@ class SgbController extends AbstractController
                          ->setParameter('catLigne', $categorie )
                          ->setParameter('anneeprev', $anneebudgetselect);
                     $resultatLigneParService = $queryLigneRecetteParService->execute(); 
-                    /*
-                        $ligneRecettes = $em->getRepository(LigneBudgetaire::class)->findAll();
-                        $services = $em->getRepository(Service::class)->findAll();
-                        $sousRubriques = $em->getRepository(SousRubrique::class)->findAll();
-                        $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
-                        $Recette="Recette";
-                        $queryRecette= $em->createQuery(
-                            '
-                            SELECT
-                                        l.intituleLigne, 
-                                        l.id
-                            FROM
-                                    App\Entity\LigneBudgetaire l
-                            WHERE
-                                    l.categorieLigne= :catLigne
-                            '
-
-                        )->setParameter('catLigne', $Recette );
-                        $resultatRecette = $queryRecette->execute(); 
-
-                        $Depense="Depense";
-                        $queryDepense= $em->createQuery(
-                            '
-                            SELECT
-                                        l.intituleLigne, 
-                                        l.id
-                            FROM
-                                    App\Entity\LigneBudgetaire l
-                            WHERE
-                                    l.categorieLigne= :catLigne
-                            '
-
-                        )->setParameter('catLigne', $Depense );
-                        $resultatDepense = $queryDepense->execute(); 
-                        */
+                   
         return $this->render('sgb/prevision/prevision.html.twig', [
                          'formPrevision'=>$formPrevision->createView(),
                          'previsions'=>$resultatLigneParService,
