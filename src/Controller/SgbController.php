@@ -760,8 +760,6 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
     ]);
 }
 
-
-
 /**
  * @Route("/sgb/recette/selectparameters", name="selectparameters")
  */
@@ -809,8 +807,6 @@ public function fillYearsPrev(){
                     'services'=> $services
     ]);
 }
-
-
 
     /**
      * @Route("/bootstrap.css", name="boots")
