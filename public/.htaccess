@@ -1,0 +1,5 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine on
+    Rewritecond %{HTTP_HOST} ^technobel-new.be$
+    Rewriterule ^(.*) https://SGB-UL/public/index.php/$1 [QSA,L,R=301]
+</IfModule>
