@@ -547,11 +547,6 @@ class SgbController extends AbstractController
                          ->setParameter('catLigne', $categorie )
                          ->setParameter('anneeprev', $anneebudgetselect);
                     $resultatLigneParService = $queryLigneRecetteParService->execute(); 
-
-dump($service);
-dump($categorie);
-dump($anneebudgetselect);
-                
                     /*
                         $ligneRecettes = $em->getRepository(LigneBudgetaire::class)->findAll();
                         $services = $em->getRepository(Service::class)->findAll();
