@@ -5,9 +5,9 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\SGBRoledelafonctionRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\SGBUserFonctionRepository")
  */
-class SGBRoledelafonction
+class SGBUserFonction
 {
     /**
      * @ORM\Id()
@@ -22,11 +22,7 @@ class SGBRoledelafonction
      */
     private $fonction;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\SGBRole")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $role;
+    
 
     public function getId(): ?int
     {
@@ -45,15 +41,4 @@ class SGBRoledelafonction
         return $this;
     }
 
-    public function getRole(): ?SGBRole
-    {
-        return $this->role;
-    }
-
-    public function setRole(?SGBRole $role): self
-    {
-        $this->role = $role;
-
-        return $this;
-    }
 }

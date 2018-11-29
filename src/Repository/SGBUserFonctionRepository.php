@@ -2,21 +2,21 @@
 
 namespace App\Repository;
 
-use App\Entity\SGBRoledelafonction;
+use App\Entity\SGBUserFonction;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
- * @method SGBRoledelafonction|null find($id, $lockMode = null, $lockVersion = null)
- * @method SGBRoledelafonction|null findOneBy(array $criteria, array $orderBy = null)
- * @method SGBRoledelafonction[]    findAll()
- * @method SGBRoledelafonction[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method SGBUserFonction|null find($id, $lockMode = null, $lockVersion = null)
+ * @method SGBUserFonction|null findOneBy(array $criteria, array $orderBy = null)
+ * @method SGBUserFonction[]    findAll()
+ * @method SGBUserFonction[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class SGBRoledelafonctionRepository extends ServiceEntityRepository
+class SGBUserFonctionRepository extends ServiceEntityRepository
 {
     public function __construct(RegistryInterface $registry)
     {
-        parent::__construct($registry, SGBRoledelafonction::class);
+        parent::__construct($registry, SGBUserFonction::class);
     }
 
 //    /**
