@@ -774,7 +774,6 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
     
                                 }
                             }
-                            //if($service=='*'){   
     $queryDetailRecette = $em->createQuery('SELECT r as mesrecettes, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision');
     $queryDetailRecette->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'idPrevision'=>$recette->getLignebudgetrecette() ));
     $resultatDetailRecette = $queryDetailRecette->getResult();
