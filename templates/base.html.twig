@@ -27,10 +27,13 @@
                         <a class="nav-link" href="{{path('user_menu')}}">Menu
                             <span class="sr-only"></span></a>
                     </li>
+                    {% if (is_granted('ROLE_ADMIN')) or (is_granted('ROLE_COMPTABLE'))   %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{path('service_create')}}">Service
                             <span class="sr-only"></span></a>
                     </li>
+                    {% endif %}
+
                     <li class="nav-item">
                         <a class="nav-link" href="{{path('personne_create')}}">Personne
                             <span class="sr-only"></span></a>
@@ -49,18 +52,22 @@
                         <a class="nav-link" href="{{path('depense_create1')}}">Dépenses</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{path('selectAnalyse')}}">Dépenses</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{path('selectparametersdepense')}}">OP</a>
                     </li>
                       <li class="nav-item">
-                        <a class="btn btn-success" href="{{path('servireOp')}}">Décaisser</a>
+                        <a  class="nav-link" href="{{path('servireOp')}}">Décaisser</a>
                       </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Rapports</a>
                     </li>
+                     {% if is_granted('ROLE_ADMIN') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{path('admin_formimportrubrique')}}">Configuration</a>
                     </li>
-
+                    {% endif %}
                     {% if app.user %}
 
                         <li class="nav-item">

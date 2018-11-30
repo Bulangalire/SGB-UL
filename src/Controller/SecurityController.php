@@ -152,4 +152,19 @@ class SecurityController extends AbstractController
     public function logout(): void{  
         throw new \Exception('This should never be reached!');
       }
+/**
+ * getAllRoutes
+ * Renvoie un array des routes contenant le préfixe $prefix
+ * @param $prefix
+ * @return array
+ */
+public function getAllRoutes($prefix = null) {
+    if(is_string($prefix)) $pattern = '/^'.$prefix.'/'; // commence par $prefix
+        else $pattern = '/.*/';
+    $this->allRoutes = array();
+    foreach($this->router->getRouteCollection()->all() as $nom => $route) {
+        if(preg_match($pattern, $nom)) $this->allRoutes[$nom] = $route;
+    }
+    return $this->allRoutes;
+}
 }

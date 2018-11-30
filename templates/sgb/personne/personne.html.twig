@@ -8,7 +8,9 @@
         <tbody>
       
           <tr> 
-
+{% for role in app.user.roles %}
+    {{role}}
+{% endfor %}
               <td nowrap valign=top>
                    
                     {{ form_start(formPersonne)}}

@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+                    <h5>La situation de la caisse
+                    </h5>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr class="table-primary">
+                                <th scope="col">ID</th>
+                                <th scope="col">Ligne recette</th>
+                                <th scope="col">Service</th>
+                                <th scope="col">Solde</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                           {% set numDepense = 0 %}
+                            {% set totalSolde = 0 %}
+                            {% for soldeParLigne in tblCaisse %}
+
+                                <tr>
+                                    <th scope="row">
+                                        {% set numDepense = numDepense + 1 %}
+                                        {{ numDepense }}
+                                    </th>
+                                    <td>
+                                        {{soldeParLigne.maCaisse.lignebudgetprevision.intituleLigne}}</td>
+                                    <td>
+                                        {{soldeParLigne.maCaisse.service.designation}}</td>
+
+                                    <td>
+                                    {% set totalSolde = totalSolde + soldeParLigne.maCaisse.leSolde  %}
+                                    {{soldeParLigne.maCaisse.leSolde}}</td>
+
+                                
+
+                                </tr>
+                            {% endfor %}
+                            <tr class="table-primary">
+                                <th scope="row"></th>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    {{totalSolde}}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    {% endblock %}

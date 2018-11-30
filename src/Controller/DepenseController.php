@@ -253,7 +253,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                                         $etatbesoin->getDepense()->getSommeEtatbesoins())> 
                                         $etatbesoin->getDepense()->getMontantdepense()){
                                             echo '<h5 style="color:red;"> le montant de l\'etat de besoin ('. (($etatbesoin->getQuantite() * $etatbesoin->getPrixunitaire()) +
-                                            $etatbesoin->getDepense()->getSommeEtatbesoins()) .') est superiere à celui de l\'OP('.  $etatbesoin->getDepense()->getMontantdepense() .') </h5>';
+                                            $etatbesoin->getDepense()->getSommeEtatbesoins()) .'$) est superiere à celui de l\'OP('.  $etatbesoin->getDepense()->getMontantdepense() .'$) </h5>';
                               }else{
                                 $manager->persist($etatbesoin);
                                 $manager->flush();

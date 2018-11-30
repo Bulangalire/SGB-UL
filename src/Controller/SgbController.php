@@ -632,7 +632,16 @@ class SgbController extends AbstractController
                                     'class'=>Previsionbudget::class,
                                     'query_builder'=>function(EntityRepository $er)use ($anneebudgetselect, $service) {
                                         
+                                        if($service=='*'){
                                         return $er->createQueryBuilder('p') 
+                                                    ->select("p, l")
+                                                    ->join("p.lignebudgetprevision", 'l')
+                                                    ->join("p.anneebudgetprevision", 'a')
+                                                    ->where("l.categorieLigne = :larecette AND a.id = :annnebudget")
+                                                    ->setParameter('larecette','Recette')
+                                                    ->setParameter('annnebudget', $anneebudgetselect);
+                                                }else{
+                                                    return $er->createQueryBuilder('p') 
                                                     ->select("p, l")
                                                     ->join("p.lignebudgetprevision", 'l')
                                                     ->join("p.anneebudgetprevision", 'a')
@@ -640,6 +649,7 @@ class SgbController extends AbstractController
                                                     ->setParameter('userservice',$service)
                                                     ->setParameter('larecette','Recette')
                                                     ->setParameter('annnebudget', $anneebudgetselect);
+                                                }
                                                 },
                                                     'choice_label'=>'lignebudgetprevision.intituleLigne',
                                                     )) 
@@ -649,11 +659,17 @@ class SgbController extends AbstractController
                                                     ->getForm();
                              
                             $formRecette->handleRequest($request);
-                           
-                        $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision');
-                        $queryRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                            if($service=='*'){   
+                                $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision order by p.service');
+                                $queryRecette->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                        
+                            }else{
+                                $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision');
+                                $queryRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                        
+                            }
                         $queryRecetteGlobale = $queryRecette->getResult();
-                        dump($queryRecetteGlobale);
+                        
                             if( $formRecette->isSubmitted() &&  $formRecette->isValid()){
                                
                                 if($em->getRepository("\App\Entity\Recette")->findOneBy(
@@ -716,15 +732,24 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
         ->add('lignebudgetrecette', EntityType::class, array(
             'class'=>Previsionbudget::class,
             'query_builder'=>function(EntityRepository $er)use ($anneebudgetselect, $service) {
-                
+                if($service=='*'){   
                 return $er->createQueryBuilder('p') 
                             ->select("p, l")
                             ->join("p.lignebudgetprevision", 'l')
                             ->join("p.anneebudgetprevision", 'a')
-                            ->where("p.service=:userservice AND l.categorieLigne = :larecette AND a.id = :annnebudget")
-                            ->setParameter('userservice',$service)
+                            ->where("l.categorieLigne = :larecette AND a.id = :annnebudget")
                             ->setParameter('larecette','Recette')
                             ->setParameter('annnebudget', $anneebudgetselect);
+                }else{
+                    return $er->createQueryBuilder('p') 
+                    ->select("p, l")
+                    ->join("p.lignebudgetprevision", 'l')
+                    ->join("p.anneebudgetprevision", 'a')
+                    ->where("p.service=:userservice AND l.categorieLigne = :larecette AND a.id = :annnebudget")
+                    ->setParameter('userservice',$service)
+                    ->setParameter('larecette','Recette')
+                    ->setParameter('annnebudget', $anneebudgetselect);
+                }
                         },
                             'choice_label'=>'lignebudgetprevision.intituleLigne',
                             )) 
@@ -749,8 +774,9 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
     
                                 }
                             }
-    $queryDetailRecette = $em->createQuery('SELECT r as mesrecettes, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision');
-    $queryDetailRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'idPrevision'=>$recette->getLignebudgetrecette() ));
+                            //if($service=='*'){   
+    $queryDetailRecette = $em->createQuery('SELECT r as mesrecettes, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision');
+    $queryDetailRecette->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'idPrevision'=>$recette->getLignebudgetrecette() ));
     $resultatDetailRecette = $queryDetailRecette->getResult();
 
     dump($resultatDetailRecette);

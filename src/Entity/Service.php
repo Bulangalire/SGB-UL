@@ -43,8 +43,6 @@ class Service
     public function __construct()
     {
         $this->personnes = new ArrayCollection();
-      
-      
      
     }
 

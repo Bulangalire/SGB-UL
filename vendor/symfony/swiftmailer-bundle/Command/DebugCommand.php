@@ -23,7 +23,7 @@ use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
  *
  * @author Jérémy Romey <jeremy@free-agent.fr>
  */
-class DebugCommand extends AbstractSwiftMailerCommand
+class DebugCommand extends ContainerAwareCommand
 {
     protected static $defaultName = 'debug:swiftmailer';
 

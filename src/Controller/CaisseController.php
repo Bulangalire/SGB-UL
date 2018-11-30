@@ -138,7 +138,7 @@ class CaisseController extends AbstractController{
 
         $em = $this->getDoctrine()->getManager();
         $anneebudgetselect= $session->get('anneeselectOp');
-        
+        dump( $anneebudgetselect);
        // if($detaildepense->getId()!==null){
 
             $frmDecaisser = $this->createFormBuilder($detaildepense)
@@ -191,14 +191,7 @@ class CaisseController extends AbstractController{
             $sqlDetailSortie->setParameters(array('depense'=> $depense==null? $detaildepense->getDepenseId()->getId(): $depense->getId()));
             $queryListDetailSortie = $sqlDetailSortie->getResult();
  
-            $queryMaCaisse = $em->createQuery('SELECT p as maCaisse , l 
-            FROM  App\Entity\Previsionbudget p 
-            JOIN p.lignebudgetprevision l
-            WHERE  p.anneebudgetprevision=:anneeselect
-            GROUP BY  p.service
-                        ');
-            $queryMaCaisse->setParameters(array('anneeselect'=> $anneebudgetselect));
-            $maCaisse = $queryMaCaisse->getResult();
+           
 
             $detaildepense->setDepenseId($depense);
             $frmDecaisser->handleRequest($request);
@@ -220,11 +213,82 @@ class CaisseController extends AbstractController{
           return $this->render('sgb/caisse/decaisser.html.twig',[
             'frmDecaisser'=> $frmDecaisser->createView(),
             'editMode'=> $detaildepense->getId()!==null,
-            'queryListDetailSortie'=>$queryListDetailSortie,
-            'tblCaisse'=>$maCaisse
+            'queryListDetailSortie'=>$queryListDetailSortie
           ]);
         
     }
+    /**
+     * @Route("/sgb/analyse/analyseGlobale", name="dataAnalys")
+     */
+    public function analyse( Depense $depense=null, Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
+        // Creation de variable de session pour les parametres des requêtes
+        // Année budgetaire
+        if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
+         
+            $session->set('anneeselect',$request->request->get('annees') );
+           }
+          $anneebudgetselect= $session->get('anneeselect');
+        
+        // Service
+        if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
+           
+            $session->set('servicesselect',$request->request->get('services') );
+        }
+        $service= $session->get('servicesselect');
+        // Période  
+        // Début periode
+        if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
+            $session->set('datedebutselect',$request->request->get('datedebut') );
+        }
+        $datedebut = $session->get('datedebutselect');
+
+        // Fin période
+        if($request->request->get('datefin')!==null && $request->request->get('datefin') <> $session->get('datefinselect') ){
+            $session->set('datefinselect',$request->request->get('datefin') );
+        }
+        $datefin =  $session->get('datefinselect');
+        $em = $this->getDoctrine()->getManager();
+        if($service=='*'){
+        $queryMaCaisse = $em->createQuery('SELECT p as maCaisse , l 
+        FROM  App\Entity\Previsionbudget p 
+        JOIN p.lignebudgetprevision l
+        LEFT JOIN  App\Entity\Recette r WITH r.lignebudgetrecette =p.id
+        WHERE  p.anneebudgetprevision=:anneeselect 
+        AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision order by p.service
+                    ');
+        $queryMaCaisse->setParameters(array('anneeselect'=> $anneebudgetselect, 'debut' => $datedebut, 'fin' => $datefin ));
+    }else{
+        $queryMaCaisse = $em->createQuery('SELECT p as maCaisse , l 
+        FROM  App\Entity\Previsionbudget p 
+        JOIN p.lignebudgetprevision l
+       
+        LEFT JOIN  App\Entity\Recette r WITH r.lignebudgetrecette  =p.id
+        WHERE  p.anneebudgetprevision=:anneeselect 
+        AND p.service=:userservice
+        AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision
+                    ');
+        $queryMaCaisse->setParameters(array('anneeselect'=> $anneebudgetselect, 'userservice' => $service, 'debut' => $datedebut, 'fin' => $datefin ));
+
+    }
+        $maCaisse = $queryMaCaisse->getResult();
+        return $this->render('sgb/analyse/analyseGlobale.html.twig',[
+            'tblCaisse'=>$maCaisse
+          ]);
+    }
+    /**
+ * @Route("/sgb/analyse/selectAnalyse", name="selectAnalyse")
+ */
+public function getAnalyse(){
+ 
+     $em = $this->getDoctrine()->getManager();
+     $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
+     $services = $em->getRepository(Service::class)->findAll();
+     return $this->render('sgb/analyse/selectAnalyse.html.twig',[
+                     'annees'=>$annees,
+                     'services'=> $services
+     ]);
+ }
+ 
     /**
      * @Route("/sgb/caisse/decaisser/{id}/delete", name="delete_caisser")
      */

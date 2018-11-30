@@ -14,9 +14,9 @@
     </style>
 
     <div class="example-wrapper">
-        <h1>Choix année budgétaire</h1>
+        <h1>Analyse budgétaire</h1>
 
-        <form action="{{ path('recette_create') }}" method="post">
+        <form action="{{ path('dataAnalys') }}" method="post">
             <div class="form-group">
                 <select required="required" name="annees" class="form-control">
                     <option value="">--Choisir une année budgetaire
@@ -38,13 +38,13 @@
                 </select>
 
             </div>
-
+         <h5>Période</h5>
             <div class="form-group">
-                <label >Date début période</label>
+                <label >du </label>
                 <input type="date" name="datedebut" max="3000-12-31" min="1000-01-01" class="form-control">
             </div>
             <div class="form-group">
-                <label >Date fin période</label>
+                <label >au</label>
                 <input type="date" name="datefin" min="1000-01-01" max="3000-12-31" class="form-control">
             </div>
 

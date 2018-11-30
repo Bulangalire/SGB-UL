@@ -1,8 +1,11 @@
+<<<<<<< HEAD
 * 3.2.4 (2018-10-27)
 
  * fixed deprecations for Symfony 4.2
  * made swiftmailer.transport service public
 
+=======
+>>>>>>> 8ef70e705875a13246d14268eeb096897b3d28ad
 * 3.2.3 (2018-08-29)
 
  * fixed EmailSenderListener that was not resetting wasExceptionThrown properly

@@ -13,7 +13,11 @@
 <a type="submit" name="trierRecette" class="btn btn-success">Recettes : {{ligneRecette}}</a>
 <table class="table table-hover">
   <thead>
+<<<<<<< HEAD
     <tr  class="table-primary">
+=======
+    <tr>
+>>>>>>> 8ef70e705875a13246d14268eeb096897b3d28ad
       <th scope="col">ID</th>
       <th scope="col">Intitulé</th>
       <th scope="col">Compte</th>
@@ -31,6 +35,7 @@
       <td>{{uneLigne.categorieLigne}}</td>
       <td>{{uneLigne.description}}</td>
       <td><a href="{{path('sgb_edit', {'id':uneLigne.id})}}" class="btn btn-primary">Modifier</a>
+<<<<<<< HEAD
         <a class="confirmModalLink btn btn-primary" data-toggle="modal" href="{{path('sgb_delete', {'id':uneLigne.id})}}">
         <i class="glyphicon glyphicon-trash"></i>
         
@@ -54,6 +59,9 @@
         </div>
     </div>
 </div>
+=======
+        <a href="{{path('sgb_delete', {'id':uneLigne.id})}}" class="btn btn-primary">Supprimer</a>
+>>>>>>> 8ef70e705875a13246d14268eeb096897b3d28ad
       </td>
     </tr>
 {% endfor %}
@@ -68,9 +76,15 @@
    
   </tbody>
 </table> 
+<<<<<<< HEAD
        
    {% endblock %}
     
 
        
        
+=======
+
+
+{% endblock %}
+>>>>>>> 8ef70e705875a13246d14268eeb096897b3d28ad

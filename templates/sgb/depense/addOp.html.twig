@@ -133,10 +133,29 @@
                 <td></td>
             </tr>
             <tr>
+            {% if (is_granted('ROLE_CHEF_SERVICE')) %}
+                <td>{{form_row(frmAddOp.autoriserChefService)}}</td>
+            {% else %}
                 <td>{{form_row(frmAddOp.autoriserChefService, {'attr':{'disabled':'disabled'}})}}</td>
+            {% endif %}
+
+            {% if (is_granted('ROLE_SG')) %}
+                <td>{{form_row(frmAddOp.autoriserSG)}}</td>
+            {% else %}
                 <td>{{form_row(frmAddOp.autoriserSG, {'attr':{'disabled':'disabled'}})}}</td>
+            {% endif %}
+
+            {% if (is_granted('ROLE_AB')) %}
+                <td>{{form_row(frmAddOp.autoriserAB)}}</td>
+            {% else %}
                 <td>{{form_row(frmAddOp.autoriserAB, {'attr':{'disabled':'disabled'}})}}</td>
+            {% endif %}
+
+            {% if (is_granted('ROLE_RECTOR')) %}
+                <td>{{form_row(frmAddOp.autoriserRecteur)}}</td>
+            {% else %}
                 <td>{{form_row(frmAddOp.autoriserRecteur, {'attr':{'disabled':'disabled'}})}}</td>
+            {% endif %}
             </tr>
             <tr class="table-primary">
                 <td></td>

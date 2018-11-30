@@ -2,12 +2,18 @@
 
 namespace Symfony\Bundle\SwiftmailerBundle\Tests\Command;
 
+<<<<<<< HEAD
 use Symfony\Bundle\FrameworkBundle\Console\Application;
+=======
+>>>>>>> 8ef70e705875a13246d14268eeb096897b3d28ad
 use Symfony\Bundle\SwiftmailerBundle\Command\SendEmailCommand;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+<<<<<<< HEAD
 use Symfony\Component\HttpKernel\KernelInterface;
+=======
+>>>>>>> 8ef70e705875a13246d14268eeb096897b3d28ad
 
 class SendEmailCommandTest extends \PHPUnit\Framework\TestCase
 {
@@ -129,6 +135,7 @@ class SendEmailCommandTest extends \PHPUnit\Framework\TestCase
     /**
      * @return CommandTester
      */
+<<<<<<< HEAD
     private function executeCommand(ContainerInterface $container, $input = array(), $options = array())
     {
         $kernel = $this->getMockBuilder(KernelInterface::class)->getMock();
@@ -139,6 +146,14 @@ class SendEmailCommandTest extends \PHPUnit\Framework\TestCase
         $application->add(new SendEmailCommand());
 
         $tester = new CommandTester($application->get('swiftmailer:spool:send'));
+=======
+    private function executeCommand(ContainerInterface $container, $input = [], $options = [])
+    {
+        $command = new SendEmailCommand();
+        $command->setContainer($container);
+
+        $tester = new CommandTester($command);
+>>>>>>> 8ef70e705875a13246d14268eeb096897b3d28ad
         $tester->execute($input, $options);
 
         return $tester;

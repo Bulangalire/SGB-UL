@@ -24,13 +24,14 @@
 
                         <thead>
                             <tr class="table-primary">
-                                <th colspan='8'>
+                                <th colspan='9'>
                                     Plan de trésorerie du : {{ app.session.get('datedebutselect')|localizeddate('none', 'none', null, null, 'd MMMM Y') }} au {{ app.session.get('datefinselect')|localizeddate('none', 'none', null, null, 'd MMMM Y') }}  </th>
                                
                             </tr>
                             <tr>
                                 <th scope="col">Code</th>
                                 <th scope="col">Compte</th>
+                                <th scope="col">Service</th>
                                 <th style="width:400;" scope="col">Ligne Budgetaire
                                 </th>
                                 <th scope="col">Prévisions</th>
@@ -59,6 +60,9 @@
                                     </td>
                                     <td>
                                         {{ recette.mesrecettes.lignebudgetrecette.lignebudgetprevision.compteLigne }}
+                                    </td>
+                                   <td>
+                                        {{ recette.mesrecettes.lignebudgetrecette.service.designation }}
                                     </td>
                                     <td style="width:400;">
                                         {{recette.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
@@ -94,6 +98,7 @@
                             <tr class="table-primary">
                                 <td>Totaux</td>
                                 <td></td>
+                                 <td></td>
                                 <td></td>
                                 <td>{{totalPrevision}}</td>
                                 <td>{{totalRecette}}
