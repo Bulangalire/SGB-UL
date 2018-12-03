@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 {% block body %}
     
- 
+ <!--
     <link rel="shortcut icon" type="image/png" href="/img/favicon.ico"/>
     <div>
         <a id="show-sidebar" class="btn btn-sm btn-dark" href="#">
@@ -16,26 +16,20 @@
                     </div>
                 </div>
                 <div class="sidebar-header">
-                 {% if app.user %}
-                    <div class="user-pic">
-                        <img class='img-responsive img-rounded' src='{{ asset("/img/user.png")}}'  alt='User picture'>
-                    </div>
-                    <div class="user-info">
+               
                    
-                        <span class="user-name">{{app.user.prenom}}
-                            <strong>{{app.user.nom}}</strong>
-                        </span>
-                        <span class="user-role">{{app.user.services.designation}}</span>
+                        
+                       
                         <span class="user-status">
                             <i class="fa fa-circle"></i>
                             <span>Online</span>
                         </span>
                         
                     </div>
-                    {% endif %}
+                    
                 </div>
                 
-                <!-- sidebar-header
+             
                 <div class="sidebar-search">
                     <div>
                         <div class="input-group">
@@ -47,8 +41,8 @@
                             </div>
                         </div>
                     </div>
-                </div> -->
-                <!-- sidebar-search --> 
+                </div> 
+              
                 <div class="sidebar-menu">
                     <ul>
                         
@@ -177,9 +171,9 @@
                         </li>
                     </ul>
                 </div>
-                <!-- sidebar-menu -->
+             
             </div>
-            <!-- sidebar-content -->
+            
             <div class="sidebar-footer">
                 <div class="dropdown">
 
@@ -250,7 +244,7 @@
                         <a class="dropdown-item" href="#">
                             <div class="message-content">
                                 <div class="pic">
-                                    <img src="{{ asset("/img/user.png")}}" alt="">
+                                    
                                 </div>
                                 <div class="content">
                                     <div class="message-title">
@@ -265,7 +259,7 @@
                         <a class="dropdown-item" href="#">
                             <div class="message-content">
                                 <div class="pic">
-                                    <img src="{{ asset("/img/user.png")}}" alt="">
+                                  
                                 </div>
                                 <div class="content">
                                     <div class="message-title">
@@ -280,7 +274,7 @@
                         <a class="dropdown-item" href="#">
                             <div class="message-content">
                                 <div class="pic">
-                                    <img src="{{ asset("/img/user.png")}}" alt="">
+                                    
                                 </div>
                                 <div class="content">
                                     <div class="message-title">
@@ -315,7 +309,7 @@
             </div>
         </nav>
         <!-- sidebar-wrapper -->
-        <main class="page-content">
+      
             <!-- 
             <div class="container-fluid">
                 <div class="row">
@@ -374,8 +368,8 @@
                 </div>
             </div>
             -->
-        </main>
+       
         <!-- page-content" -->
-    </div>
+    
     <!-- page-wrapper -->
 {% endblock %}
