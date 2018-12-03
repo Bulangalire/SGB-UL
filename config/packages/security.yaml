@@ -55,6 +55,9 @@ security:
          - { path: ^/sgb/depense, roles: ROLE_ADMIN }
          - { path: ^/sgb/caisse, roles: ROLE_ADMIN }
          - { path: ^/sgb/recette, roles: ROLE_ADMIN }
+         - { path: ^/sgb/service, roles: ROLE_ADMIN }
+         - { path: ^/sgb/LigneBudgetaire, roles: ROLE_ADMIN }
+         - { path: ^/sgb/prevision, roles: ROLE_ADMIN }
 
          - { path: ^/sgb/caisse, roles: ROLE_CAISSE }
          - { path: ^/sgb/depense, roles: ROLE_COMPTABILITE }

@@ -51,15 +51,15 @@
                                     <td>{{service.description}}</td>
                                     <td>
 
-                                        <a href="{{path('service_edit', {'id':service.id})}}"><img src="{{path('edit_button')}}"/></a>
-                                        &nbsp; &nbsp;
+                                        <a href="{{path('service_edit', {'id':service.id})}}">  <img src="{{ asset("/img/edit.png")}}" alt=""></a>
+                                       
                                         <a href="{{path('personne_by_service', {'id':service.id})}}">
-                                            <img src="{{path('personne_button')}}"/></a>
+                                             <img src="{{ asset("/img/user.png")}}" alt=""></a>
 
                                         <a class="confirmModalLink" data-toggle="modal" href="{{path('service_delete', {'id':service.id})}}">
                                             <i class="glyphicon glyphicon-trash"></i>
 
-                                            <img src="{{path('delete_button')}}"/></a>
+                                              <img src="{{ asset("/img/delete1.png")}}" alt=""></a>
 
                                         <div class="modal hide fade" id="confirmModal">
                                             <div class="modal-dialog">

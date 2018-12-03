@@ -833,56 +833,7 @@ public function fillYearsPrev(){
     ]);
 }
 
-    /**
-     * @Route("/bootstrap.css", name="boots")
-     */
-    public function bootstrap(){
-
-        return $this->render('bootstrap.css');
-    }
-    /**
-     * @Route("/popper.js", name="popper")
-     */
-    public function popper(){
-
-        return $this->render('popper.js');
-    }
-     /**
-     * @Route("/bootstrapjs.js", name="bootstrapjs")
-     */
-    public function bootstrapjs(){
-
-        return $this->render('bootstrapjs.js');
-    }
-    /**
-     * @Route("/jquery.js", name="jquery")
-     */
-    public function jquery(){
-
-        return $this->render('jquery.js');
-    }
-     /**
-     * @Route("/CustomScrollbarjs.js", name="CustomScrollbarjs")
-     */
-    public function CustomScrollbarjs(){
-
-        return $this->render('CustomScrollbarjs.js');
-    }
-    /**
-     * @Route("/all.css", name="all")
-     */
-    public function cssAll(){
-
-        return $this->render('all.css');
-    }
-    /**
-     * @Route("/CustomScrollbar.css", name="CustomScrollbar")
-     */
-    public function CustomScrollbar(){
-    
-
-        return $this->render('CustomScrollbar.css');
-    }
+ 
     /**
      * @Route("/resources/images/delete.png", name="delete_button")
      */

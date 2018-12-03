@@ -6,9 +6,12 @@
             {% block title %}SGB-UL{% endblock %}
         </title>
         <!--<link rel="stylesheet" href="https://bootswatch.com/4/flatly/bootstrap.min.css">-->
-       
+      
+       <link rel="stylesheet" href= {{ asset('build/css/app.css') }}>
+   
         {% block stylesheets %}
-        <link rel="stylesheet" href="{{path('boots')}}">
+
+       
         
           
         {% endblock %}
@@ -52,7 +55,7 @@
                         <a class="nav-link" href="{{path('depense_create1')}}">Dépenses</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{path('selectAnalyse')}}">Dépenses</a>
+                        <a class="nav-link" href="{{path('selectAnalyse')}}">Plan</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{path('selectparametersdepense')}}">OP</a>
@@ -92,12 +95,14 @@
         </nav>
         <div class="container">
             {% block body %}{% endblock %}
+
         </div>
-        {% block javascripts %}
-        <script type="text/javascript" src="{{path('jquery')}}"></script>
-        <script type="text/javascript" src="{{path('bootstrapjs')}}"></script>
+         
+         {% block javascripts %}      
+       <script type="text/javascript" src="{{ asset('build/js/app.js') }}"></script>
          <script type="text/javascript">
             $(document).ready(function () {
+                var $ = require('jquery')
                 var theHREF;
 
                 $(".confirmModalLink").click(function(e) {
@@ -115,6 +120,8 @@
                 });
             });
         </script>
+        
+        
         {% endblock %}
     </body>
 </html>

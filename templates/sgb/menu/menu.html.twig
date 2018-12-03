@@ -1,9 +1,9 @@
 {% extends 'base.html.twig' %}
 {% block body %}
     
-    <link rel="stylesheet" href="assets/css/custom-themes.css">
-    <link rel="shortcut icon" type="image/png" href="assets/img/favicon.png"/>
-    <div class="page-wrapper chiller-theme sidebar-bg bg1 toggled">
+ 
+    <link rel="shortcut icon" type="image/png" href="/img/favicon.ico"/>
+    <div>
         <a id="show-sidebar" class="btn btn-sm btn-dark" href="#">
             <i class="fas fa-bars"></i>
         </a>
@@ -18,7 +18,7 @@
                 <div class="sidebar-header">
                  {% if app.user %}
                     <div class="user-pic">
-                        <img class="img-responsive img-rounded" src="assets/img/user.jpg" alt="User picture">
+                        <img class='img-responsive img-rounded' src='{{ asset("/img/user.png")}}'  alt='User picture'>
                     </div>
                     <div class="user-info">
                    
@@ -250,7 +250,7 @@
                         <a class="dropdown-item" href="#">
                             <div class="message-content">
                                 <div class="pic">
-                                    <img src="assets/img/user.jpg" alt="">
+                                    <img src="{{ asset("/img/user.png")}}" alt="">
                                 </div>
                                 <div class="content">
                                     <div class="message-title">
@@ -265,7 +265,7 @@
                         <a class="dropdown-item" href="#">
                             <div class="message-content">
                                 <div class="pic">
-                                    <img src="assets/img/user.jpg" alt="">
+                                    <img src="{{ asset("/img/user.png")}}" alt="">
                                 </div>
                                 <div class="content">
                                     <div class="message-title">
@@ -280,7 +280,7 @@
                         <a class="dropdown-item" href="#">
                             <div class="message-content">
                                 <div class="pic">
-                                    <img src="assets/img/user.jpg" alt="">
+                                    <img src="{{ asset("/img/user.png")}}" alt="">
                                 </div>
                                 <div class="content">
                                     <div class="message-title">
