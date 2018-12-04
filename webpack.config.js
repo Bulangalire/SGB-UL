@@ -19,9 +19,6 @@ Encore
      */ 
     .addEntry('js/app', './assets/js/app.js')
     .addStyleEntry('css/app', './assets/scss/app.scss')
-    
-    //.addEntry('page2', './assets/js/page2.js')
-
     // will require an extra script tag for runtime.js
     // but, you probably want this, unless you're building a single-page app
     .enableSingleRuntimeChunk()

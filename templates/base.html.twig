@@ -7,13 +7,10 @@
         </title>
         <!--<link rel="stylesheet" href="https://bootswatch.com/4/flatly/bootstrap.min.css">-->
       
-       <link rel="stylesheet" href= {{ asset('build/css/app.css') }}>
-   
         {% block stylesheets %}
 
-       
-        
-          
+       {{ encore_entry_link_tags('js/app') }}
+       <link rel="stylesheet" href= {{ asset('build/css/app.css') }}>
         {% endblock %}
     </head>
     <body>
@@ -99,7 +96,9 @@
         </div>
          
          {% block javascripts %}      
+         {{ encore_entry_script_tags('js/app') }}
        <script type="text/javascript" src="{{ asset('build/js/app.js') }}"></script>
+       <script src="{{ asset('build/runtime.js') }}"></script>
          <script type="text/javascript">
             $(document).ready(function () {
                 var $ = require('jquery')

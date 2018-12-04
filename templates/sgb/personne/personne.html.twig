@@ -59,14 +59,14 @@
                             <td>{{personne.postnom}}</td>
                             <td>{{personne.prenom}}</td>
                             <td>{{personne.username}}</td>
-                            <td>{{personne.services.designation}}</td>
+                            <td>{{personne.services.designation}}</td> 
                            <td>
-                                <a href="{{path('personne_edit', {'id':personne.id})}}"><img src="{{path('edit_button')}}" /></a> 
+                                <a href="{{path('personne_edit', {'id':personne.id})}}"><img src="{{ asset('/img/edit.png') }}" /></a> 
                             
                           <a class="confirmModalLink" data-toggle="modal" href="{{path('personne_delete', {'id':personne.id})}}">
                                             <i class="glyphicon glyphicon-trash"></i>
 
-                                            <img src="{{path('delete_button')}}"/></a>
+                                            <img src="{{ asset('/img/delete1.png') }}"/></a>
 
                                         <div class="modal hide fade" id="confirmModal">
                                             <div class="modal-dialog">
