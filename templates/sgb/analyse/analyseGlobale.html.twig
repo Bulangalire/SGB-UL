@@ -22,16 +22,13 @@
                                         {% set numDepense = numDepense + 1 %}
                                         {{ numDepense }}
                                     </th>
-                                    <td>
-                                        {{soldeParLigne.maCaisse.lignebudgetprevision.intituleLigne}}</td>
-                                    <td>
-                                        {{soldeParLigne.maCaisse.service.designation}}</td>
-
-                                    <td>
+                                    <td> {{soldeParLigne.maCaisse.lignebudgetprevision.compteLigne}}</td>
+                                    <td> {{soldeParLigne.maCaisse.lignebudgetprevision.intituleLigne}}</td>
+                                    <td> {{soldeParLigne.maCaisse.service.designation}}</td>
+                                    <td> {{soldeParLigne.maCaisse.montantprevision}} </td>
+                                    <td>{{diff(date())}}
                                     {% set totalSolde = totalSolde + soldeParLigne.maCaisse.leSolde  %}
                                     {{soldeParLigne.maCaisse.leSolde}}</td>
-
-                                
 
                                 </tr>
                             {% endfor %}

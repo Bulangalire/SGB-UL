@@ -22,6 +22,15 @@ class AppExtension extends AbstractExtension
     
         return $enLettres;
     }
+
+    public function lesJours($dateDebut, $dateFin): integer{
+
+        $jours = $dateFin->diff(floatval($valeur), $symbole);
+        $enLettres = $obj->convert("fr-FR");
+       // $nb  = $obj->getFormated(" ", ",");
+    
+        return $enLettres;
+    }
     
     
 }
