@@ -6,9 +6,14 @@
                         <thead>
                             <tr class="table-primary">
                                 <th scope="col">ID</th>
-                                <th scope="col">Ligne recette</th>
                                 <th scope="col">Service</th>
-                                <th scope="col">Solde</th>
+                                 <th scope="col">Compte</th>
+                                <th scope="col">Budget</th>
+                                <th scope="col">Annuel</th>
+                                 <th scope="col">Période</th>
+                                <th scope="col">Réalisation</th>
+                                <th scope="col">Ecarts</th>
+                                 <th scope="col">% Réalisation</th>
 
                             </tr>
                         </thead>
@@ -22,11 +27,24 @@
                                         {% set numDepense = numDepense + 1 %}
                                         {{ numDepense }}
                                     </th>
+                                     <td> {{soldeParLigne.maCaisse.service.designation}}</td>
                                     <td> {{soldeParLigne.maCaisse.lignebudgetprevision.compteLigne}}</td>
                                     <td> {{soldeParLigne.maCaisse.lignebudgetprevision.intituleLigne}}</td>
-                                    <td> {{soldeParLigne.maCaisse.service.designation}}</td>
-                                    <td> {{soldeParLigne.maCaisse.montantprevision}} </td>
-                                    <td>{{diff(date())}}
+                                   
+                                    <td> {{soldeParLigne.maCaisse.montantprevision|number_format(2, '.',',')}} </td>
+                                    {% set dateDebut = app.session.get('datedebutselect') %}
+                                    {% set dateFin = app.session.get('datefinselect') %}
+                                    {% set difference = date( dateFin| date() ).diff(date(dateDebut)) %}
+                                    {% set leftDays = difference.days %}
+                                    {% set annee = app.session.get('datefinselect')|localizeddate('none', 'none', null, null, 'Y') %}
+                                    {% if IsLeapYear(annee)  %}
+                                        {% set joursAnnee = 366 %}
+                                     {% else %}
+                                        {% set joursAnnee = 365 %}
+                                     {% endif %}
+                                  
+                                    <td>{% set previsionPeriode = (soldeParLigne.maCaisse.montantprevision / joursAnnee ) * (leftDays|round(1, 'ceil') ) %}
+                                    {{ previsionPeriode|round(1, 'ceil')}}
                                     {% set totalSolde = totalSolde + soldeParLigne.maCaisse.leSolde  %}
                                     {{soldeParLigne.maCaisse.leSolde}}</td>
 

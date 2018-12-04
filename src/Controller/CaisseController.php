@@ -283,6 +283,7 @@ public function getAnalyse(){
      $em = $this->getDoctrine()->getManager();
      $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
      $services = $em->getRepository(Service::class)->findAll();
+     //$twig->addExtension(new Twig_Extensions_Extension_Date());
      return $this->render('sgb/analyse/selectAnalyse.html.twig',[
                      'annees'=>$annees,
                      'services'=> $services

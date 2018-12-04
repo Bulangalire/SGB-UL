@@ -10,9 +10,12 @@ class AppExtension extends AbstractExtension
     public function getFunctions()
     {
         return array(
-            new TwigFunction('converssion', array($this, 'converter')),
+            new TwigFunction('converssion', array($this, 'converter')),  
+            new TwigFunction('IsLeapYear', array($this, 'IsLeapYear'))
         );
     }
+    
+
 
     public function converter($valeur, $symbole): string{
 
@@ -23,14 +26,9 @@ class AppExtension extends AbstractExtension
         return $enLettres;
     }
 
-    public function lesJours($dateDebut, $dateFin): integer{
-
-        $jours = $dateFin->diff(floatval($valeur), $symbole);
-        $enLettres = $obj->convert("fr-FR");
-       // $nb  = $obj->getFormated(" ", ",");
     
-        return $enLettres;
-    }
-    
+    public function IsLeapYear($Year) {
+        return ((($Year & 3) == 0) && (($Year % 100 != 0) || ($Year % 400 == 0)));
+       }
     
 }
