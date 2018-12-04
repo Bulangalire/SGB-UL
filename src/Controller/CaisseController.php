@@ -254,7 +254,7 @@ class CaisseController extends AbstractController{
         JOIN p.lignebudgetprevision l
         LEFT JOIN  App\Entity\Recette r WITH r.lignebudgetrecette =p.id
         WHERE  p.anneebudgetprevision=:anneeselect 
-        AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision order by p.service
+        AND r.createAt BETWEEN :debut AND :fin order by p.service
                     ');
         $queryMaCaisse->setParameters(array('anneeselect'=> $anneebudgetselect, 'debut' => $datedebut, 'fin' => $datefin ));
     }else{
@@ -265,7 +265,7 @@ class CaisseController extends AbstractController{
         LEFT JOIN  App\Entity\Recette r WITH r.lignebudgetrecette  =p.id
         WHERE  p.anneebudgetprevision=:anneeselect 
         AND p.service=:userservice
-        AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision
+        AND r.createAt BETWEEN :debut AND :fin
                     ');
         $queryMaCaisse->setParameters(array('anneeselect'=> $anneebudgetselect, 'userservice' => $service, 'debut' => $datedebut, 'fin' => $datefin ));
 
