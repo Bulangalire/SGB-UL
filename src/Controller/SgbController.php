@@ -361,9 +361,9 @@ class SgbController extends AbstractController
 
 
    /**
-     * @Route("/sgb/depense/depense/{errordelete}", name="errordeletedepense1")
-     * @Route("/sgb/depense/depense/new", name="depense_create1")
-     * @Route("/sgb/depense/depense/{id}/edit", name="depense_edit1")
+     * @Route("/sgb/depense/depense/{id}", name="deletedepense")
+     * @Route("/sgb/depense/depense/new", name="depense_create")
+     * @Route("/sgb/depense/depense/{id}/edit", name="depense_edit")
      */
     public function formDepense(Depense $unedepense = null, Request $request){
         if($this->getUser()===null) {              

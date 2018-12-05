@@ -27,43 +27,71 @@
                         <a class="nav-link" href="{{path('user_menu')}}">Menu
                             <span class="sr-only"></span></a>
                     </li>
-                    {% if (is_granted('ROLE_ADMIN')) or (is_granted('ROLE_COMPTABLE'))   %}
+                  
+                    {% if (is_authorized(app.user, "Service"))   %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{path('service_create')}}">Service
                             <span class="sr-only"></span></a>
                     </li>
                     {% endif %}
-
+                      
+                    {% if (is_authorized(app.user, "Personne"))   %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{path('personne_create')}}">Personne
                             <span class="sr-only"></span></a>
                     </li>
+                      {% endif %}
+                       
+                       
+                    {% if (is_authorized(app.user, "LigneBudgetaire"))   %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{path('lb_overview')}}">Ligne Budgetaire
                             <span class="sr-only"></span></a>
                     </li>
+                     {% endif %}
+
+                     {% if (is_authorized(app.user, "Prevision"))   %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{path('selectparPrev')}}">Prévision</a>
                     </li>
+                     {% endif %}
+
+                     {% if (is_authorized(app.user, "Recette"))   %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{path('selectparameters')}}">Recette</a>
                     </li>
+                    {% endif %}
+                     {% if (is_authorized(app.user, "Depenses"))   %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{path('depense_create1')}}">Dépenses</a>
+                        <a class="nav-link" href="{{path('depense_create')}}">Dépenses</a>
                     </li>
+                     {% endif %}
+
+                     {% if (is_authorized(app.user, "Plan"))   %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{path('selectAnalyse')}}">Plan</a>
                     </li>
+                     {% endif %}
+
+                     {% if (is_authorized(app.user, "OP"))   %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{path('selectparametersdepense')}}">OP</a>
                     </li>
+                     {% endif %}
+
+                    {% if (is_authorized(app.user, "Decaisser"))   %}
                       <li class="nav-item">
                         <a  class="nav-link" href="{{path('servireOp')}}">Décaisser</a>
                       </li>
+                       {% endif %}
+
+                    {% if (is_authorized(app.user, "Rapports"))   %}
                     <li class="nav-item">
                         <a class="nav-link" href="#">Rapports</a>
                     </li>
-                     {% if is_granted('ROLE_ADMIN') %}
+                    {% endif %}
+
+                     {% if (is_authorized(app.user, "Configuration"))   %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{path('admin_formimportrubrique')}}">Configuration</a>
                     </li>

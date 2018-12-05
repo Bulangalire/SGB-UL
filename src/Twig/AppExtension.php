@@ -3,18 +3,56 @@ namespace App\Twig;
 
 use App\Entity\Nuts;
 use Twig\TwigFunction;
+use Doctrine\ORM\EntityManager;
 use Twig\Extension\AbstractExtension;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
 class AppExtension extends AbstractExtension
 {
+    protected $doctrine;
+
+    
+    public function __construct(RegistryInterface $doctrine)
+    {
+        $this->doctrine = $doctrine;
+       
+    }
     public function getFunctions()
     {
         return array(
             new TwigFunction('converssion', array($this, 'converter')),  
-            new TwigFunction('IsLeapYear', array($this, 'IsLeapYear'))
+            new TwigFunction('IsLeapYear', array($this, 'IsLeapYear')),
+            new TwigFunction('is_authorized', array($this, 'is_authorized'))
         );
     }
-    
+
+
+    public function is_authorized( $user, $function) 
+    {
+      $em = $this->doctrine->getManager();
+       $UserRoles= array();
+       $UserRoles=$user->getRoles();
+       $isExits=false;
+       $lesFonctionsAttribuees=array();
+       foreach( $UserRoles as $role){
+            $SGBRole = $em->getRepository("\App\Entity\SGBRole")->findByNomrole($role);
+            $SGBFunctionDuRoles=$em->getRepository("\App\Entity\SGBFunctionsRole")->findByRole($SGBRole);
+
+           foreach( $SGBFunctionDuRoles as $uneFunction){
+                 $lesFonctionsAttribuees[]  = $uneFunction->getFunction()->getNomfonction();
+                 if($uneFunction->getFunction()->getNomfonction()===$function){
+                  $isExits = true;
+                break 2;
+            }
+            }
+            //for($i=0; $i<count($SGBRole); $i++){
+             //$SGBRole[0]->sGBFunctionsRoles();
+           // break;
+       // }
+       }
+
+       return  $isExits;
+    }
 
 
     public function converter($valeur, $symbole): string{

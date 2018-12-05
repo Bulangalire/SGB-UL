@@ -28,9 +28,12 @@ class SecurityController extends AbstractController
     public function inscription(Personne $personne=null, Request $request, ObjectManager $manager,
     UserPasswordEncoderInterface $encoder )
     {
+        
+
         if($this->getUser()===null) {              
             return $this->redirectToRoute('user_login');
            }
+          // $hasAccess = $this->isGranted('ROLE_ADMIN');
         $personne = new Personne();
         
         $formUser = $this->createForm(AjouUserType::class, $personne);

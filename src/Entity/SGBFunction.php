@@ -9,6 +9,19 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class SGBFunction
 {
+    public const SERVICE = "Service";
+    public const PERSONNE = "Personne";
+    public const PREVESION = "Prévision";
+    public const LIGNEBUDGETAIRE = "Ligne Budgétaire";
+    public const RECETTE = "Recette";
+    public const DEPENSES = "Dépenses";
+    public const PLAN = "Plan";
+    public const OP = "OP";
+    public const DECAISSER = "Décaisser";
+    public const RAPPORT = "Rapports";
+    public const CONFIGURATION = "Configuration";
+    public const DECONNEXION = "Deconnexion";
+    public const CONNEXION ="Connexion";
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
