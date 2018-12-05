@@ -49,23 +49,23 @@ security:
     # Là dans ce cas seul les utilisateurs ayant le rôle ROLE_ADMIN
     # peuvent acceder à toutes les pages commençant par /admin
     access_control:
-         - { path: ^/admin, roles: ROLE_ADMIN }
-         - { path: ^/security, roles: ROLE_ADMIN }
-         - { path: ^/sgb/personne, roles: ROLE_ADMIN }
-         - { path: ^/sgb/depense, roles: ROLE_ADMIN }
-         - { path: ^/sgb/caisse, roles: ROLE_ADMIN }
-         - { path: ^/sgb/recette, roles: ROLE_ADMIN }
-         - { path: ^/sgb/service, roles: ROLE_ADMIN }
-         - { path: ^/sgb/LigneBudgetaire, roles: ROLE_ADMIN }
-         - { path: ^/sgb/prevision, roles: ROLE_ADMIN }
-         - { path: ^/sgb/caisse, roles: ROLE_CAISSE }
-         - { path: ^/sgb/depense, roles: ROLE_COMPTABILITE }
-         - { path: ^/sgb/LigneBudgetaire, roles: ROLE_COMPTABILITE }
-         - { path: ^/sgb/prevision, roles: ROLE_COMPTABILITE }
-         - { path: ^/sgb/recette, roles: ROLE_CAISSE }
-         - { path: ^/sgb/service, roles: ROLE_COMPTABILITE }
-         - { path: ^/sgb/service, roles: ROLE_COMPTE_FAC }
-         - { path: ^/sgb/depense, roles: ROLE_CHEF_SERVICE }
-         - { path: ^/sgb/depense, roles: ROLE_AB }
-         - { path: ^/sgb/depense, roles: ROLE_SG }
+        #  - { path: ^/admin, roles: ROLE_ADMIN }
+        #  - { path: ^/security, roles: ROLE_ADMIN }
+        #  - { path: ^/sgb/personne, roles: ROLE_ADMIN }
+        #  - { path: ^/sgb/depense, roles: ROLE_ADMIN }
+        #  - { path: ^/sgb/caisse, roles: ROLE_ADMIN }
+        #  - { path: ^/sgb/recette, roles: ROLE_ADMIN }
+        #  - { path: ^/sgb/service, roles: ROLE_ADMIN }
+        #  - { path: ^/sgb/LigneBudgetaire, roles: ROLE_ADMIN }
+        #  - { path: ^/sgb/prevision, roles: ROLE_ADMIN }
+        #  - { path: ^/sgb/caisse, roles: ROLE_CAISSE }
+        #  - { path: ^/sgb/depense, roles: ROLE_COMPTABILITE }
+        #  - { path: ^/sgb/LigneBudgetaire, roles: ROLE_COMPTABILITE }
+        #  - { path: ^/sgb/prevision, roles: ROLE_COMPTABILITE }
+        #  - { path: ^/sgb/recette, roles: ROLE_CAISSE }
+        #  - { path: ^/sgb/service, roles: ROLE_COMPTABILITE }
+        #  - { path: ^/sgb/service, roles: ROLE_COMPTE_FAC }
+        #  - { path: ^/sgb/depense, roles: ROLE_CHEF_SERVICE }
+        #  - { path: ^/sgb/depense, roles: ROLE_AB }
+        #  - { path: ^/sgb/depense, roles: ROLE_SG }
 
