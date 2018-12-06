@@ -15,7 +15,13 @@
 
     <div class="example-wrapper">
         <h1>Analyse budgétaire</h1>
+        {% if error is defined %}
+         <h5 style="color:red;">{{error}}</h5>
+        {% endif %}
 
+        
+        
+        <h4></h4>
         <form action="{{ path('dataAnalys') }}" method="post">
             <div class="form-group">
                 <select required="required" name="annees" class="form-control">

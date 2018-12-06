@@ -91,13 +91,13 @@
                                     <td>{{prevision.montantprevision}}</td>
 
                                     <td>
-                                        <a href="{{path('prevision_edit', {'id':prevision.id})}}"><img src="{{path('edit_button')}}"/></a>
+                                        <a href="{{path('prevision_edit', {'id':prevision.id})}}"><img src="{{ asset("/img/edit.png")}}" alt="Modifier"></a>
                                         &nbsp; &nbsp;
                                                                             
                                      <a class="confirmModalLink" data-toggle="modal" href="{{path('delete_prevision', {'id':prevision.id})}}">
                                             <i class="glyphicon glyphicon-trash"></i>
 
-                                            <img src="{{path('delete_button')}}"/></a>
+                                            <img src="{{ asset("/img/delete1.png")}}" alt="Supprimer"></a>
 
                                         <div class="modal hide fade" id="confirmModal">
                                             <div class="modal-dialog">

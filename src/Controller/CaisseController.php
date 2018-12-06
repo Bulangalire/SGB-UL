@@ -221,6 +221,12 @@ class CaisseController extends AbstractController{
      * @Route("/sgb/analyse/analyseGlobale", name="dataAnalys")
      */
     public function analyse( Depense $depense=null, Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
+        
+     
+        
+        
+        
+        
         // Creation de variable de session pour les parametres des requêtes
         // Année budgetaire
         if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
@@ -247,46 +253,95 @@ class CaisseController extends AbstractController{
             $session->set('datefinselect',$request->request->get('datefin') );
         }
         $datefin =  $session->get('datefinselect');
+
+
+
+        if($this->dateDifference($datedebut ,  $datefin )){
+            return $this->redirectToRoute('selectError', array(
+                'error'=>'error'
+            ));
+        }
+
+
         $em = $this->getDoctrine()->getManager();
         if($service=='*'){
-        $queryMaCaisse = $em->createQuery('SELECT p as maCaisse , l 
-        FROM  App\Entity\Previsionbudget p 
-        JOIN p.lignebudgetprevision l
-        LEFT JOIN  App\Entity\Recette r WITH r.lignebudgetrecette =p.id
-        WHERE  p.anneebudgetprevision=:anneeselect 
-        AND r.createAt BETWEEN :debut AND :fin order by p.service
-                    ');
-        $queryMaCaisse->setParameters(array('anneeselect'=> $anneebudgetselect, 'debut' => $datedebut, 'fin' => $datefin ));
+            $queryMaCaisse = $em->createQuery('SELECT r as mesrecettes, 
+            sum(r.montantrecette) as montantrecette, p 
+            FROM  App\Entity\Recette r 
+            JOIN r.lignebudgetrecette p
+            WHERE p.anneebudgetprevision=:anneebudgetselect 
+            AND r.createAt BETWEEN :debut 
+            AND :fin group by p.id ORDER BY p.service ASC');
+            $queryMaCaisse->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+
+            $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense 
+            FROM   App\Entity\Detaildepense d 
+            JOIN d.lignebudgetdepense p 
+            WHERE p.anneebudgetprevision=:anneebudgetselect 
+            AND d.createAt BETWEEN :debut 
+            AND :fin 
+            group by p.id ORDER BY p.service ASC');
+            $queryDepense->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+
+
     }else{
-        $queryMaCaisse = $em->createQuery('SELECT p as maCaisse , l 
-        FROM  App\Entity\Previsionbudget p 
-        JOIN p.lignebudgetprevision l
-       
-        LEFT JOIN  App\Entity\Recette r WITH r.lignebudgetrecette  =p.id
-        WHERE  p.anneebudgetprevision=:anneeselect 
-        AND p.service=:userservice
-        AND r.createAt BETWEEN :debut AND :fin
-                    ');
-        $queryMaCaisse->setParameters(array('anneeselect'=> $anneebudgetselect, 'userservice' => $service, 'debut' => $datedebut, 'fin' => $datefin ));
+        $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense 
+            FROM   App\Entity\Detaildepense d 
+            JOIN d.lignebudgetdepense p 
+            WHERE  p.service=:userservice 
+            AND p.anneebudgetprevision=:anneebudgetselect 
+            AND d.createAt BETWEEN :debut 
+            AND :fin 
+            group by p.id ORDER BY p.service ASC');
+            $queryDepense->setParameters(array('userservice' =>$service,'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+
+        $queryMaCaisse = $em->createQuery('SELECT r as mesrecettes, 
+        sum(r.montantrecette) as montantrecette, 
+        p FROM  App\Entity\Recette r 
+        JOIN r.lignebudgetrecette p  
+        WHERE p.service=:userservice 
+        AND p.anneebudgetprevision=:anneebudgetselect 
+        AND r.createAt BETWEEN :debut 
+        AND :fin group by p.id');
+        $queryMaCaisse->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
 
     }
         $maCaisse = $queryMaCaisse->getResult();
+        $mesDepense = $queryDepense->getResult();
         return $this->render('sgb/analyse/analyseGlobale.html.twig',[
-            'tblCaisse'=>$maCaisse
+            'tblCaisse'=>$maCaisse,
+            'tblDepense'=>$mesDepense
           ]);
     }
+
+
+function dateDifference($datedebut ,  $datefin )
+{
+    $datetime1 = date_create($datedebut);
+    $datetime2 = date_create($datefin);
+  
+    $interval = $datetime2->diff($datetime1);
+  
+    return $interval->days>366? true : false;
+}
+
     /**
  * @Route("/sgb/analyse/selectAnalyse", name="selectAnalyse")
+ * @Route("/sgb/analyse/selectAnalyse/{error}", name="selectError")
  */
-public function getAnalyse(){
+public function getAnalyse($error=null){
  
      $em = $this->getDoctrine()->getManager();
+     if($error){
+        $error="Les nombres des jours pour l'année budgétaire depensent une année";
+     }
      $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
      $services = $em->getRepository(Service::class)->findAll();
      //$twig->addExtension(new Twig_Extensions_Extension_Date());
      return $this->render('sgb/analyse/selectAnalyse.html.twig',[
                      'annees'=>$annees,
-                     'services'=> $services
+                     'services'=> $services,
+                     'error'=>$error
      ]);
  }
  

@@ -65,7 +65,7 @@
                                         {% set solde = dep.mesdep.lignebudgetsource.recettes - dep.sommedepense %}
                                            {% if solde <= 0 %}
                                             <h5 style="color:red;">
-                                               {{ converssion(solde, "USD") }}
+                                               {{ converssion(-solde, "USD") }}
                                             </h5>
                                         {% else %}
                                             <h5 style="color:black;">
