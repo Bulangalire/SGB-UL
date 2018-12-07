@@ -72,6 +72,10 @@ class Personne implements UserInterface, \Serializable
      */
     private $roles = [];
 
+    public function __construct(){
+        $this->roles[] = 'ROLE_USER';
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -176,9 +180,14 @@ class Personne implements UserInterface, \Serializable
  
         return array_unique($roles);
     }
-    public function setRoles(array $roles): void
+    public function setRoles(array $roles)
     {
-        $this->roles = $roles;
+        if(array_diff($role, array("ROLE_USER", "ROLE_ADMIN", "ROLE_RECTOR", "ROLE_CAISSE", "ROLE_COMPTABILITE", "ROLE_SG", "ROLE_COMPTE_FAC", "ROLE_CHEF_SERVICE", "ROLE_AB"))) {
+            throw new \InvalidArgumentException("Bad role");
+        }
+        $this->roles = $role;
+
+        return $this;
     }
  /*
     public function setRoles($role)

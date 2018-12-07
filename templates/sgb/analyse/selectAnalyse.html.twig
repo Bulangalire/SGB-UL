@@ -35,13 +35,24 @@
             </div>
 
             <div class="form-group">
-                <select required="required" name="services" class="form-control">
-                     <option value="{{app.user.services.id}}">{{app.user.services.designation}}</option>
-                     <option value="*">Tous</option>
+                {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE')  %}
+                   <select disabled="disabled" name="services" class="form-control">
+                    <option readonly="true" value="{{app.user.services.id}}">{{app.user.services.designation}}
+                    </option>
                     {% for service in services %}
                         <option value="{{service.id}}">{{service.designation}}</option>
                     {% endfor %}
                 </select>
+                {% else %}
+                <select required="required" name="services" class="form-control">
+                    <option value="{{app.user.services.id}}">{{app.user.services.designation}}
+                    </option>
+                    <option value="*">Tous</option>
+                    {% for service in services %}
+                        <option value="{{service.id}}">{{service.designation}}</option>
+                    {% endfor %}
+                </select>
+                 {% endif %}
 
             </div>
          <h5>Période</h5>

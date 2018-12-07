@@ -28,8 +28,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class DepenseController extends AbstractController{
 
 /**
- * @Route("/sgb/depense/addOp", name="depense_create")
- * @Route("/sgb/depense/addOp/{id}/edit", name="depense_edit")
+ * @Route("/sgb/depense/addOp", name="depense_Op")
+ * @Route("/sgb/depense/addOp/{id}/edit", name="op_edit")
  */
 public function frmOp(Session $session, Depense $unedepense = null, Request $request, ObjectManager $manager){
     if($this->getUser()===null) {              
@@ -38,11 +38,19 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
     if(!$unedepense){
         $unedepense= new Depense();
     }
+    
+    // Service
+   if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+    $session->set('servicesselectOp', $this->getUser()->getServices()->getId() );
+    $service= $session->get('servicesselectOp');
+    }else{
     // Service
     if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselectOp') ){
-        $session->set('servicesselectOp', $request->request->get('services') );
-       }
+        $session->set('servicesselectOp',$request->request->get('services') );
+    }
     $service= $session->get('servicesselectOp');
+    }
+
 
     // Année budgetaire
     if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselectOp') ){
@@ -50,6 +58,7 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
     }
     $anneebudgetselect= $session->get('anneeselectOp');
 
+    $em = $this->getDoctrine()->getManager();
     $frmDepense= $this->createFormBuilder( $unedepense)
             
             ->add('id', HiddenType::class
@@ -59,12 +68,21 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
             ->add('montantdepense')
             ->add('utilisateurdepense', EntityType::class, array(
                 'class'  => Personne::class,
-
-                'query_builder'=>function(EntityRepository $er){
-                    return $er->createQueryBuilder('u')
-                                ->where('u.services=:id')
-                                ->setParameter('id',$this->getUser()->getServices());
-                },
+               
+                'query_builder'=>function(EntityRepository $er)use ( $unedepense) {
+                    if($this->isGranted('ROLE_COMPTABILITE') or $this->isGranted('ROLE_COMPTE_FAC')){
+                            return $er->createQueryBuilder('p')
+                            ->select("p")
+                            ->where("p.id=:user")
+                            ->setParameter('user', $this->getUser());
+                    }elseif($this->isGranted('ROLE_RECTOR') or $this->isGranted('ROLE_SG') or $this->isGranted('ROLE_AB') or $this->isGranted('ROLE_CHEF_SERVICE')){
+                        return $er->createQueryBuilder('p')
+                        ->select("p")
+                        ->where("p.id=:userdepense")
+                        ->setParameter('userdepense', $unedepense->getUtilisateurdepense());
+                    }
+                },               
+               
                 'choice_label'=>'nom',
                 'label'=>'Comptable'
             ))
@@ -145,24 +163,76 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
                             )) 
             ->add('service', EntityType::class, array(
                 'class'  => Service::class,
-                'choice_label' => 'designation',
-                'data' => $this->getUser()->getServices(),
+                'query_builder'=>function(EntityRepository $er)use ( $service, $em) {
+                    if($this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
+                            return $er->createQueryBuilder('s')
+                            ->select("s")
+                            ->where("s.id=:userservice")
+                            ->setParameter('userservice',  $this->getUser()->getServices());
+                    }elseif($this->isGranted('ROLE_COMPTABILITE') or $this->isGranted('ROLE_RECTOR') or $this->isGranted('ROLE_SG') or $this->isGranted('ROLE_AB')){
+                        return $er->createQueryBuilder('s')
+                        ->select("s")
+                        ->where("s.id=:userservice")
+                        ->setParameter('userservice',  $service);
+                    }
+                },               
+                 'choice_label' => 'designation',
+                
             ))
+
             ->getForm();
-           
+            dump(  $em->getRepository(Service::class)->find($service));
+            dump($this->getUser()->getServices());
            $frmDepense->handleRequest($request);
            $em = $this->getDoctrine()->getManager();
-
-           $sqlOpNonSigne="SELECT d as listOp  FROM 
-           App\Entity\Depense d
-           WHERE d.autoriserChefService=false
-           AND d.autoriserSG=false
-           AND d.autoriserAB=false
-           AND d.autoriserRecteur=false";
-           $queryOpNonSigne = $em->createQuery($sqlOpNonSigne);
-           $resutatListOpNonSigne = $queryOpNonSigne->getResult();
+           if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+            $queryOpNonSigne = $em->createQuery("SELECT d as listOp  FROM 
+                App\Entity\Depense d
+                WHERE d.autoriserChefService=false
+                AND d.service=:ceService
+                ");
+                
+                
+           }elseif($this->isGranted('ROLE_RECTOR')) {
+            $queryOpNonSigne = $em->createQuery("SELECT d as listOp  FROM 
+                    App\Entity\Depense d
+                    WHERE d.service=:ceService 
+                    AND d.autoriserRecteur=false
+                    ");
+                
+            }elseif($this->isGranted('ROLE_SG')) {
+                $queryOpNonSigne = $em->createQuery("SELECT d as listOp  FROM 
+                        App\Entity\Depense d
+                        WHERE d.service=:ceService 
+                        AND d.autoriserSG=false
+                        ");
+                    
+                }elseif($this->isGranted('ROLE_AB')) {
+                    $queryOpNonSigne = $em->createQuery("SELECT d as listOp  FROM 
+                            App\Entity\Depense d
+                            WHERE d.service=:ceService 
+                            AND d.autoriserAB=false
+                            ");
+                        
+                }else{
+                    $queryOpNonSigne = $em->createQuery("SELECT d as listOp  FROM 
+                            App\Entity\Depense d
+                            WHERE d.service=:ceService 
+                            ");
+                }
+            $queryOpNonSigne->setParameter('ceService', $service);
+                $resutatListOpNonSigne = $queryOpNonSigne->getResult();
                 dump(  $resutatListOpNonSigne);
+
             if( $frmDepense->isSubmitted() && $frmDepense->isValid() ){
+
+                if($unedepense->getService()==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
+                    $unedepense->setService($this->getUser()->getServices());
+                 }
+                 if($unedepense->getUtilisateurdepense()==null){
+                    $unedepense->setUtilisateurdepense($this->getUser());
+                 }
+
                     if($em->getRepository("\App\Entity\Depense")->findOneBy(
                         array('numOp'=>$unedepense->getNumOp(), 
                         'beneficiaire'=>$unedepense->getBeneficiaire(), 
@@ -186,11 +256,10 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
                                //$unedepense->setLigneBudgetaire($request->request->get('ligneBudgetaire'));
                                if($unedepense->getLibele()==null){
                                 $unedepense->setLibele($unedepense->getLigneBudgetaire()->getLignebudgetprevision()->getIntituleLigne());
-                            }
+                               }
                                $manager->persist($unedepense);
                                 $manager->flush();
-                                return $this->render('sgb/depense/addOp.html.twig', ['frmAddOp' =>  $frmDepense->createView(),
-                                'resutatListOpNonSigne'=>$resutatListOpNonSigne]);
+                                return $this->redirectToRoute('depense_Op');
                             }else{
                               echo $errorMessage= '<h5 style="color:red;">Le montant de depense depasse le solde à depenser pour cette ligne. reste est de :'.$SoldeADepense .' </h5>';
                                return $this->render('sgb/depense/addOp.html.twig',['frmAddOp' =>  $frmDepense->createView(),
@@ -203,7 +272,9 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
             
          
             return $this->render('sgb/depense/addOp.html.twig',['frmAddOp' =>  $frmDepense->createView(),
-            'resutatListOpNonSigne'=>$resutatListOpNonSigne]);
+            'resutatListOpNonSigne'=>$resutatListOpNonSigne,
+           
+            ]);
      }
 
 
@@ -358,7 +429,162 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
 ]);
 
          }
+    /**
+     * @Route("/sgb/depense/lesOPDepenses", name="lesOPDepenses_overview")
+     * 
+     */
+    public function getOpPaye(Session $session, Depense $unedepense = null, Request $request, ObjectManager $manager)
+    {
+        if($this->getUser()===null) {              
+           return $this->redirectToRoute('user_login');
+        }
 
+        // Service limité au rôle de l'utilisateur
+        if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') )
+        {
+            $session->set('servicesselectOp', $this->getUser()->getServices()->getId() );
+            $service= $session->get('servicesselectOp');
+        }else{
+            // Service accès compltet
+            if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselectOp') )
+            {
+                $session->set('servicesselectOp',$request->request->get('services') );
+            }
+            $service= $session->get('servicesselectOp');
+        }
+
+        // Année budgetaire
+        if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselectOp') )
+        {
+            $session->set('anneeselectOp', $request->request->get('annees') );
+        }
+
+           $anneebudgetselect= $session->get('anneeselectOp');
+           $em = $this->getDoctrine()->getManager();
+        
+           // Lister les op encours de paiement
+           if($service=='*'){   
+                $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
+                sum(  dop.montantdetail) as dejaPayer, p, d 
+                FROM  App\Entity\Detaildepense dop 
+                JOIN dop.depenseId d 
+                JOIN dop.lignebudgetdepense p
+                WHERE 
+                    p.anneebudgetprevision=:anneebudgetselect 
+                GROUP BY dop.depenseId 
+                HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
+                $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+          
+            }else{
+       
+                $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
+                sum(  dop.montantdetail) as dejaPayer, p, d 
+                FROM  App\Entity\Detaildepense dop 
+                JOIN dop.depenseId d 
+                JOIN dop.lignebudgetdepense p
+                WHERE 
+                    p.anneebudgetprevision=:anneebudgetselect
+                AND 
+                    d.service=:ceservice
+                GROUP BY dop.depenseId 
+                HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
+                $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'ceservice'=> $service));
+           }
+
+
+          $queryListOpAPaye = $sqlOPAPaye->getResult();
+         
+          
+
+        // Lister deja signe mais non payé
+        if($service=='*'){   
+          $sqlOPAPayeDeux = $em->createQuery('SELECT d
+          FROM  App\Entity\Depense d 
+          JOIN d.ligneBudgetaire p
+          WHERE
+          d.autoriserAB=true 
+          AND d.autoriserSG=true 
+          AND d.autoriserRecteur=true
+          AND p.anneebudgetprevision=:anneebudgetselect
+          AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                FROM App\Entity\Detaildepense dd ) 
+            ');
+         $sqlOPAPayeDeux->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+        }else{
+            $sqlOPAPayeDeux = $em->createQuery('SELECT d
+          FROM  App\Entity\Depense d 
+          JOIN d.ligneBudgetaire p
+          WHERE
+              d.service=:ceservice
+          AND d.autoriserAB=true 
+          AND d.autoriserSG=true 
+          AND d.autoriserRecteur=true
+          AND p.anneebudgetprevision=:anneebudgetselect
+          AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                FROM App\Entity\Detaildepense dd ) 
+            ');
+         $sqlOPAPayeDeux->setParameters(array('ceservice'=>$service, 'anneebudgetselect'=> $anneebudgetselect));
+
+
+        }
+         $queryListOpAPayeDeux = $sqlOPAPayeDeux->getResult();
+
+
+        // Lister NON signe
+        if($service=='*'){    
+            $sqlOPNonSigne = $em->createQuery('SELECT d
+            FROM  App\Entity\Depense d 
+            JOIN d.ligneBudgetaire p
+            WHERE
+            d.autoriserAB=false 
+            AND d.autoriserSG=false 
+            AND d.autoriserRecteur=false
+            AND p.anneebudgetprevision=:anneebudgetselect
+            AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                FROM App\Entity\Detaildepense dd ) 
+            ');
+            $sqlOPNonSigne->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+        }else{
+            $sqlOPNonSigne = $em->createQuery('SELECT d
+            FROM  App\Entity\Depense d 
+            JOIN d.ligneBudgetaire p
+            WHERE d.service=:ceservice
+            
+            AND p.anneebudgetprevision=:anneebudgetselect
+            AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                FROM App\Entity\Detaildepense dd ) 
+                HAVING (CASE WHEN 
+            d.autoriserAB=false OR
+            d.autoriserSG=false OR
+            d.autoriserRecteur=false 
+            THEN FALSE ELSE  TRUE END)=FALSE
+            
+            ');
+            $sqlOPNonSigne->setParameters(array('ceservice'=>$service, 'anneebudgetselect'=> $anneebudgetselect));
+        }
+        $queryListOPNonSigne = $sqlOPNonSigne->getResult();
+          // $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision');
+          // $queryRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+          // $queryRecetteGlobale = $queryRecette->getResult();
+          return $this->render('sgb/depense/lesOPDepenses.html.twig',['queryListOpAPayeOverView' => $queryListOpAPaye,
+          
+          'queryListOpAPayeDeux'=> $queryListOpAPayeDeux,
+          'queryListOPNonSigne'=> $queryListOPNonSigne 
+          ]);
+        }
+/**
+ * @Route("/sgb/depense/selectparametersLesOpDepense", name="selectparametersLesOpDepense")
+ */
+public function fillYears(Request $request){
+    
+    $em = $this->getDoctrine()->getManager();
+    $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
+    $services = $em->getRepository(Service::class)->findAll();
+    return $this->render('sgb/depense/selectparametersLesOpDepense.html.twig',[
+                    'annees'=>$annees,
+                    'services'=> $services
+    ]);
+}
 
         }
         

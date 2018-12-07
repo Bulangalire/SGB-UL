@@ -419,7 +419,7 @@ class SgbController extends AbstractController
      * @Route("/sgb/prevision/new", name="sgb_prevision")
      * @Route("/sgb/prevision/{id}/edit", name="prevision_edit")
      */
-    public function prevision(Session $session, Request $request, PersonneRepository $personneRepository,Previsionbudget $prevision=null,  ObjectManager $manager){
+    public function prevision(Session $session, Request $request, Previsionbudget $prevision=null,  ObjectManager $manager){
         
         if($this->getUser()===null) {              
             return $this->redirectToRoute('user_login');
@@ -440,14 +440,19 @@ class SgbController extends AbstractController
         $session->set('categorieselect',$request->request->get('categorie') );
        }
     $categorie= $session->get('categorieselect');
-
+        // Service if user for service then use is service only
+    if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+        $session->set('servicesselect', $this->getUser()->getServices()->getId() );
+        $service= $session->get('servicesselect');
+    }else{
      // Service
      if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
         $session->set('servicesselect',$request->request->get('services') );
        }
     $service= $session->get('servicesselect');
+    }
 
-    $userServ = $this->getUser()->getServices()->getDesignation();
+    //$userServ = $this->getUser()->getServices()->getDesignation();
     $user=$this->getUser();
     
         $formPrevision = $this->createFormBuilder($prevision)
@@ -458,6 +463,7 @@ class SgbController extends AbstractController
         ))
        ->add('anneebudgetprevision', EntityType::class, array(
             'class'  => Anneebudgetaire::class,
+            'data' => $em->getRepository(Anneebudgetaire::class)->find($anneebudgetselect),
             'choice_label' => 'anneebudget'
         ))
     
@@ -473,12 +479,7 @@ class SgbController extends AbstractController
 
         ->add('service', EntityType::class, array(
             'class'  => Service::class,
-            'data' =>  $em->getRepository(Service::class)->find($service)->getDesignation(),
-            'choice_attr' => function()use($user) {
-                $disabled = false;
-                $disabled=$user->getServices()->getDesignation()!='NTIC';
-                return $disabled ? ['disabled' => 'disabled'] : [];
-            },
+            'data' =>  $em->getRepository(Service::class)->find($service),
             'choice_label' => 'designation',
         ))
        
@@ -493,55 +494,55 @@ class SgbController extends AbstractController
                 'choice_label'=>'intituleLigne'))
   
        ->getForm();
+      
      $formPrevision->handleRequest($request);
                    // $formPrevision;
+                   $queryLigneRecetteParService= $em->createQuery(
+                    '
+                    SELECT
+                                r.nom,
+                                s.designation,
+                                l.intituleLigne,
+                                l.categorieLigne,
+                                a.anneebudget,
+                                p.id,
+                                p.montantprevision
+                    FROM
+               
+                            App\Entity\Previsionbudget p
+                    LEFT JOIN App\Entity\SousRubrique r WITH p.sousrubrique = r.id
+                    LEFT JOIN  App\Entity\Service s WITH p.service = s.id
+                    LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
+                    LEFT JOIN  App\Entity\Anneebudgetaire a WITH p.anneebudgetprevision = a.id
+                    WHERE
+                            p.service= :serviceuser AND l.categorieLigne= :catLigne AND p.anneebudgetprevision = :anneeprev
+                    '
+                     )->setParameter('serviceuser',  $service )
+                     ->setParameter('catLigne', $categorie )
+                     ->setParameter('anneeprev', $anneebudgetselect);
+                $resultatLigneParService = $queryLigneRecetteParService->execute(); 
+
                     if( $formPrevision->isSubmitted() &&  $formPrevision->isValid()){
+                       
+                        if($prevision->getService()==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
+                            $prevision->setService($user->getServices());
+                         }
                         if($em->getRepository("\App\Entity\Previsionbudget")->findOneBy(
                             array('service'=>$prevision->getService(), 
                             'anneebudgetprevision'=>$prevision->getAnneebudgetprevision(), 
                             'lignebudgetprevision'=>$prevision->getLignebudgetprevision()) 
-                            )&& $prevision->getId()==null){
-                                echo '<h2 style="color:red;"> la prevision existe déjà </h2>';
+                            ) && $prevision->getId()==null){
+                                echo '<h5 style="color:red;"> la prevision existe déjà </h5>';
                             }else{
-                                if($prevision->getService()==null && $user->getServices() !=="NTIC" ){
-                                    $prevision->setService($user->getServices());
-                                 }
-                              
+                                
                                 $manager->persist($prevision);
                                 $manager->flush();
-
+                                return $this->redirectToRoute('sgb_prevision'); 
                             }
                     }
-                    $previsions = $em->getRepository(Previsionbudget::class)->findAll();
-                    
-                   if($this->getUser()===null) {              
-                    return $this->redirectToRoute('user_login');
-                   }
-                   //$serviceuser=$this->getUser()->getServices()->getId();
-                    $queryLigneRecetteParService= $em->createQuery(
-                        '
-                        SELECT
-                                    r.nom,
-                                    s.designation,
-                                    l.intituleLigne,
-                                    l.categorieLigne,
-                                    a.anneebudget,
-                                    p.id,
-                                    p.montantprevision
-                        FROM
                    
-                                App\Entity\Previsionbudget p
-                        LEFT JOIN App\Entity\SousRubrique r WITH p.sousrubrique = r.id
-                        LEFT JOIN  App\Entity\Service s WITH p.service = s.id
-                        LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
-                        LEFT JOIN  App\Entity\Anneebudgetaire a WITH p.anneebudgetprevision = a.id
-                        WHERE
-                                p.service= :serviceuser AND l.categorieLigne= :catLigne AND p.anneebudgetprevision = :anneeprev
-                        '
-                         )->setParameter('serviceuser',  $service )
-                         ->setParameter('catLigne', $categorie )
-                         ->setParameter('anneeprev', $anneebudgetselect);
-                    $resultatLigneParService = $queryLigneRecetteParService->execute(); 
+                   //$serviceuser=$this->getUser()->getServices()->getId();
+                   
                    
         return $this->render('sgb/prevision/prevision.html.twig', [
                          'formPrevision'=>$formPrevision->createView(),
@@ -596,11 +597,16 @@ class SgbController extends AbstractController
           $anneebudgetselect= $session->get('anneeselect');
         
         // Service
-        if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
-           
+        if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+            $session->set('servicesselect', $this->getUser()->getServices()->getId() );
+            $service= $session->get('servicesselect');
+        }else{
+         // Service
+         if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
             $session->set('servicesselect',$request->request->get('services') );
-        }
+           }
         $service= $session->get('servicesselect');
+        }
         // Période  
         // Début periode
         if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
@@ -709,11 +715,17 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
     }
     $anneebudgetselect= $session->get('anneeselect');
         
+   // Service
+   if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+    $session->set('servicesselect', $this->getUser()->getServices()->getId() );
+    $service= $session->get('servicesselect');
+    }else{
     // Service
     if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
         $session->set('servicesselect',$request->request->get('services') );
     }
     $service= $session->get('servicesselect');
+    }
     $em = $this->getDoctrine()->getManager();
     $formDetailRecette= $this->createFormBuilder($recette)
     ->add('libelle')
@@ -778,9 +790,7 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
     $queryDetailRecette->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'idPrevision'=>$recette->getLignebudgetrecette() ));
     $resultatDetailRecette = $queryDetailRecette->getResult();
 
-    dump($resultatDetailRecette);
     return $this->render('sgb/recette/detailRecette.html.twig',[
-            
         'formDetailRecette'=>$formDetailRecette->createView(), 'resultatDetailRecette'=> $resultatDetailRecette 
     ]);
 }

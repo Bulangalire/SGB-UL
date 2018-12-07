@@ -15,8 +15,11 @@
 
                 </td>
                 <td>
-
+                    {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF')  %}
+                    {{ form_row(frmAddOp.utilisateurdepense, {'attr': {'selected':'{{app.user.nom}}', 'disabled': 'disabled' }})}}
+                 {% else %}
                     {{ form_row(frmAddOp.utilisateurdepense)}}
+                 {% endif %}
 
                 </td>
                 <td>
@@ -25,7 +28,12 @@
 
                 </td>
                 <td>
-                    {{form_row(frmAddOp.service) }}
+                  {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF')  %}
+                    {{ form_row(frmAddOp.service, {'attr': {'selected':'{{app.user.services.designation }}', 'disabled': 'disabled' }})}}
+                {% else %}
+                    {{ form_row(frmAddOp.service)}}
+                 {% endif %}
+                   
                 </td>
                 <td rowspan="7" valign=top>
                 &nbsp; &nbsp; &nbsp; &nbsp; 
@@ -48,7 +56,7 @@
                                 <tr>
                                     <td>{{op.listOp.numOp}}</td>
                                     <td>
-                                        <a href="{{path('depense_edit',{'id':op.listOp.id})}}"><img src="{{path('edit_button')}}"/></a>
+                                        <a href="{{path('op_edit',{'id':op.listOp.id})}}"><img src="{{ asset('/img/edit.png') }}"/></a>
                                     </td>
 
                                 </tr>
@@ -167,14 +175,31 @@
             <tr>
                 <td>
                     <br>
+                    
+                    {% set idDepense = frmAddOp.vars.value.id %}
+                    {% if idDepense is null %}
                     <button type="submit" class="btn btn-success" formnovalidate="formnovalidate">
-                        Enregistrer
+                            Enregistrer
                     </button>
+
+                    {% elseif frmAddOp.vars.value.utilisateurdepense.nom is not same as(app.user.nom)  and  is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_COMPTABILITE') %}
+                    <button type="submit" disabled="disabled"  class="btn btn-success" formnovalidate="formnovalidate">
+                            Enregistrer
+                    </button>
+                      {% elseif frmAddOp.vars.value.utilisateurdepense.nom is same as(app.user.nom)   %}
+                       <button type="submit" class="btn btn-success" formnovalidate="formnovalidate">
+                            Enregistrer
+                    </button>
+                    {% elseif frmAddOp.vars.value.utilisateurdepense.nom is not same as(app.user.nom)  and is_granted('ROLE_RECTOR') or is_granted('ROLE_SG') or is_granted('ROLE_AB') or is_granted('ROLE_CHEF_SERVICE')    %}
+                       <button type="submit" class="btn btn-success" formnovalidate="formnovalidate">
+                            Enregistrer
+                    </button>
+                    {% endif %}
 
                 </td>
                 <td>
                     <br>
-                    {% set idDepense = frmAddOp.vars.value.id %}
+                  
                     {% if idDepense is not null %}
                         <a class="btn btn-success" href="{{path('etatBesoin_par_op', {'id':idDepense})}}">Son Etat de besoin</a>
                     {% endif %}
@@ -185,7 +210,7 @@
                 </td>
                 <td>
                     <br>
-                    <a class="btn btn-success" href="{{path('admin_formimportrubrique')}}">Voir les OP en attente
+                    <a class="btn btn-success" href="{{path('selectparametersLesOpDepense')}}">Voir les OP en attente
                     </a>
                 </td>
                 <td>

@@ -106,8 +106,10 @@
                      {{sousTotauxEcartRecette|number_format(2, '.',',')}}
                 </td>
                 <td>
+                     {% if sousTotauxPeriodeRecette is not same as(0) %}
                      {% set sousPoucentageRecette = (sousTotauxRealisationRecette * 100 ) / sousTotauxPeriodeRecette %}
                      {{sousPoucentageRecette|number_format(2, '.',',')}} {{"%"}}
+                    {% endif %}
                 </td>
             </tr>
 
@@ -155,7 +157,9 @@
                     </td>
 
                     <td>
+                        {% if previsionPeriodeDepense is not same as(0) %}
                         {{  ((depenseBudget.sommedepense * 100) / previsionPeriodeDepense)|number_format(2, '.',',') }}{{" % "}}
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
@@ -191,8 +195,10 @@
                      {{ecartGlobal|number_format(2, '.',',')}}
                 </td>
                 <td>
+                    {% if  (sousTotauxPeriodeRecette - sousTotauxPeriodeDepense) is not same as(0) %}
                      {% set poucentageGlobal = ((sousTotauxRealisationRecette - sousTotauxRealisationDepense) * 100 ) / (sousTotauxPeriodeRecette - sousTotauxPeriodeDepense) %}
                      {{poucentageGlobal|number_format(2, '.',',')}} {{"%"}}
+                     {% endif %}
                 </td>
             </tr>
         </tbody>

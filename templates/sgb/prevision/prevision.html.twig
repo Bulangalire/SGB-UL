@@ -15,9 +15,11 @@
                 </td>
 
                 <td>
-
+                {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE')  %}
+                    {{ form_row(formPrevision.service, {'attr': {'selected':'{{app.user.services.designation }}', 'disabled': 'disabled' }})}}
+                {% else %}
                     {{ form_row(formPrevision.service, {'attr': {'selected':'{{ app.user.services.designation }}' }})}}
-
+                 {% endif %}
                 </td>
 
                 <td></td>
@@ -65,7 +67,7 @@
                         <thead>
                             <tr class="table-primary" >
                                 <th colspan='7'>
-                                    Les previsions budgetaire </th>
+                                    Les previsions budgetaire de {{app.session.get('categorieselect')}}</th>
                              
                                 
                             </tr>
@@ -81,6 +83,7 @@
                             </tr>
                         </thead>
                         <tbody>
+                        {% set totalPrevision = 0 %}
                             {% for prevision in previsions %}
                                 <tr>
                                     <th scope="row">{{prevision.id}}</th>
@@ -88,6 +91,7 @@
                                     <td>{{prevision.intituleLigne}}</td>
                                     <td>{{prevision.designation}}</td>
                                     <td>{{prevision.anneebudget}}</td>
+                                    {% set totalPrevision = totalPrevision + prevision.montantprevision %}
                                     <td>{{prevision.montantprevision}}</td>
 
                                     <td>
@@ -127,13 +131,13 @@
                                     </td>
                                 </tr>
                             {% endfor %}
-                            <tr>
+                             <tr class="table-primary">
                                 <td ></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td></td>
-                                <td></td>
+                                <td> Totale prévision</td>
+                                <td>{{totalPrevision}}</td>
                                 <td></td>
                             </tr>
 

@@ -49,7 +49,7 @@
                     <a class="btn btn-success" href="{{path('depense_edit', {'id': id })}}">Retour à l'OP</a>
                     {% else %}
                           {% set depense = frmEtatbesoin.vars.value.depense.id   %}
-                           <a class="btn btn-success" href="{{path('depense_edit', {'id': depense })}}">Retour à l'OP</a>
+                           <a class="btn btn-success" href="{{path('op_edit', {'id': depense })}}">Retour à l'OP</a>
                     {% endif %}
 
                 </td>
@@ -91,7 +91,7 @@
                 <a class="confirmModalLink" data-toggle="modal" href="{{path('etatbesoin_delete', {'id':item.id})}}">
         <i class="glyphicon glyphicon-trash"></i>
         
-       <img src="{{path('delete_button')}}"/></a>
+      <img src="{{ asset('/img/delete1.png') }}"/></a>
 
   <div class="modal hide fade" id="confirmModal">
     <div class="modal-dialog">

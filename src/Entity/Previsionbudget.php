@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity(repositoryClass="App\Repository\PrevisionbudgetRepository")
  * @UniqueEntity(
  * fields={"anneebudgetprevision", "service", "lignebudgetprevision"},
+ * errorPath="lignebudgetprevision",
  * message="Cette ligne a été déjà  prevue dans ce service pour l'année budgetaire selectionée !!!"
  * )
  */

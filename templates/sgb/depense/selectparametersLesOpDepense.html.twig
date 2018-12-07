@@ -16,7 +16,7 @@
     <div class="example-wrapper">
         <h1>Choix année budgétaire</h1>
 
-        <form action="{{ path('sgb_prevision') }}" method="post">
+        <form action="{{ path('lesOPDepenses_overview') }}" method="post">
             <div class="form-group">
                 <select required="required" name="annees" class="form-control">
                     <option value="">--Choisir une année budgetaire
@@ -25,19 +25,11 @@
                         <option value="{{annee.id}}">{{annee.anneebudget}}</option>
                     {% endfor %}
                 </select>
-            </div>
-            <div class="form-group">
-                <select required="required" name="categorie" class="form-control">
-                    <option value="">--Choisir une catégorie
-                    </option>
-                    <option value="Recette">Recette</option>
-                    <option value="Depense">Depense</option>
-                </select>
 
             </div>
-            <div class="form-group">
 
-                {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF')  %}
+             <div class="form-group">
+                 {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE')  %}
                    <select disabled="disabled" name="services" class="form-control">
                     <option readonly="true" value="{{app.user.services.id}}">{{app.user.services.designation}}
                     </option>
@@ -63,11 +55,7 @@
                 </button>
 
             </div>
-
-          <div class="form-group">
-                        <a class="btn btn-success"  href="{{path('depense_create')}}">Quitter</a>
-          </div>
-
+             <a class="btn btn-success" href="{{path('home')}}">Quitter</a>
         </form>
 
     </div>

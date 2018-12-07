@@ -16,7 +16,7 @@
     <div class="example-wrapper">
         <h1>Choix année budgétaire</h1>
 
-        <form action="{{ path('depense_create') }}" method="post">
+        <form action="{{ path('depense_Op') }}" method="post">
             <div class="form-group">
                 <select required="required" name="annees" class="form-control">
                     <option value="">--Choisir une année budgetaire
@@ -29,14 +29,23 @@
             </div>
 
              <div class="form-group">
-                <select required="required" name="services" class="form-control">
-                    <option value="">--Choisir un service
+                 {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE')  %}
+                   <select disabled="disabled" name="services" class="form-control">
+                    <option readonly="true" value="{{app.user.services.id}}">{{app.user.services.designation}}
                     </option>
                     {% for service in services %}
                         <option value="{{service.id}}">{{service.designation}}</option>
                     {% endfor %}
                 </select>
-
+                {% else %}
+                <select required="required" name="services" class="form-control">
+                    <option value="{{app.user.services.id}}">{{app.user.services.designation}}
+                    </option>
+                    {% for service in services %}
+                        <option value="{{service.id}}">{{service.designation}}</option>
+                    {% endfor %}
+                </select>
+                 {% endif %}
             </div>
 
             <div class="form-group">

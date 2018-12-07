@@ -34,6 +34,7 @@ class Depense
 
     /**
      * @ORM\Column(type="float")
+     * @Assert\NotBlank, message="Veuillez completer correctement avant d'enregistrer"
      */
     private $montantdepense;
 

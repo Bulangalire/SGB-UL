@@ -12,6 +12,7 @@
                         <thead>
                             <tr class="table-primary">
                                 <th scope="col">ID</th>
+                                <th scope="col">Numéro OP</th>
                                 <th scope="col">Bénéficiaire</th>
                                 <th scope="col">Service</th>
                                 <th scope="col">Date émission</th>
@@ -33,6 +34,7 @@
                                         {% set numDepense = numDepense + 1 %}
                                         {{ numDepense }}
                                     </th>
+                                    <td>{{op.lesdetails.depenseid.numOp}}</td>
                                     <td>{{op.lesdetails.depenseid.beneficiaire}}</td>
                                     <td>
                                         {{op.lesdetails.depenseid.service.designation}}
@@ -61,6 +63,7 @@
                                 <th scope="row"></th>
                                 <td></td>
                                 <td></td>
+                             <td></td>
                                 <td></td>
                                 <td></td>
                                 <td >{{totalSortie}} </td>

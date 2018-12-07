@@ -73,11 +73,11 @@
                                     </td>
                                     <td>
                                         {% set totalRecette = totalRecette + recette.montantrecette %}
-                                        {{recette.montantrecette}}
+                                        {{recette.montantrecette|number_format(2, '.',',')}}
                                     </td>
 
                                     <td>
-                                        {{recette.mesrecettes.lignebudgetrecette.montantprevision - recette.montantrecette}}
+                                        {{(recette.mesrecettes.lignebudgetrecette.montantprevision - recette.montantrecette)|number_format(2, '.',',')}}
                                     </td>
 
                                     <td>
@@ -100,14 +100,14 @@
                                 <td></td>
                                  <td></td>
                                 <td></td>
-                                <td>{{totalPrevision}}</td>
-                                <td>{{totalRecette}}
+                                <td>{{totalPrevision|number_format(2, '.',',')}}</td>
+                                <td>{{totalRecette|number_format(2, '.',',')}}
                                 </td>
-                                <td>{{totalPrevision - totalRecette}}</td>
+                                <td>{{(totalPrevision - totalRecette)|number_format(2, '.',',')}}</td>
                              
                                 <td>
                                 {% if totalPrevision > 0 %}
-                                {{( ( totalRecette / totalPrevision) * 100) |number_format(2, '.', ',')  }}%
+                                {{( ( totalRecette / totalPrevision) * 100)|number_format(2, '.', ',')  }}%
                                    {% endif %}
                                 </td>
 
