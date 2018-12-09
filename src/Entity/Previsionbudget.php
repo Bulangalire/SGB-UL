@@ -68,7 +68,6 @@ class Previsionbudget
      */
     private $recettesUtiliseesEnDepenses;
 
-    private $leSolde;
 
     public function __construct()
     {
@@ -191,8 +190,12 @@ class Previsionbudget
 
         return $this;
     }
-    public function getLeSolde(): self
+    public function getLeSolde()
     {
-        return $this->leSolde=$this->getRecettes()-$this->getRecettesUtiliseesEnDepenses();
+        return $this->getRecettes()-$this->getRecettesUtiliseesEnDepenses();
+    }
+
+    public function __toString(){
+        return $this->service. " " .$this->nom;
     }
 }

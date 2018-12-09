@@ -72,20 +72,55 @@
                         </tbody>
                     </table>
                 </td>
-                <td valign="top">
-                     <h5> La situation de la caisse </h5>
-                        <li class="nav-item">
-                        <a class="btn btn-success" href="{{path('selectAnalyse')}}">Dépenses</a>
-                    </li>
-                  
+                <td  valign="top">
+                 <h5> La situation de la caisse </h5>
+                         <table class="table table-hover">
+                            <thead>
+                                <tr class="table-primary">
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Service</th>
+                                    <th scope="col">recette</th>
+                                    <th scope="col">montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                              {% set numDepense = 0 %}
+                                {% for soldeLigne in querySoldeCompte %}
+                                   <tr>
+                                       <th scope="row">
+                                             {% set numDepense = numDepense + 1 %}
+                                        {{ numDepense }}
+                                       </th>
+                                        <td>
+                                            {{soldeLigne.mesrecettes.lignebudgetrecette.service.designation}}
+                                        </td>
+                                        <td>
+                                            {{soldeLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
+                                        </td>
+                                        <td>
+                                            {{soldeLigne.mesrecettes.lignebudgetrecette.leSolde}}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                <tr class="table-primary">
+                                <th scope="row"></th>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </tbody>
+                        </table>
                 </td>
+
+
             </tr>
             <tr>
-                <td></td>
-                <td>
+                
 
-                    <td></td>
-                </td>
+                 
+                    <td>
+                    </td>
+                 
             </tr>
 
         </tbody>

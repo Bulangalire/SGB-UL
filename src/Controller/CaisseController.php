@@ -123,7 +123,22 @@ class CaisseController extends AbstractController{
 
         $detaildepense= new Detaildepense();
         }
-       
+
+
+             // Creation de variable de session pour les parametres des requêtes
+         
+            // Période  
+            // Début periode
+            if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
+                $session->set('datedebutselect',$request->request->get('datedebut') );
+            }
+            $datedebut = $session->get('datedebutselect');
+    
+            // Fin période
+            if($request->request->get('datefin')!==null && $request->request->get('datefin') <> $session->get('datefinselect') ){
+                $session->set('datefinselect',$request->request->get('datefin') );
+            }
+            $datefin =  $session->get('datefinselect');
             // Service
             if( $this->isGranted('ROLE_COMPTE_FAC') ){
                 $session->set('servicesselectOp', $this->getUser()->getServices()->getId() );
@@ -196,7 +211,16 @@ class CaisseController extends AbstractController{
             $sqlDetailSortie->setParameters(array('depense'=> $depense==null? $detaildepense->getDepenseId()->getId(): $depense->getId()));
             $queryListDetailSortie = $sqlDetailSortie->getResult();
  
-           
+
+            $sqlSoldeCompte = $em->createQuery('SELECT r as mesrecettes, 
+            sum(r.montantrecette) as montantrecette, 
+            p FROM  App\Entity\Recette r 
+            JOIN r.lignebudgetrecette p  
+            WHERE p.service=:userservice 
+            AND p.anneebudgetprevision=:anneebudgetselect 
+            group by p.id');
+            $sqlSoldeCompte->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect));
+           $querySoldeCompte = $sqlSoldeCompte->getResult();
 
             $detaildepense->setDepenseId($depense);
             $frmDecaisser->handleRequest($request);
@@ -214,11 +238,12 @@ class CaisseController extends AbstractController{
                 return $this->redirectToRoute('add_decaisser',['id'=> $detaildepense->getDepenseId()->getId()]);
             }
             }         
-
+           
           return $this->render('sgb/caisse/decaisser.html.twig',[
             'frmDecaisser'=> $frmDecaisser->createView(),
             'editMode'=> $detaildepense->getId()!==null,
-            'queryListDetailSortie'=>$queryListDetailSortie
+            'queryListDetailSortie'=>$queryListDetailSortie,
+            'querySoldeCompte'=>$querySoldeCompte
           ]);
         
     }

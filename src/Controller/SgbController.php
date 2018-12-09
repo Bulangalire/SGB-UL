@@ -361,17 +361,46 @@ class SgbController extends AbstractController
 
 
    /**
-     * @Route("/sgb/depense/depense/{id}", name="deletedepense")
-     * @Route("/sgb/depense/depense/new", name="depense_create")
-     * @Route("/sgb/depense/depense/{id}/edit", name="depense_edit")
+     * @Route("/sgb/depense/depense", name="depenseEffectuer")
      */
     public function formDepense(Depense $unedepense = null, Request $request){
         if($this->getUser()===null) {              
             return $this->redirectToRoute('user_login');
            }
         if(!$unedepense){
-        $unedepense= new Depense();
-    }
+            $unedepense= new Depense();
+        }
+        $session = $request->getSession();
+        // Creation de variable de session pour les parametres des requêtes
+        // Année budgetaire
+        if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
+             $session->set('anneeselect',$request->request->get('annees') );
+        }
+          $anneebudgetselect= $session->get('anneeselect');
+        
+        // Service
+        if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+            $session->set('servicesselect', $this->getUser()->getServices()->getId() );
+            $service= $session->get('servicesselect');
+        }else{
+         // Service
+         if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
+            $session->set('servicesselect',$request->request->get('services') );
+           }
+        $service= $session->get('servicesselect');
+        }
+        // Période  
+        // Début periode
+        if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
+            $session->set('datedebutselect',$request->request->get('datedebut') );
+        }
+        $datedebut = $session->get('datedebutselect');
+
+        // Fin période
+        if($request->request->get('datefin')!==null && $request->request->get('datefin') <> $session->get('datefinselect') ){
+            $session->set('datefinselect',$request->request->get('datefin') );
+        }
+        $datefin =  $session->get('datefinselect');
    
     $userServ = $this->getUser()->getServices();
     $user=$this->getUser();
@@ -394,9 +423,20 @@ class SgbController extends AbstractController
 
                     $em = $this->getDoctrine()->getManager();
              
-                    $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense FROM   App\Entity\Detaildepense d JOIN d.lignebudgetsource p JOIN d.depenseId dd WHERE p.service=:userservice group by d.id ORDER BY d.lignebudgetsource DESC');
-                    $queryDepense->setParameters(array('userservice' => 13));
+                    $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense 
+                    FROM   App\Entity\Detaildepense d 
+                    JOIN d.lignebudgetsource p 
+                    WHERE p.service=:userservice
+                    AND p.anneebudgetprevision=:anneebudgetselect 
+                    AND d.createAt BETWEEN :debut 
+                    AND :fin 
+                    group by d.id ORDER BY d.lignebudgetsource DESC');
+
+                    $queryDepense->setParameters(array('userservice' => $service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
                     $queryDepenseGlobale = $queryDepense->getResult();
+
+                   dump($queryDepenseGlobale);
+
                     $queryRecette = $em->createQuery('SELECT rr as mesrecettes, sum(rr.montantrecette) as montantrecette, pp FROM  App\Entity\Recette rr JOIN rr.lignebudgetrecette pp  WHERE rr.utilisateur =:user AND pp.service=:userservice group by pp.id');
                     $queryRecette->setParameters(array('user'=> $user, 'userservice' => $userServ));
                     $queryRecetteGlobale = $queryRecette->getResult();
@@ -812,6 +852,25 @@ public function fillYears(Request $request){
                     'services'=> $services
     ]);
 }
+
+
+/**
+ * @Route("/sgb/depense/selectdepense", name="selectdepense")
+ */
+public function fillforDepenseYears(Request $request){
+    
+    $em = $this->getDoctrine()->getManager();
+    $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
+    $services = $em->getRepository(Service::class)->findAll();
+    return $this->render('sgb/depense/selectdepense.html.twig',[
+                    'annees'=>$annees,
+                    'services'=> $services
+    ]);
+}
+
+
+
+
 
 /**
  * @Route("/sgb/depense/selectparametersdepense", name="selectparametersdepense")

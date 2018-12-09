@@ -318,7 +318,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                 $querylesEtatDeBesoins=$em->createQuery('SELECT e FROM App\Entity\Etatbesoin e WHERE e.depense=:cetteDepense');
                 $querylesEtatDeBesoins->setParameters(array('cetteDepense'=> $depense->getId()));
                 $lesEtatDeBesoins = $querylesEtatDeBesoins->getResult();
-    
+
 
                 if( $frmEtatbesoin->isSubmitted() &&  $frmEtatbesoin->isValid()){
                    
@@ -513,9 +513,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                     AND d.service=:ceservice
                     GROUP BY dop.depenseId 
                     HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
-                    $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'ceservice'=> $service));
-               
-
+                 
                 }
                 $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'ceservice'=> $service));
                 }
