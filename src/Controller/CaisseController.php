@@ -123,21 +123,26 @@ class CaisseController extends AbstractController{
 
         $detaildepense= new Detaildepense();
         }
-        dump( $depense);
-        dump($detaildepense);
-        // Service
-        if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselectOp') ){
-            $session->set('servicesselectOp', $request->request->get('services') );
-        }
-        $service= $session->get('servicesselectOp');
+       
+            // Service
+            if( $this->isGranted('ROLE_COMPTE_FAC') ){
+                $session->set('servicesselectOp', $this->getUser()->getServices()->getId() );
+                $service= $session->get('servicesselectOp');
+            }else{
+            // Service
+            if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselectOp') ){
+                $session->set('servicesselectOp',$request->request->get('services') );
+            }
+            $service= $session->get('servicesselectOp');
+            }
 
         // Année budgetaire
         if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselectOp') ){
             $session->set('anneeselectOp', $request->request->get('annees') );
         }
-
-        $em = $this->getDoctrine()->getManager();
         $anneebudgetselect= $session->get('anneeselectOp');
+        $em = $this->getDoctrine()->getManager();
+        
         dump( $anneebudgetselect);
        // if($detaildepense->getId()!==null){
 
@@ -157,16 +162,16 @@ class CaisseController extends AbstractController{
             ->add('lignebudgetsource', EntityType::class, array(
                 'class'  => Previsionbudget::class,
                 'placeholder'=>'Choisissez une ligne de Recette',
-                'query_builder'=>function(EntityRepository $er)use ($detaildepense){
+                'query_builder'=>function(EntityRepository $er)use ($service, $anneebudgetselect){
                     return $er->createQueryBuilder('p')
                                 ->join('p.lignebudgetprevision', 'l')
                                 ->where('l.categorieLigne=:thisCat')
-                                // ->andWhere('p.service=:ceService')
-                                    ->groupBy('p.service')
-                                    //->having('p.leSolde > 0')
-                                ->setParameter('thisCat', 'Recette');
-                                // ->setParameter('ceService', $detaildepense->getDepenseId()->getService());
-                },
+                                ->andWhere('p.service=:ceService')
+                                ->andWhere('p.anneebudgetprevision=:annee')
+                                ->setParameter('thisCat', 'Recette')
+                                ->setParameter('ceService', $service)
+                                ->setParameter('annee', $anneebudgetselect);
+                            },
                 'choice_label'=>'lignebudgetprevision.intituleLigne'))
             
             ->add('montantdetail', IntegerType::class, [
@@ -221,12 +226,6 @@ class CaisseController extends AbstractController{
      * @Route("/sgb/analyse/analyseGlobale", name="dataAnalys")
      */
     public function analyse( Depense $depense=null, Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
-        
-     
-        
-        
-        
-        
         // Creation de variable de session pour les parametres des requêtes
         // Année budgetaire
         if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
@@ -282,8 +281,6 @@ class CaisseController extends AbstractController{
             AND :fin 
             group by p.id ORDER BY p.service ASC');
             $queryDepense->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
-
-
     }else{
         $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense 
             FROM   App\Entity\Detaildepense d 

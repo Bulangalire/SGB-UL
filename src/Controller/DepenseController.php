@@ -6,6 +6,7 @@ use App\Entity\Depense;
 use App\Entity\Service;
 use App\Entity\Personne;
 use App\Entity\Etatbesoin;
+use App\Entity\Detaildepense;
 use App\Entity\Anneebudgetaire;
 use App\Entity\Previsionbudget;
 use Doctrine\DBAL\Types\FloatType;
@@ -74,7 +75,9 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
                             return $er->createQueryBuilder('p')
                             ->select("p")
                             ->where("p.id=:user")
-                            ->setParameter('user', $this->getUser());
+                            ->setParameter('user',  $unedepense->getUtilisateurdepense()!== $this->getUser()? 
+                            $unedepense->getUtilisateurdepense(): $unedepense == null? $this->getUser():$this->getUser()
+                             );
                     }elseif($this->isGranted('ROLE_RECTOR') or $this->isGranted('ROLE_SG') or $this->isGranted('ROLE_AB') or $this->isGranted('ROLE_CHEF_SERVICE')){
                         return $er->createQueryBuilder('p')
                         ->select("p")
@@ -144,6 +147,11 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
             ->add('autoriserRecteur', CheckboxType::class, [
                 'attr'=>[
                 'label'=>'Autorisation du Recteur',
+                 ]
+            ])
+            ->add('isCentralyzed', CheckboxType::class, [
+                'attr'=>[
+                'label'=>'centraliser',
                  ]
             ])
 
@@ -476,20 +484,41 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                 $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
           
             }else{
-       
-                $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
-                sum(  dop.montantdetail) as dejaPayer, p, d 
-                FROM  App\Entity\Detaildepense dop 
-                JOIN dop.depenseId d 
-                JOIN dop.lignebudgetdepense p
-                WHERE 
-                    p.anneebudgetprevision=:anneebudgetselect
-                AND 
-                    d.service=:ceservice
-                GROUP BY dop.depenseId 
-                HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
+                
+                if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+                    $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
+                    sum(  dop.montantdetail) as dejaPayer, p, d 
+                    FROM  App\Entity\Detaildepense dop 
+                    JOIN dop.depenseId d 
+                    JOIN dop.lignebudgetdepense p
+                    WHERE 
+                        p.anneebudgetprevision=:anneebudgetselect
+                    AND d.isCentralyzed=false    
+                    AND 
+                        d.service=:ceservice
+                    GROUP BY dop.depenseId 
+                    HAVING (sum( CASE WHEN d.autoriserChefService=true 
+                        THEN dop.montantdetail
+                        ELSE  d.montantdepense + 1 END) < d.montantdepense ) ');
+                    
+                }else{
+                    $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
+                    sum(  dop.montantdetail) as dejaPayer, p, d 
+                    FROM  App\Entity\Detaildepense dop 
+                    JOIN dop.depenseId d 
+                    JOIN dop.lignebudgetdepense p
+                    WHERE 
+                        p.anneebudgetprevision=:anneebudgetselect
+                    AND d.isCentralyzed=false
+                    AND d.service=:ceservice
+                    GROUP BY dop.depenseId 
+                    HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
+                    $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'ceservice'=> $service));
+               
+
+                }
                 $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'ceservice'=> $service));
-           }
+                }
 
 
           $queryListOpAPaye = $sqlOPAPaye->getResult();
@@ -511,24 +540,34 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
             ');
          $sqlOPAPayeDeux->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
         }else{
-            $sqlOPAPayeDeux = $em->createQuery('SELECT d
-          FROM  App\Entity\Depense d 
-          JOIN d.ligneBudgetaire p
-          WHERE
-              d.service=:ceservice
-          AND d.autoriserAB=true 
-          AND d.autoriserSG=true 
-          AND d.autoriserRecteur=true
-          AND p.anneebudgetprevision=:anneebudgetselect
-          AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
-                FROM App\Entity\Detaildepense dd ) 
-            ');
+            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+                    $sqlOPAPayeDeux = $em->createQuery('SELECT d
+                FROM  App\Entity\Depense d 
+                JOIN d.ligneBudgetaire p
+                WHERE
+                    d.service=:ceservice
+                AND d.isCentralyzed=false
+                AND p.anneebudgetprevision=:anneebudgetselect
+                AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                        FROM App\Entity\Detaildepense dd ) 
+                    ');
+            }else{
+                $sqlOPAPayeDeux = $em->createQuery('SELECT d
+                FROM  App\Entity\Depense d 
+                JOIN d.ligneBudgetaire p
+                WHERE
+                    d.service=:ceservice
+                AND d.autoriserAB=true 
+                AND d.autoriserSG=true 
+                AND d.autoriserRecteur=true
+                AND p.anneebudgetprevision=:anneebudgetselect
+                AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                    FROM App\Entity\Detaildepense dd ) 
+                ');  
+        } 
          $sqlOPAPayeDeux->setParameters(array('ceservice'=>$service, 'anneebudgetselect'=> $anneebudgetselect));
-
-
         }
          $queryListOpAPayeDeux = $sqlOPAPayeDeux->getResult();
-
 
         // Lister NON signe
         if($service=='*'){    
@@ -545,31 +584,49 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
             ');
             $sqlOPNonSigne->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
         }else{
-            $sqlOPNonSigne = $em->createQuery('SELECT d
-            FROM  App\Entity\Depense d 
-            JOIN d.ligneBudgetaire p
-            WHERE d.service=:ceservice
-            
-            AND p.anneebudgetprevision=:anneebudgetselect
-            AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
-                FROM App\Entity\Detaildepense dd ) 
-                HAVING (CASE WHEN 
-            d.autoriserAB=false OR
-            d.autoriserSG=false OR
-            d.autoriserRecteur=false 
-            THEN FALSE ELSE  TRUE END)=FALSE
-            
-            ');
+            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+                $sqlOPNonSigne = $em->createQuery('SELECT d
+                FROM  App\Entity\Depense d 
+                JOIN d.ligneBudgetaire p
+                WHERE d.service=:ceservice
+                AND p.anneebudgetprevision=:anneebudgetselect
+                AND  d.isCentralyzed=false 
+                AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                    FROM App\Entity\Detaildepense dd ) 
+                    HAVING (CASE WHEN 
+                 d.autoriserChefService=false 
+                THEN FALSE ELSE  TRUE END)=FALSE
+                
+                ');
+            }else{
+                $sqlOPNonSigne = $em->createQuery('SELECT d
+                FROM  App\Entity\Depense d 
+                JOIN d.ligneBudgetaire p
+                WHERE d.service=:ceservice
+                AND d.isCentralyzed=true 
+                AND p.anneebudgetprevision=:anneebudgetselect
+                AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                    FROM App\Entity\Detaildepense dd ) 
+                    HAVING (CASE WHEN 
+                d.autoriserAB=false OR
+                d.autoriserSG=false OR
+                d.autoriserRecteur=false 
+                THEN FALSE ELSE  TRUE END)=FALSE
+                
+                ');
+
+            }
             $sqlOPNonSigne->setParameters(array('ceservice'=>$service, 'anneebudgetselect'=> $anneebudgetselect));
-        }
+        
+            }
         $queryListOPNonSigne = $sqlOPNonSigne->getResult();
           // $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision');
           // $queryRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
           // $queryRecetteGlobale = $queryRecette->getResult();
-          return $this->render('sgb/depense/lesOPDepenses.html.twig',['queryListOpAPayeOverView' => $queryListOpAPaye,
-          
-          'queryListOpAPayeDeux'=> $queryListOpAPayeDeux,
-          'queryListOPNonSigne'=> $queryListOPNonSigne 
+          return $this->render('sgb/depense/lesOPDepenses.html.twig',[
+                'queryListOpAPayeOverView' => $queryListOpAPaye,
+                'queryListOpAPayeDeux'=> $queryListOpAPayeDeux,
+                'queryListOPNonSigne'=> $queryListOPNonSigne 
           ]);
         }
 /**

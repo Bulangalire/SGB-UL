@@ -20,7 +20,11 @@
                                 <th scope="col">Montant OP</th>
                                 <th scope="col">Déjà décaisser</th>
                                 <th scope="col">Solde</th>
-                                <th scope="col">Décaisser</th>
+                                <th scope="col">
+                                {% if is_granted('ROLE_COMPTE_FAC')  %}
+                                    Décaisser
+                                {% endif %}
+                                </th>
 
                             </tr>
                         </thead>
@@ -60,7 +64,10 @@
                                         {{op.lesdetails.depenseid.montantdepense - op.dejaPayer}}
                                     </td>
                                     <td>
-                                   
+                                     {% if is_granted('ROLE_COMPTE_FAC')  %}
+                                       <a href="{{path('add_decaisser', {'id':op.lesdetails.depenseid.id})}}">
+                                            <img src="{{ asset('/img/add.jpg') }}"/></a>
+                                    {% endif %}
                                     </td>
 
                                 </tr>
@@ -126,8 +133,12 @@
                                 <th scope="col">Ligne de depense</th>
                                 <th scope="col">Montant</th>
                                 <th scope="col"> </th>
-                                <th scope="col"></th>
                                 <th scope="col">Modifier</th>
+                                <th scope="col">
+                                 {% if is_granted('ROLE_COMPTE_FAC')  %}
+                                    Décaisser
+                                {% endif %}
+                                </th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -160,12 +171,14 @@
                                         
                                     </td>
                                     <td>
-                                       
+                                       <a href="{{path('op_edit', {'id':opDeux.id})}}">
+                                            <img src="{{ asset('/img/add.jpg') }}"/></a>
                                     </td>
                                     <td>
-                              
-                                        <a href="{{path('op_edit', {'id':opDeux.id})}}">
+                                        {% if is_granted('ROLE_COMPTE_FAC')  %}
+                                             <a href="{{path('add_decaisser', {'id':opDeux.id})}}">
                                             <img src="{{ asset('/img/add.jpg') }}"/></a>
+                                        {% endif %}
                                     </td>
 
                                 </tr>
@@ -241,11 +254,14 @@
                                         
                                     </td>
                                     <td>
-                                       
+                                        
                                     </td>
+
                                     <td>
-                                  <a href="{{path('op_edit', {'id':opNonSigne.id})}}">
-                                            <img src="{{ asset('/img/add.jpg') }}"/></a>
+                                    <a href="{{path('op_edit', {'id':opNonSigne.id})}}">
+                                            <img src="{{ asset('/img/edit.png') }}"/></a>
+
+                                            
                                     </td>
 
                                 </tr>

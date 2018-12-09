@@ -53,9 +53,9 @@
                                     </td>
                                      <td>
                                         <a href="{{path('edit_decaisser', {'id':uneSortie.lesdetails.id})}}">
-                                            <img src="{{path('edit_button')}}"/></a>
+                                           <img src="{{ asset('/img/edit.png') }}"/></a>
                                             <a href="{{path('delete_caisser', {'id':uneSortie.lesdetails.id})}}">
-                                            <img src="{{path('delete_button')}}"/></a>
+                                            <img src="{{ asset('/img/delete1.png') }}"/></a>
                                     </td>
 
                                 </tr>
@@ -73,10 +73,7 @@
                     </table>
                 </td>
                 <td valign="top">
-                     <h5>La situation de la caisse
-                     
-                    </h5>
- 
+                     <h5> La situation de la caisse </h5>
                         <li class="nav-item">
                         <a class="btn btn-success" href="{{path('selectAnalyse')}}">Dépenses</a>
                     </li>

@@ -134,6 +134,11 @@ class Depense
      * @ORM\Column(type="boolean", nullable=true)
      */
     private $autoriserRecteur;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $isCentralyzed;
  
       public function __construct(){
         $this->createAt= new \Datetime();
@@ -427,6 +432,18 @@ class Depense
     public function setAutoriserRecteur(?bool $autoriserRecteur): self
     {
         $this->autoriserRecteur = $autoriserRecteur;
+
+        return $this;
+    }
+
+    public function getIsCentralyzed(): ?bool
+    {
+        return $this->isCentralyzed;
+    }
+
+    public function setIsCentralyzed(?bool $isCentralyzed): self
+    {
+        $this->isCentralyzed = $isCentralyzed;
 
         return $this;
     }

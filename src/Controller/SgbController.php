@@ -680,7 +680,9 @@ class SgbController extends AbstractController
                                
                                 if($em->getRepository("\App\Entity\Recette")->findOneBy(
                                     array('lignebudgetrecette'=>$recette->getLignebudgetrecette(), 
-                                    'montantrecette'=>$recette->getMontantrecette() 
+                                    'montantrecette'=>$recette->getMontantrecette(),
+                                    'libelle'=>$recette->getLibelle(),
+                                    'description'=>$recette->getDescription()
                                 ) 
                                     )&& $recette->getId()==null){
                                         echo '<h2 style="color:red;"> la recette existe déjà </h2>';
