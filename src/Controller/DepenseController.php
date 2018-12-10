@@ -189,8 +189,7 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
             ))
 
             ->getForm();
-            dump(  $em->getRepository(Service::class)->find($service));
-            dump($this->getUser()->getServices());
+            
            $frmDepense->handleRequest($request);
            $em = $this->getDoctrine()->getManager();
            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
@@ -230,7 +229,8 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
                 }
             $queryOpNonSigne->setParameter('ceService', $service);
                 $resutatListOpNonSigne = $queryOpNonSigne->getResult();
-                dump(  $resutatListOpNonSigne);
+              
+                
 
             if( $frmDepense->isSubmitted() && $frmDepense->isValid() ){
 
@@ -309,9 +309,8 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                 ->add('prixunitaire')
                
                 ->getForm();
-                dump($depense);
-                dump($etatbesoin);
-                dump($request);
+             
+                
                 $etatbesoin->setDepense( $depense);
                 $em = $this->getDoctrine()->getManager();
                 $frmEtatbesoin->handleRequest($request);
@@ -430,7 +429,6 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
           $sqlOPDejaPaye->setParameters(array( 'debut'=> $datedebut, 'fin'=> $datefin));
           $queryListOPDejaPaye = $sqlOPDejaPaye->getResult();
 
-          dump($queryListOPDejaPaye);
           return $this->render('sgb/depense/opRegles.html.twig',[
             'queryListOPDejaPaye'=>$queryListOPDejaPaye,
             
