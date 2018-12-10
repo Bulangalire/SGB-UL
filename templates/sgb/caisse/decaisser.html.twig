@@ -39,6 +39,8 @@
                             {% set numDepense = 0 %}
                             {% set totalDetail = 0 %}
                             {% for uneSortie in queryListDetailSortie %}
+                          
+                            
                                 <tr>
                                     <th scope="row">
                                         {% set numDepense = numDepense + 1 %}
@@ -85,7 +87,10 @@
                             </thead>
                             <tbody>
                               {% set numDepense = 0 %}
+                               {% set soldeService = 0 %}
+                              {% set service = null %}
                                 {% for soldeLigne in querySoldeCompte %}
+                                  {% if soldeLigne.mesrecettes.lignebudgetrecette.leSolde > 0 %}
                                    <tr>
                                        <th scope="row">
                                              {% set numDepense = numDepense + 1 %}
@@ -93,21 +98,58 @@
                                        </th>
                                         <td>
                                             {{soldeLigne.mesrecettes.lignebudgetrecette.service.designation}}
+                                            {% set service = soldeLigne.mesrecettes.lignebudgetrecette.service %}
                                         </td>
                                         <td>
                                             {{soldeLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
                                         </td>
                                         <td>
+                                            {% set soldeService = soldeService + soldeLigne.mesrecettes.lignebudgetrecette.leSolde %}
                                             {{soldeLigne.mesrecettes.lignebudgetrecette.leSolde}}
                                         </td>
                                     </tr>
+                                    {% endif %}
                                 {% endfor %}
                                 <tr class="table-primary">
                                 <th scope="row"></th>
                                 <td></td>
-                                <td></td>
-                                <td></td>
+                                <td>Reste en caisse</td>
+                                <td>{{soldeService}}</td>
                             </tr>
+                             {% set numDepenseAutre = 0 %}
+                               {% set soldeAutresService = 0 %}
+                                {% for soldeLigneAutre in querySoldeCompteAutres %}
+                                  {% if soldeLigneAutre.mesrecettes.lignebudgetrecette.leSolde > 0  and soldeLigneAutre.mesrecettes.lignebudgetrecette.service is not same as(service) %}
+                                 <tr>
+                                    <th scope="row">
+                                             {% set numDepenseAutre = numDepenseAutre + 1 %}
+                                        {{ numDepenseAutre }}
+                                       </th>
+                                        <td>
+                                            {{soldeLigneAutre.mesrecettes.lignebudgetrecette.service.designation}}
+                                        </td>
+                                        <td>
+                                            {{soldeLigneAutre.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
+                                        </td>
+                                        <td>
+                                           {% set soldeAutresService = soldeAutresService + soldeLigneAutre.mesrecettes.lignebudgetrecette.leSolde %}
+                                            {{soldeLigneAutre.mesrecettes.lignebudgetrecette.leSolde}}
+                                        </td>
+                                </tr>
+                             {% endif %}
+                                {% endfor %}
+                                <tr class="table-primary">
+                                <th scope="row"></th>
+                                <td></td>
+                                <td>Reste Autre </td>
+                                <td>{{soldeAutresService}}</td>
+                                </tr>
+                                 <tr class="table-primary">
+                                <th scope="row"></th>
+                                <td></td>
+                                <td>Reste Global </td>
+                                <td>{{soldeAutresService + soldeService}}</td>
+                                </tr>
                             </tbody>
                         </table>
                 </td>

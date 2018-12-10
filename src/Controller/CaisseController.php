@@ -54,47 +54,163 @@ class CaisseController extends AbstractController{
 
           
                     // Lister les op encours de paiement
-           $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
-           sum(  dop.montantdetail) as dejaPayer, p, d 
-           FROM  App\Entity\Detaildepense dop 
-           JOIN dop.depenseId d 
-           JOIN dop.lignebudgetdepense p
-           WHERE 
-              p.anneebudgetprevision=:anneebudgetselect 
-           GROUP BY dop.depenseId 
-           HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
-          $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
-          $queryListOpAPaye = $sqlOPAPaye->getResult();
+          
+       
+              
+          if($service=='*'){   
+            $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
+            sum(  dop.montantdetail) as dejaPayer, p, d 
+            FROM  App\Entity\Detaildepense dop 
+            JOIN dop.depenseId d 
+            JOIN dop.lignebudgetdepense p
+            WHERE 
+                p.anneebudgetprevision=:anneebudgetselect 
+            GROUP BY dop.depenseId 
+            HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
+            $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+      
+        }else{
+            
+            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+                $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
+                sum(  dop.montantdetail) as dejaPayer, p, d 
+                FROM  App\Entity\Detaildepense dop 
+                JOIN dop.depenseId d 
+                JOIN dop.lignebudgetdepense p
+                WHERE 
+                    p.anneebudgetprevision=:anneebudgetselect
+                AND d.isCentralyzed=false    
+                AND 
+                    d.service=:ceservice
+                GROUP BY dop.depenseId 
+                HAVING (sum( CASE WHEN d.autoriserChefService=true 
+                    THEN dop.montantdetail
+                    ELSE  d.montantdepense + 1 END) < d.montantdepense ) ');
+                
+            }else{
+                $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
+                sum(  dop.montantdetail) as dejaPayer, p, d 
+                FROM  App\Entity\Detaildepense dop 
+                JOIN dop.depenseId d 
+                JOIN dop.lignebudgetdepense p
+                WHERE 
+                    p.anneebudgetprevision=:anneebudgetselect
+                AND d.isCentralyzed=true
+                AND d.service=:ceservice
+                GROUP BY dop.depenseId 
+                HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
+             
+            }
+            $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'ceservice'=> $service));
+            }
+            $queryListOpAPaye = $sqlOPAPaye->getResult();
         
+
+
+
         // Lister deja signe mais non payé
-          $sqlOPAPayeDeux = $em->createQuery('SELECT d
-          FROM  App\Entity\Depense d 
-          JOIN d.ligneBudgetaire p
-          WHERE
-          d.autoriserAB=true 
-          AND d.autoriserSG=true 
-          AND d.autoriserRecteur=true
-          AND p.anneebudgetprevision=:anneebudgetselect
-          AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+        if($service=='*'){   
+            $sqlOPAPayeDeux = $em->createQuery('SELECT d
+            FROM  App\Entity\Depense d 
+            JOIN d.ligneBudgetaire p
+            WHERE
+            d.autoriserAB=true 
+            AND d.autoriserSG=true 
+            AND d.autoriserRecteur=true
+            AND p.anneebudgetprevision=:anneebudgetselect
+            AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
                 FROM App\Entity\Detaildepense dd ) 
             ');
-         $sqlOPAPayeDeux->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
-         $queryListOpAPayeDeux = $sqlOPAPayeDeux->getResult();
+        $sqlOPAPayeDeux->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+        }else{
+            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+                    $sqlOPAPayeDeux = $em->createQuery('SELECT d
+                FROM  App\Entity\Depense d 
+                JOIN d.ligneBudgetaire p
+                WHERE
+                    d.service=:ceservice
+                AND d.isCentralyzed=false
+                AND d.autoriserChefService=true
+                AND p.anneebudgetprevision=:anneebudgetselect
+                AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                        FROM App\Entity\Detaildepense dd ) 
+                    ');
+            }else{
+                $sqlOPAPayeDeux = $em->createQuery('SELECT d
+                FROM  App\Entity\Depense d 
+                JOIN d.ligneBudgetaire p
+                WHERE
+                    d.service=:ceservice
+                AND d.autoriserAB=true 
+                AND d.autoriserSG=true 
+                AND d.autoriserRecteur=true
+                AND p.anneebudgetprevision=:anneebudgetselect
+                AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                    FROM App\Entity\Detaildepense dd ) 
+                ');  
+        } 
+        $sqlOPAPayeDeux->setParameters(array('ceservice'=>$service, 'anneebudgetselect'=> $anneebudgetselect));
+        }
+        $queryListOpAPayeDeux = $sqlOPAPayeDeux->getResult();
 
-        // Lister NON signe 
-         $sqlOPNonSigne = $em->createQuery('SELECT d
-         FROM  App\Entity\Depense d 
-         JOIN d.ligneBudgetaire p
-         WHERE
-         d.autoriserAB=false 
-         OR d.autoriserSG=false 
-         OR d.autoriserRecteur=false
-         AND p.anneebudgetprevision=:anneebudgetselect
-         AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
-               FROM App\Entity\Detaildepense dd ) 
-           ');
-        $sqlOPNonSigne->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+
+
+
+
+
+         // Lister NON signe
+         if($service=='*'){    
+            $sqlOPNonSigne = $em->createQuery('SELECT d
+            FROM  App\Entity\Depense d 
+            JOIN d.ligneBudgetaire p
+            WHERE
+            d.autoriserAB=false 
+            AND d.autoriserSG=false 
+            AND d.autoriserRecteur=false
+            AND p.anneebudgetprevision=:anneebudgetselect
+            AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                FROM App\Entity\Detaildepense dd ) 
+            ');
+            $sqlOPNonSigne->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+        }else{
+            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+                $sqlOPNonSigne = $em->createQuery('SELECT d
+                FROM  App\Entity\Depense d 
+                JOIN d.ligneBudgetaire p
+                WHERE d.service=:ceservice
+                AND p.anneebudgetprevision=:anneebudgetselect
+                AND  d.isCentralyzed=false 
+                AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                    FROM App\Entity\Detaildepense dd ) 
+                    HAVING (CASE WHEN 
+                 d.autoriserChefService=false 
+                THEN FALSE ELSE  TRUE END)=FALSE
+                
+                ');
+            }else{
+                $sqlOPNonSigne = $em->createQuery('SELECT d
+                FROM  App\Entity\Depense d 
+                JOIN d.ligneBudgetaire p
+                WHERE d.service=:ceservice
+                AND d.isCentralyzed=true 
+                AND p.anneebudgetprevision=:anneebudgetselect
+                AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                    FROM App\Entity\Detaildepense dd ) 
+                    HAVING (CASE WHEN 
+                d.autoriserAB=false OR
+                d.autoriserSG=false OR
+                d.autoriserRecteur=false 
+                THEN FALSE ELSE  TRUE END)=FALSE
+                
+                ');
+
+            }
+            $sqlOPNonSigne->setParameters(array('ceservice'=>$service, 'anneebudgetselect'=> $anneebudgetselect));
+        
+            }
         $queryListOPNonSigne = $sqlOPNonSigne->getResult();
+
+
 
           // $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision');
           // $queryRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
@@ -218,6 +334,17 @@ class CaisseController extends AbstractController{
             $sqlSoldeCompte->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect));
            $querySoldeCompte = $sqlSoldeCompte->getResult();
 
+           $sqlSoldeCompteAutres = $em->createQuery('SELECT r as mesrecettes, 
+            sum(r.montantrecette) as montantrecette, 
+            p FROM  App\Entity\Recette r 
+            JOIN r.lignebudgetrecette p  
+            WHERE p.anneebudgetprevision=:anneebudgetselect 
+            group by p.id');
+            $sqlSoldeCompteAutres->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+           $querySoldeCompteAutres = $sqlSoldeCompteAutres->getResult();
+
+       
+
             $detaildepense->setDepenseId($depense);
             $frmDecaisser->handleRequest($request);
             if( $frmDecaisser->isSubmitted() &&  $frmDecaisser->isValid()){
@@ -238,7 +365,8 @@ class CaisseController extends AbstractController{
             'frmDecaisser'=> $frmDecaisser->createView(),
             'editMode'=> $detaildepense->getId()!==null,
             'queryListDetailSortie'=>$queryListDetailSortie,
-            'querySoldeCompte'=>$querySoldeCompte
+            'querySoldeCompte'=>$querySoldeCompte,
+            'querySoldeCompteAutres' =>$querySoldeCompteAutres
           ]);
         
     }
@@ -377,6 +505,20 @@ public function getAnalyse($error=null){
                         return $this->redirectToRoute('servireOp');  
                        }
    }
+
+   /**
+ * @Route("/sgb/caisse/selectdecaissercentrale", name="selectdecaissercentrale")
+ */
+public function fillDecaisserYears(Request $request){
+    
+    $em = $this->getDoctrine()->getManager();
+    $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
+    $services = $em->getRepository(Service::class)->findAll();
+    return $this->render('sgb/caisse/selectdecaissercentrale.html.twig',[
+                    'annees'=>$annees,
+                    'services'=> $services
+    ]);
+}
 
 
 }

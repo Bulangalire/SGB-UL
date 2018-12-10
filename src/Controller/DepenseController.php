@@ -543,6 +543,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                 WHERE
                     d.service=:ceservice
                 AND d.isCentralyzed=false
+                AND d.autoriserChefService=true
                 AND p.anneebudgetprevision=:anneebudgetselect
                 AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
                         FROM App\Entity\Detaildepense dd ) 
