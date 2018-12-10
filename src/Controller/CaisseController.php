@@ -65,9 +65,7 @@ class CaisseController extends AbstractController{
            HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
           $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
           $queryListOpAPaye = $sqlOPAPaye->getResult();
-         
-          dump($queryListOpAPaye);
-
+        
         // Lister deja signe mais non payé
           $sqlOPAPayeDeux = $em->createQuery('SELECT d
           FROM  App\Entity\Depense d 
@@ -98,13 +96,11 @@ class CaisseController extends AbstractController{
         $sqlOPNonSigne->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
         $queryListOPNonSigne = $sqlOPNonSigne->getResult();
 
-
-            dump($queryListOPNonSigne);
           // $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision');
           // $queryRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
           // $queryRecetteGlobale = $queryRecette->getResult();
-          return $this->render('sgb/caisse/lesOp.html.twig',['queryListOpAPaye' => $queryListOpAPaye,
-          
+          return $this->render('sgb/caisse/lesOP.html.twig',[
+          'queryListOpAPaye' => $queryListOpAPaye,
           'queryListOpAPayeDeux'=> $queryListOpAPayeDeux,
           'queryListOPNonSigne'=> $queryListOPNonSigne 
           ]);
@@ -157,9 +153,9 @@ class CaisseController extends AbstractController{
         }
         $anneebudgetselect= $session->get('anneeselectOp');
         $em = $this->getDoctrine()->getManager();
+     
         
-        dump( $anneebudgetselect);
-       // if($detaildepense->getId()!==null){
+
 
             $frmDecaisser = $this->createFormBuilder($detaildepense)
             ->add('lignebudgetdepense', EntityType::class, array(
@@ -225,8 +221,7 @@ class CaisseController extends AbstractController{
             $detaildepense->setDepenseId($depense);
             $frmDecaisser->handleRequest($request);
             if( $frmDecaisser->isSubmitted() &&  $frmDecaisser->isValid()){
-
-                dump($detaildepense);
+                
                 if($detaildepense->getMontantdetail() > $detaildepense->getDepenseId()->getSoldeDepense() ){
                   echo '<h5 style="color:red;">le montant est superière à celui qui reste !!!'. $detaildepense->getDepenseId()->getSoldeDepense() .' $</h5>' ;
 
