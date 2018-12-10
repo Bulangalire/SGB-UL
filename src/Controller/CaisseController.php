@@ -93,8 +93,7 @@ class CaisseController extends AbstractController{
                 FROM  App\Entity\Detaildepense dop 
                 JOIN dop.depenseId d 
                 JOIN dop.lignebudgetdepense p
-                WHERE 
-                    p.anneebudgetprevision=:anneebudgetselect
+                WHERE p.anneebudgetprevision=:anneebudgetselect
                 AND d.isCentralyzed=true
                 AND d.service=:ceservice
                 GROUP BY dop.depenseId 
@@ -290,15 +289,27 @@ class CaisseController extends AbstractController{
                 'class'  => Previsionbudget::class,
                 'placeholder'=>'Choisissez une ligne de Recette',
                 'query_builder'=>function(EntityRepository $er)use ($service, $anneebudgetselect){
+                    if( $this->isGranted('ROLE_COMPTE_FAC') ){
                     return $er->createQueryBuilder('p')
                                 ->join('p.lignebudgetprevision', 'l')
                                 ->where('l.categorieLigne=:thisCat')
                                 ->andWhere('p.service=:ceService')
                                 ->andWhere('p.anneebudgetprevision=:annee')
+                                //->having('p.recettes - recettesUtiliseesEnDepenses > 0')
                                 ->setParameter('thisCat', 'Recette')
                                 ->setParameter('ceService', $service)
                                 ->setParameter('annee', $anneebudgetselect);
-                            },
+                            }else{
+                                return $er->createQueryBuilder('p')
+                                ->join('p.lignebudgetprevision', 'l')
+                                ->where('l.categorieLigne=:thisCat')
+                                ->having('p.recettes - p.recettesUtiliseesEnDepenses > 0')
+                                ->setParameter('thisCat', 'Recette')
+                                ->andWhere('p.anneebudgetprevision=:annee')
+                                ->setParameter('annee', $anneebudgetselect);
+                                }
+
+                        },
                 'choice_label'=>'lignebudgetprevision.intituleLigne'))
             
             ->add('montantdetail', IntegerType::class, [
