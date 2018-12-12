@@ -289,14 +289,14 @@ class SgbController extends AbstractController
      * @Route("/sgb/personne/{id}/edit", name="personne_edit")
      * @Route("/sgb/personne/{id}/filtrer", name="personne_by_service")
      */
-    public function formpersonne(UserPasswordEncoderInterface $encoder, $id=null, PersonneRepository $personneRepository, Personne $unePersonne = null, Request $request, ObjectManager $manager){
+    public function formpersonne(UserPasswordEncoderInterface $encoder, Service $service =null, PersonneRepository $personneRepository, Personne $unePersonne = null, Request $request, ObjectManager $manager){
         if($this->getUser()===null) {              
             return $this->redirectToRoute('user_login');
            }
         if(!$unePersonne){
         $unePersonne= new Personne();
     }
-    
+   
     $em = $this->getDoctrine()->getManager();
     $service=$em->getRepository("\App\Entity\Service");
         $frmpersonne= $this->createFormBuilder( $unePersonne)
@@ -326,12 +326,11 @@ class SgbController extends AbstractController
                             //return $this->redirectToRoute('sgb_show', ['id' => $uneLigne->getId()]);
                         }
                     } 
-                    if($unePersonne->getId()==null || $id==null){
+                    
+                    if($unePersonne->getId()==null ||  $service==null){
                         $lesPersonnes = $personneRepository->findAll();  
                     }else{
-                        if($id!==null){
-                        $lesPersonnes = $personneRepository->findByServices($service->findById($id)); 
-                        }
+                        $lesPersonnes = $personneRepository->findByServices($unePersonne->getServices()->getId()); 
                     }
                           
             return $this->render('sgb/personne/personne.html.twig', [

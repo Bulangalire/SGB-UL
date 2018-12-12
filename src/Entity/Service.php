@@ -38,6 +38,11 @@ class Service
      */
     private $personnes;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Axeanalytique", inversedBy="services")
+     */
+    private $axeAnalytique;
+
     
 
     public function __construct()
@@ -114,6 +119,18 @@ class Service
                 $personne->setServices(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAxeAnalytique(): ?Axeanalytique
+    {
+        return $this->axeAnalytique;
+    }
+
+    public function setAxeAnalytique(?Axeanalytique $axeAnalytique): self
+    {
+        $this->axeAnalytique = $axeAnalytique;
 
         return $this;
     }

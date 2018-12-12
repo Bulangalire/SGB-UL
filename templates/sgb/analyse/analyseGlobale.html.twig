@@ -38,6 +38,28 @@
             {% set difference = date(dateFin | date()).diff(date(dateDebut)) %}
             {% set leftDays = difference.days %}
 
+            {% if leftDays == 364 %}
+                {% set leftDays = leftDays + 1 %}
+
+                {% elseif leftDays == 181 %}
+
+                {% set leftDays = leftDays + 1.5 %}
+
+                {% elseif leftDays == 211 %}
+
+                {% set leftDays = leftDays + 1.91 %}
+                {% elseif leftDays == 30 %}
+                {% set leftDays = leftDays + 0.41666 %}
+                {% elseif leftDays == 334 %}
+                {% set leftDays = leftDays + 1 %}
+                {% elseif leftDays == 303 %}
+                {% set leftDays = leftDays + 1 %}
+                {% elseif leftDays == 272 %}
+                {% set leftDays = leftDays + 1 %}
+                {% elseif leftDays == 242 %}
+                {% set leftDays = leftDays + 1 %}
+
+            {% endif %}
 
             {% set annee = app.session.get('datefinselect') | localizeddate('none', 'none', null, null, 'Y') %}
             {% set thisYear = date()|localizeddate('none', 'none', null, null, 'Y') %}
@@ -48,14 +70,14 @@
                 {% set annee = app.session.get('datedebutselect') | localizeddate('none', 'none', null, null, 'Y') %}
             {% endif %}
 
+            <!-- Année bixestulle non utilisee-->
             {% if IsLeapYear(annee) %}
-                {% set joursAnnee = 366 %}
+                {% set joursAnnee = 365 %}
             {% else %}
                 {% set joursAnnee = 365 %}
             {% endif %}
 
             {% for soldeParLigne in tblCaisse %}
-
                 <tr>
                     <th scope="row">
                         {% set numDepense = numDepense + 1 %}
@@ -72,12 +94,10 @@
                         {% set sousTotauxAnnuelRecette = sousTotauxAnnuelRecette + soldeParLigne.mesrecettes.lignebudgetrecette.montantprevision %}
                         {{soldeParLigne.mesrecettes.lignebudgetrecette.montantprevision|number_format(2, '.',',')}}
                     </td>
-
                     <td>
-                        
-                         {% set previsionPeriode = (soldeParLigne.mesrecettes.lignebudgetrecette.montantprevision / joursAnnee) * (leftDays | round(2, 'ceil')) %}
+                         {% set previsionPeriode = (soldeParLigne.mesrecettes.lignebudgetrecette.montantprevision / joursAnnee) * (leftDays) %}
                          {% set sousTotauxPeriodeRecette = sousTotauxPeriodeRecette + previsionPeriode %}
-                        {{ previsionPeriode|round(2, 'ceil')}}
+                        {{ previsionPeriode|number_format(2, '.',',')}}
                     </td>
 
                     <td>
@@ -87,7 +107,6 @@
                     <td>
                         {{ soldeParLigne.montantrecette - previsionPeriode|round(2, 'ceil') }}
                     </td>
-
                     <td>
                         {{  ((soldeParLigne.montantrecette * 100) / previsionPeriode)|round(2, 'ceil') }}{{" % "}}
                     </td>

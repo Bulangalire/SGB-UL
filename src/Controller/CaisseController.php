@@ -412,7 +412,7 @@ class CaisseController extends AbstractController{
         }
         $datefin =  $session->get('datefinselect');
 
-
+dump($datefin);
 
         if($this->dateDifference($datedebut ,  $datefin )){
             return $this->redirectToRoute('selectError', array(
@@ -457,8 +457,8 @@ class CaisseController extends AbstractController{
         JOIN r.lignebudgetrecette p  
         WHERE p.service=:userservice 
         AND p.anneebudgetprevision=:anneebudgetselect 
-        AND r.createAt BETWEEN :debut 
-        AND :fin group by p.id');
+        AND r.createAt >=:debut 
+        AND r.createAt <=:fin group by p.id');
         $queryMaCaisse->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
 
     }
