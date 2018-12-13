@@ -1,7 +1,7 @@
 {
-  "build/css/app.css": "http://localhost:8080/build/css/app.css",
-  "build/js/app.css": "http://localhost:8080/build/js/app.css",
-  "build/js/app.js": "http://localhost:8080/build/js/app.js",
-  "build/js/jquery.js": "http://localhost:8080/build/js/jquery.js",
-  "build/runtime.js": "http://localhost:8080/build/runtime.js"
+  "build/css/app.css": "/build/css/app.04353234.css",
+  "build/js/app.css": "/build/js/app.04353234.css",
+  "build/js/app.js": "/build/js/app.d9be0a03.js",
+  "build/js/jquery.js": "/build/js/jquery.c13d8d1c.js",
+  "build/runtime.js": "/build/runtime.6cf710cd.js"
 }

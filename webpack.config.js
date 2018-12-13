@@ -46,6 +46,5 @@ Encore
     // uncomment if you're having problems with a jQuery plugin
     .autoProvidejQuery()
 ;
-var config = Encore.getWebpackConfig();
-config.externals.jquery='jQuery'
-module.exports = config;
+module.exports = Encore.getWebpackConfig();
+
