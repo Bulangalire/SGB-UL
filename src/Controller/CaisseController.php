@@ -6,6 +6,7 @@ use App\Entity\Depense;
 use App\Entity\Service;
 use App\Entity\Personne;
 use App\Entity\Etatbesoin;
+use App\Entity\Axeanalytique;
 use App\Entity\Detaildepense;
 use App\Entity\Anneebudgetaire;
 use App\Entity\LigneBudgetaire;
@@ -325,35 +326,58 @@ class CaisseController extends AbstractController{
             ])
             
             ->getForm();
-            
-             $sqlDetailSortie = $em->createQuery('SELECT dop as lesdetails, d 
-             FROM  App\Entity\Detaildepense dop 
-             JOIN dop.depenseId d 
-             WHERE dop.depenseId=:depense
-            ');
-            $sqlDetailSortie->setParameters(array('depense'=> $depense==null? $detaildepense->getDepenseId()->getId(): $depense->getId()));
-            $queryListDetailSortie = $sqlDetailSortie->getResult();
- 
+            $querySoldeCompteAutres=null;
+            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+                $sqlDetailSortie = $em->createQuery('SELECT dop as lesdetails, d 
+                FROM  App\Entity\Detaildepense dop 
+                JOIN dop.depenseId d 
+                WHERE dop.depenseId=:depense
+                ');
+                $sqlDetailSortie->setParameters(array('depense'=> $depense==null? $detaildepense->getDepenseId()->getId(): $depense->getId()));
+                $queryListDetailSortie = $sqlDetailSortie->getResult();
+    
 
-            $sqlSoldeCompte = $em->createQuery('SELECT r as mesrecettes, 
-            sum(r.montantrecette) as montantrecette, 
-            p FROM  App\Entity\Recette r 
-            JOIN r.lignebudgetrecette p  
-            WHERE p.service=:userservice 
-            AND p.anneebudgetprevision=:anneebudgetselect 
-            group by p.id');
-            $sqlSoldeCompte->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect));
-           $querySoldeCompte = $sqlSoldeCompte->getResult();
+                $sqlSoldeCompte = $em->createQuery('SELECT r as mesrecettes, 
+                sum(r.montantrecette) as montantrecette, 
+                p FROM  App\Entity\Recette r 
+                JOIN r.lignebudgetrecette p  
+                WHERE p.service=:userservice 
+                AND p.anneebudgetprevision=:anneebudgetselect 
+                group by p.id');
+                $sqlSoldeCompte->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect));
+                $querySoldeCompte = $sqlSoldeCompte->getResult();
 
-           $sqlSoldeCompteAutres = $em->createQuery('SELECT r as mesrecettes, 
-            sum(r.montantrecette) as montantrecette, 
-            p FROM  App\Entity\Recette r 
-            JOIN r.lignebudgetrecette p  
-            WHERE p.anneebudgetprevision=:anneebudgetselect 
-            group by p.id');
-            $sqlSoldeCompteAutres->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
-           $querySoldeCompteAutres = $sqlSoldeCompteAutres->getResult();
 
+            }else{
+
+                $sqlDetailSortie = $em->createQuery('SELECT dop as lesdetails, d 
+                FROM  App\Entity\Detaildepense dop 
+                JOIN dop.depenseId d 
+                WHERE dop.depenseId=:depense
+                ');
+                $sqlDetailSortie->setParameters(array('depense'=> $depense==null? $detaildepense->getDepenseId()->getId(): $depense->getId()));
+                $queryListDetailSortie = $sqlDetailSortie->getResult();
+    
+
+                $sqlSoldeCompte = $em->createQuery('SELECT r as mesrecettes, 
+                sum(r.montantrecette) as montantrecette, 
+                p FROM  App\Entity\Recette r 
+                JOIN r.lignebudgetrecette p  
+                WHERE p.service=:userservice 
+                AND p.anneebudgetprevision=:anneebudgetselect 
+                group by p.id');
+                $sqlSoldeCompte->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect));
+                $querySoldeCompte = $sqlSoldeCompte->getResult();
+
+                $sqlSoldeCompteAutres = $em->createQuery('SELECT r as mesrecettes, 
+                sum(r.montantrecette) as montantrecette, 
+                p FROM  App\Entity\Recette r 
+                JOIN r.lignebudgetrecette p  
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                group by p.id');
+                $sqlSoldeCompteAutres->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+                $querySoldeCompteAutres = $sqlSoldeCompteAutres->getResult();
+            }
        
 
             $detaildepense->setDepenseId($depense);
@@ -393,12 +417,27 @@ class CaisseController extends AbstractController{
            }
           $anneebudgetselect= $session->get('anneeselect');
         
-        // Service
-        if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
+         // Service limité au rôle de l'utilisateur
+         if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') )
+         {
+             $session->set('servicesselect', $this->getUser()->getServices()->getId() );
+             $service= $session->get('servicesselect');
+         }else{
+             // Service accès compltet
+             if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') )
+             {
+                 $session->set('servicesselect',$request->request->get('services') );
+             }
+             $service= $session->get('servicesselect');
+         }
+        
+        // Axe
+         if($request->request->get('axe')!==null && $request->request->get('axe') <> $session->get('axeselect') ){
            
-            $session->set('servicesselect',$request->request->get('services') );
+            $session->set('axeselect',$request->request->get('axe') );
         }
-        $service= $session->get('servicesselect');
+        $axe= $session->get('axeselect');
+      
         // Période  
         // Début periode
         if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
@@ -412,8 +451,6 @@ class CaisseController extends AbstractController{
         }
         $datefin =  $session->get('datefinselect');
 
-dump($datefin);
-
         if($this->dateDifference($datedebut ,  $datefin )){
             return $this->redirectToRoute('selectError', array(
                 'error'=>'error'
@@ -422,22 +459,23 @@ dump($datefin);
 
 
         $em = $this->getDoctrine()->getManager();
+        if($service!==""){
         if($service=='*'){
             $queryMaCaisse = $em->createQuery('SELECT r as mesrecettes, 
             sum(r.montantrecette) as montantrecette, p 
             FROM  App\Entity\Recette r 
             JOIN r.lignebudgetrecette p
             WHERE p.anneebudgetprevision=:anneebudgetselect 
-            AND r.createAt BETWEEN :debut 
-            AND :fin group by p.id ORDER BY p.service ASC');
+            AND r.createAt >=:debut  
+            AND r.createAt <=:fin group by p.id ORDER BY p.service ASC');
             $queryMaCaisse->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
 
             $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense 
             FROM   App\Entity\Detaildepense d 
             JOIN d.lignebudgetdepense p 
             WHERE p.anneebudgetprevision=:anneebudgetselect 
-            AND d.createAt BETWEEN :debut 
-            AND :fin 
+            AND d.createAt >=:debut 
+            AND d.createAt <=:fin 
             group by p.id ORDER BY p.service ASC');
             $queryDepense->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
     }else{
@@ -446,8 +484,8 @@ dump($datefin);
             JOIN d.lignebudgetdepense p 
             WHERE  p.service=:userservice 
             AND p.anneebudgetprevision=:anneebudgetselect 
-            AND d.createAt BETWEEN :debut 
-            AND :fin 
+            AND d.createAt >=:debut  
+            AND d.createAt <=:fin
             group by p.id ORDER BY p.service ASC');
             $queryDepense->setParameters(array('userservice' =>$service,'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
 
@@ -462,6 +500,52 @@ dump($datefin);
         $queryMaCaisse->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
 
     }
+}elseif($axe!==""){
+    if($axe=='*'){
+        $queryMaCaisse = $em->createQuery('SELECT r as mesrecettes, 
+        sum(r.montantrecette) as montantrecette, p 
+        FROM  App\Entity\Recette r 
+        JOIN r.lignebudgetrecette p
+        WHERE p.anneebudgetprevision=:anneebudgetselect 
+        AND r.createAt >=:debut  
+        AND r.createAt <=:fin group by p.id ORDER BY p.service ASC');
+        $queryMaCaisse->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+
+        $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense 
+        FROM   App\Entity\Detaildepense d 
+        JOIN d.lignebudgetdepense p 
+        WHERE p.anneebudgetprevision=:anneebudgetselect 
+        AND d.createAt >=:debut 
+        AND d.createAt <=:fin 
+        group by p.id ORDER BY p.service ASC');
+        $queryDepense->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+}else{
+    $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense 
+        FROM   App\Entity\Detaildepense d 
+        JOIN d.lignebudgetdepense p 
+        JOIN  p.service s
+        WHERE  s.axeAnalytique=:axeAnalytique 
+        AND p.anneebudgetprevision=:anneebudgetselect 
+        AND d.createAt >=:debut  
+        AND d.createAt <=:fin
+        group by p.id ORDER BY p.service ASC');
+        $queryDepense->setParameters(array('axeAnalytique' =>$axe,'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+
+    $queryMaCaisse = $em->createQuery('SELECT r as mesrecettes, 
+    sum(r.montantrecette) as montantrecette, 
+    p FROM  App\Entity\Recette r 
+    JOIN r.lignebudgetrecette p  
+    JOIN  p.service s
+    WHERE s.axeAnalytique=:axeAnalytique 
+    AND p.anneebudgetprevision=:anneebudgetselect 
+    AND r.createAt >=:debut 
+    AND r.createAt <=:fin group by p.id');
+    $queryMaCaisse->setParameters(array('axeAnalytique' =>$axe, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+
+}
+
+}
+    
         $maCaisse = $queryMaCaisse->getResult();
         $mesDepense = $queryDepense->getResult();
         return $this->render('sgb/analyse/analyseGlobale.html.twig',[
@@ -493,10 +577,12 @@ public function getAnalyse($error=null){
      }
      $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
      $services = $em->getRepository(Service::class)->findAll();
+     $axes = $em->getRepository(Axeanalytique::class)->findAll();
      //$twig->addExtension(new Twig_Extensions_Extension_Date());
      return $this->render('sgb/analyse/selectAnalyse.html.twig',[
                      'annees'=>$annees,
                      'services'=> $services,
+                     'axes'=> $axes,
                      'error'=>$error
      ]);
  }

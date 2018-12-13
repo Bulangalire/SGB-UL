@@ -160,13 +160,13 @@
 
                     <td>
                         {% set previsionPeriodeDepense = (depenseBudget.mesdep.lignebudgetdepense.montantprevision / joursAnnee) * (leftDays | round(2, 'ceil')) %}
-                        {{ previsionPeriodeDepense|round(2, 'ceil')}}
+                        {{ previsionPeriodeDepense|number_format(2, '.',',')}}
                          {% set sousTotauxPeriodeDepense = sousTotauxPeriodeDepense + previsionPeriodeDepense  %}
                         
                     </td>
 
                     <td>
-                        {{depenseBudget.sommedepense |number_format(2, '.',',')}}
+                        {{depenseBudget.sommedepense|number_format(2, '.',',')}}
                         {% set sousTotauxRealisationDepense = sousTotauxRealisationDepense + depenseBudget.sommedepense %}
                     </td>
                     <td>

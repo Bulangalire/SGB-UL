@@ -45,7 +45,7 @@
                         <option value="{{service.id}}">{{service.designation}}</option>
                     {% endfor %}
                 </select>
-                {% else %}
+                {% elseif is_granted('ROLE_COMPTABILITE') or is_granted('ROLE_ADMIN')  %}
                 <select required="required" name="services" class="form-control">
                     <option value="{{app.user.services.id}}">{{app.user.services.designation}}
                     </option>

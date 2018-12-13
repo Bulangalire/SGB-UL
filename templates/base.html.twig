@@ -67,9 +67,9 @@
                     </li>
                      {% endif %}
 
-                     {% if (is_authorized(app.user, "Plan"))   %}
+                     {% if (is_authorized(app.user, "Analyse"))   %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{path('selectAnalyse')}}">Plan</a>
+                        <a class="nav-link" href="{{path('selectAnalyse')}}">Analyse</a>
                     </li>
                      {% endif %}
 
@@ -143,8 +143,8 @@
        <script type="text/javascript" src="{{ asset('build/js/app.js') }}"></script>
        <script src="{{ asset('build/runtime.js') }}"></script>
          <script type="text/javascript">
-           /* $(document).ready(function () {
-                var $ = require('jquery')
+             $(document).ready(function () {
+                //var $ = require('jquery')
                 var theHREF;
 
                 $(".confirmModalLink").click(function(e) {
@@ -160,7 +160,7 @@
                 $("#confirmModalYes").click(function(e) {
                     window.location.href = theHREF;
                 });
-            });*/
+            });
         </script>
         
         

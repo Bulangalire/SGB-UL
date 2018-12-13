@@ -528,7 +528,8 @@ class SgbController extends AbstractController
                 'query_builder'=>function(EntityRepository $er) use ( $categorie){
                     return $er->createQueryBuilder('u')
                                 ->where('u.categorieLigne=:thisCat')
-                                ->setParameter('thisCat', $categorie);
+                                ->setParameter('thisCat', $categorie)
+                                ->orderBy('u.intituleLigne', 'ASC');
                 },
                 'choice_label'=>'intituleLigne'))
   
@@ -562,7 +563,6 @@ class SgbController extends AbstractController
                 $resultatLigneParService = $queryLigneRecetteParService->execute(); 
 
                     if( $formPrevision->isSubmitted() &&  $formPrevision->isValid()){
-                       
                         if($prevision->getService()==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
                             $prevision->setService($user->getServices());
                          }

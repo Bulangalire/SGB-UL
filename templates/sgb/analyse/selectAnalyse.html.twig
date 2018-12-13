@@ -44,12 +44,21 @@
                     {% endfor %}
                 </select>
                 {% else %}
-                <select required="required" name="services" class="form-control">
-                    <option value="{{app.user.services.id}}">{{app.user.services.designation}}
-                    </option>
+                 <h5>Par Service</h5>
+                <select name="services" class="form-control">
+                    <option ></option>
                     <option value="*">Tous</option>
                     {% for service in services %}
                         <option value="{{service.id}}">{{service.designation}}</option>
+                    {% endfor %}
+                </select>
+               <hr>
+               <h5>Ou par Axe analytique</h5>
+               <select name="axe" class="form-control">
+                    <option ></option>
+                    <option value="*">Tous</option>
+                    {% for axe in axes %}
+                        <option value="{{axe.id}}">{{axe.designation}}</option>
                     {% endfor %}
                 </select>
                  {% endif %}

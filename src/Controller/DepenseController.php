@@ -626,6 +626,99 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                 'queryListOPNonSigne'=> $queryListOPNonSigne 
           ]);
         }
+
+        /**
+         * @Route("/sgb/depense/etatCaisse", name="caisse_par_service")
+         */
+        public function etatCaisse(Service $service=null, Depense $depense=null, Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
+
+        
+            // Service
+        if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+            $session->set('servicesselectOp', $this->getUser()->getServices()->getId() );
+            $service= $session->get('servicesselectOp');
+            }else{
+            // Service
+            if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselectOp') ){
+                $session->set('servicesselectOp',$request->request->get('services') );
+            }
+            $service= $session->get('servicesselectOp');
+            }
+
+
+            // Année budgetaire
+            if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselectOp') ){
+                $session->set('anneeselectOp', $request->request->get('annees') );
+            }
+            $anneebudgetselect= $session->get('anneeselectOp');
+
+
+
+            $em = $this->getDoctrine()->getManager();
+          
+            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+                $sqlDetailSortieParLigne = $em->createQuery('SELECT dop as lesdetails,p
+                FROM  App\Entity\Detaildepense dop 
+                JOIN dop.lignebudgetsource p
+                WHERE  p.anneebudgetprevision=:anneebudgetselect
+                AND p.service=:service
+               ');
+               $sqlDetailSortieParLigne->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'service'=>$service));
+             
+                $sqlSoldeCompte = $em->createQuery('SELECT r as mesrecettes, 
+                sum(r.montantrecette) as montantrecette, 
+                p FROM  App\Entity\Recette r 
+                JOIN r.lignebudgetrecette p  
+                WHERE p.service=:userservice 
+                AND p.anneebudgetprevision=:anneebudgetselect 
+                group by p.id');
+                $sqlSoldeCompte->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect));
+
+                $queryListDetailSortieParLigne = $sqlDetailSortieParLigne->getResult();
+                $querySoldeCompte = $sqlSoldeCompte->getResult();
+                return $this->render('sgb/depense/etatCaisse.html.twig',[
+                 
+                 'queryListDetailSortieParLigne'=>$queryListDetailSortieParLigne,
+                 'querySoldeCompte'=>$querySoldeCompte
+               ]);
+             
+            }else{
+            $sqlDetailSortieParLigne = $em->createQuery('SELECT dop as lesdetails,p
+            FROM  App\Entity\Detaildepense dop 
+            JOIN dop.lignebudgetsource p
+            WHERE  p.anneebudgetprevision=:anneebudgetselect
+           ');
+           $sqlDetailSortieParLigne->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+          
+           $sqlSoldeCompte = $em->createQuery('SELECT r as mesrecettes, 
+            sum(r.montantrecette) as montantrecette, 
+            p FROM  App\Entity\Recette r 
+            JOIN r.lignebudgetrecette p  
+            WHERE p.service=:userservice 
+            AND p.anneebudgetprevision=:anneebudgetselect 
+            group by p.id');
+            $sqlSoldeCompte->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect));
+         
+            $sqlSoldeCompteAutres = $em->createQuery('SELECT r as mesrecettes, 
+            sum(r.montantrecette) as montantrecette, 
+            p FROM  App\Entity\Recette r 
+            JOIN r.lignebudgetrecette p  
+            WHERE p.anneebudgetprevision=:anneebudgetselect 
+            group by p.id');
+            $sqlSoldeCompteAutres->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+
+            $queryListDetailSortieParLigne = $sqlDetailSortieParLigne->getResult();
+            $querySoldeCompte = $sqlSoldeCompte->getResult();
+            $querySoldeCompteAutres = $sqlSoldeCompteAutres->getResult();
+            return $this->render('sgb/depense/etatCaisse.html.twig',[
+             
+             'queryListDetailSortieParLigne'=>$queryListDetailSortieParLigne,
+             'querySoldeCompte'=>$querySoldeCompte,
+             'querySoldeCompteAutres' =>$querySoldeCompteAutres
+           ]);
+        }
+         
+        }
 /**
  * @Route("/sgb/depense/selectparametersLesOpDepense", name="selectparametersLesOpDepense")
  */
