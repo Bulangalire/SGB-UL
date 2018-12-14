@@ -18,7 +18,6 @@ Encore
      * and one CSS file (e.g. app.css) if you JavaScript imports CSS.
      */ 
     .addEntry('js/app', './assets/js/app.js')
-    .addEntry('js/jquery', './assets/js/jquery.js')
     .addStyleEntry('css/app', './assets/scss/app.scss')
     // will require an extra script tag for runtime.js
     // but, you probably want this, unless you're building a single-page app
@@ -44,7 +43,11 @@ Encore
     //.enableTypeScriptLoader()
  
     // uncomment if you're having problems with a jQuery plugin
-    .autoProvidejQuery()
+   .autoProvidejQuery({
+    'window.jQuery': 'jquery',
+      $: "jquery",
+      jQuery: "jquery"
+    })
 ;
 module.exports = Encore.getWebpackConfig();
 
