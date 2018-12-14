@@ -68,6 +68,26 @@ class AppExtension extends AbstractExtension
     public function IsLeapYear($Year) {
         return ((($Year & 3) == 0) && (($Year % 100 != 0) || ($Year % 400 == 0)));
        }
+
+
+
+    public function getFilters()
+    {
+        return array(
+            new \Twig_SimpleFilter('chart', array($this, 'chartFilter')),
+        );
+    }
+
+    public function chartFilter($items, $key = 'intituleLigne')
+    {
+        $output = [];
+        foreach ($items as $item) {
+            if(array_key_exists($key, $item)) {
+                $output[] = $item[$key];
+            }   
+        }    
+        return json_encode($output);
+    }
        
     
 }
