@@ -17,4 +17,5 @@ return [
     Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle::class => ['dev' => true, 'test' => true],
     Omines\DataTablesBundle\DataTablesBundle::class => ['all' => true],
     Symfony\WebpackEncoreBundle\WebpackEncoreBundle::class => ['all' => true],
+    Mukadi\ChartJSBundle\MukadiChartJSBundle::class => ['all' => true],
 ];

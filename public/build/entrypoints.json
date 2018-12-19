@@ -9,6 +9,24 @@
         "/build/js/app.css"
       ]
     },
+    "js/moment": {
+      "js": [
+        "/build/runtime.js",
+        "/build/js/moment.js"
+      ]
+    },
+    "js/chartDetailRecette": {
+      "js": [
+        "/build/runtime.js",
+        "/build/js/chartDetailRecette.js"
+      ]
+    },
+    "js/chartPrevision": {
+      "js": [
+        "/build/runtime.js",
+        "/build/js/chartPrevision.js"
+      ]
+    },
     "css/app": {
       "js": [
         "/build/runtime.js"

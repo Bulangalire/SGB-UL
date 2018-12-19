@@ -119,6 +119,12 @@
     "monolog/monolog": {
         "version": "1.23.0"
     },
+    "mukadi/chartjs-builder": {
+        "version": "1.0.3"
+    },
+    "mukadi/chartjs-bundle": {
+        "version": "1.0.2"
+    },
     "nikic/php-parser": {
         "version": "v4.1.0"
     },

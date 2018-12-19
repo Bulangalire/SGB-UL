@@ -9,7 +9,7 @@
       
         {% block stylesheets %}
 
-       {{ encore_entry_link_tags('js/app') }}
+     
        <link rel="stylesheet" href= {{ asset('build/css/app.css') }}>
         {% endblock %}
     </head>
@@ -139,34 +139,10 @@
         </div>
          
          {% block javascripts %}      
-         {{ encore_entry_script_tags('js/app') }}
+        
        <script type="text/javascript" src="{{ asset('build/js/app.js') }}"></script>
        <script src="{{ asset('build/runtime.js') }}"></script>
-      
-       <script>
             
-           /*$(document).ready(function () {
-                //var $ = require('jquery')
-                var theHREF;
-
-                $(".confirmModalLink").click(function(e) {
-                    e.preventDefault();
-                    theHREF = $(this).attr("href");
-                    $("#confirmModal").modal("show");
-                });
-
-                $("#confirmModalNo").click(function(e) {
-                    $("#confirmModal").modal("hide");
-                });
-
-                $("#confirmModalYes").click(function(e) {
-                    window.location.href = theHREF;
-                });
-            });
-
-
-       */
-       </script>
         {% endblock %}
     </body>
 </html>

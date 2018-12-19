@@ -84,10 +84,12 @@
                         </thead>
                         <tbody>
                         {% set totalPrevision = 0 %}
+                         {% set labelsNum = 0 %}
                             {% for prevision in previsions %}
                                 <tr>
                                     <th scope="row">{{prevision.id}}</th>
                                     <td>{{prevision.nom}}</td>
+                                    {% set labelsNum = labelsNum +1 %}
                                     <td>{{prevision.intituleLigne}}</td>
                                     <td>{{prevision.designation}}</td>
                                     <td>{{prevision.anneebudget}}</td>
@@ -141,8 +143,10 @@
                                 <td></td>
                             </tr>
                              <tr>
+                            
                 <td colspan="4">
-                    <canvas id="myChart" width="200" height="200"></canvas>
+                    <canvas id="myCanvas" width="400" height="400" data-montant="{{chartData(previsions, 'montantprevision')|e('html_attr')}}" data-ligne="{{chart(previsions, 'intituleLigne')|e('html_attr')}}"></canvas>
+                
                 </td>
             </tr>
                         </tbody>
@@ -155,4 +159,8 @@
 
         </tbody>
     </table>
+{% endblock %}
+ {% block javascripts %}
+{{ parent() }}
+ <script type="text/javascript" src="{{ asset('build/js/chartPrevision.js') }}"></script>
 {% endblock %}

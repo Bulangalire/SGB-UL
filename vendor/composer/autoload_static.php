@@ -105,6 +105,8 @@ class ComposerStaticInit951113f29838caf8622a5ab65fb03540
         ),
         'M' => 
         array (
+            'Mukadi\\Chart\\' => 13,
+            'Mukadi\\ChartJSBundle\\' => 21,
             'Monolog\\' => 8,
         ),
         'F' => 
@@ -412,6 +414,14 @@ class ComposerStaticInit951113f29838caf8622a5ab65fb03540
         'Omines\\DataTablesBundle\\' => 
         array (
             0 => __DIR__ . '/..' . '/omines/datatables-bundle/src',
+        ),
+        'Mukadi\\Chart\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mukadi/chartjs-builder/src',
+        ),
+        'Mukadi\\ChartJSBundle\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mukadi/chartjs-bundle',
         ),
         'Monolog\\' => 
         array (

@@ -44,6 +44,9 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Mukadi\Chart\Utils\RandomColorFactory;
+use Mukadi\Chart\Chart;
 
 class SgbController extends AbstractController
 {
@@ -580,8 +583,6 @@ class SgbController extends AbstractController
                             }
                     }
                    
-                   //$serviceuser=$this->getUser()->getServices()->getId();
-                   
                    
         return $this->render('sgb/prevision/prevision.html.twig', [
                          'formPrevision'=>$formPrevision->createView(),
@@ -827,9 +828,23 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
     
                                 }
                             }
-    $queryDetailRecette = $em->createQuery('SELECT r as mesrecettes, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision');
+    $queryDetailRecette = $em->createQuery(
+        '
+        SELECT 
+            r.id,
+            r.libelle, 
+            r.montantrecette, 
+            r.createAt,
+            u.nom,
+            l.intituleLigne
+        FROM  
+             App\Entity\Recette r
+             LEFT JOIN  App\Entity\Personne u WITH r.utilisateur = u.id 
+             LEFT JOIN App\Entity\Previsionbudget p WITH r.lignebudgetrecette = p.id 
+             LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
+             WHERE p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision');
     $queryDetailRecette->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'idPrevision'=>$recette->getLignebudgetrecette() ));
-    $resultatDetailRecette = $queryDetailRecette->getResult();
+    $resultatDetailRecette = $queryDetailRecette->execute();
 
     return $this->render('sgb/recette/detailRecette.html.twig',[
         'formDetailRecette'=>$formDetailRecette->createView(), 'resultatDetailRecette'=> $resultatDetailRecette 

@@ -72,6 +72,8 @@ return array(
     'PhpCsFixer\\' => array($vendorDir . '/friendsofphp/php-cs-fixer/src'),
     'PackageVersions\\' => array($vendorDir . '/ocramius/package-versions/src/PackageVersions'),
     'Omines\\DataTablesBundle\\' => array($vendorDir . '/omines/datatables-bundle/src'),
+    'Mukadi\\Chart\\' => array($vendorDir . '/mukadi/chartjs-builder/src'),
+    'Mukadi\\ChartJSBundle\\' => array($vendorDir . '/mukadi/chartjs-bundle'),
     'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),
     'Fig\\Link\\' => array($vendorDir . '/fig/link-util/src'),
     'Faker\\' => array($vendorDir . '/fzaninotto/faker/src/Faker'),

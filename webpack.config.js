@@ -18,6 +18,9 @@ Encore
      * and one CSS file (e.g. app.css) if you JavaScript imports CSS.
      */ 
     .addEntry('js/app', './assets/js/app.js')
+    .addEntry('js/moment', './assets/js/moment.js')
+    .addEntry('js/chartDetailRecette', './assets/js/chartDetailRecette.js')
+    .addEntry('js/chartPrevision', './assets/js/chartPrevision.js')
     .addStyleEntry('css/app', './assets/scss/app.scss')
     // will require an extra script tag for runtime.js
     // but, you probably want this, unless you're building a single-page app

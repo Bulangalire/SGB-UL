@@ -22,7 +22,9 @@ class AppExtension extends AbstractExtension
         return array(
             new TwigFunction('converssion', array($this, 'converter')),  
             new TwigFunction('IsLeapYear', array($this, 'IsLeapYear')),
-            new TwigFunction('is_authorized', array($this, 'is_authorized'))
+            new TwigFunction('is_authorized', array($this, 'is_authorized')),
+            new TwigFunction('chart', array($this, 'chartFilter')),
+            new TwigFunction('chartData', array($this, 'chartFilterData')),
         );
     }
 
@@ -71,14 +73,20 @@ class AppExtension extends AbstractExtension
 
 
 
-    public function getFilters()
-    {
-        return array(
-            new \Twig_SimpleFilter('chart', array($this, 'chartFilter')),
-        );
-    }
+ 
 
-    public function chartFilter($items, $key = 'intituleLigne')
+    public function chartFilter($items, $key)
+    {
+       // if($items[0]=0)
+        $output = [];
+        foreach ($items as $item) {
+            if(array_key_exists($key, $item)) {
+                $output[] = $item[$key];
+            }   
+        }    
+        return json_encode($output);
+    }
+    public function chartFilterData($items, $key)
     {
         $output = [];
         foreach ($items as $item) {

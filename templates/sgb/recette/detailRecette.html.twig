@@ -25,7 +25,7 @@
                         <thead>
                             <tr class="table-primary">
                                 <th colspan='8'>
-                                    Detail de la ligne  : {{ resultatDetailRecette[0].mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne }} &nbsp; &nbsp; total : {{ resultatDetailRecette[0].mesrecettes.lignebudgetrecette.recettes }} ( {{converssion(resultatDetailRecette[0].mesrecettes.lignebudgetrecette.recettes ,"USD")}})</th>
+                                    Detail de la ligne  : {{ resultatDetailRecette[0].intituleLigne }}</th>
                             </tr>
                             <tr>
                                 <th scope="col">Code</th>
@@ -46,25 +46,25 @@
                                         {{num}}
                                     </td>
                                     <td>
-                                        {{ recette.mesrecettes.libelle }}
+                                        {{ recette.libelle }}
                                     </td>
                                    
                                     <td>
-                                         {{recette.mesrecettes.utilisateur.nom}}
+                                         {{recette.nom}}
                                        
                                     </td>
                                     <td>
-                                        {{recette.mesrecettes.createAt |date('d/m/Y')}}
+                                        {{recette.createAt |date('d/m/Y')}}
                                        
                                     </td>
 
                                     <td>
-                                       {{recette.mesrecettes.montantrecette}}
+                                       {{recette.montantrecette}}
                                     </td>
 
                                     <td>
                                                                                   
-                                          <a href="{{path('edit_recette', {'id':recette.mesrecettes.id})}}"><img src="{{ asset("/img/edit.png")}}" alt="Modifier"></a> 
+                                          <a href="{{path('edit_recette', {'id':recette.id})}}"><img src="{{ asset("/img/edit.png")}}" alt="Modifier"></a> 
                                 
 
                                     </td>
@@ -81,7 +81,20 @@
                                 <td></td>
                                 
                             </tr>
+                            <tr>
+                            
+                                <td>
+                                    <!--
+                                    <canvas id="myDetailRecette" width="400" height="400" 
+                                    data-montantrecette="{{chartData(resultatDetailRecette, 'montantrecette')}}" 
+                                    data-daterecette="{{chart(resultatDetailRecette, 'createAt')}}"></canvas> -->
 
+                                    <canvas id="mesRecettes" width="400" height="400" 
+                                    data-recettes="{{resultatDetailRecette|json_encode}}"></canvas>
+
+
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
 
@@ -91,4 +104,10 @@
 
         </tbody>
     </table>
+{% endblock %}
+ {% block javascripts %}
+{{ parent() }}
+<script type="text/javascript" src="{{ asset('build/js/moment.js') }}"></script>
+ <script type="text/javascript" src="{{ asset('build/js/chartDetailRecette.js') }}"></script>
+
 {% endblock %}
