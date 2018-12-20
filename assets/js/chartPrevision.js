@@ -1,8 +1,9 @@
 $(document).ready(function () {
-
+    
 var montantprevision = $("#myCanvas").data('montant');
 var intituleLigne = $("#myCanvas").data('ligne');
 var ctx = $("#myCanvas");
+
 chartPrevisions("Les previsions ", montantprevision, intituleLigne, ctx,'pie');
 
 /*
@@ -116,13 +117,6 @@ function chartPrevisions(titre, montantprevision, intituleLigne, ctx, typeChart)
                 display:true,
                 text: titre,
                 fontSize:25
-            },
-            legend:{
-                display:true,
-                position:'right',
-                labels:{
-                    fontColor:'#777',
-                }
             },
             layaout:{
                 padding:{

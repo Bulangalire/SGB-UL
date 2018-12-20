@@ -6,9 +6,13 @@ $(document).ready(function () {
     //chartDetailRecette("Recette", montantrecette, daterecette, ctxrecette,'bar');
    // console.log(daterecette = $("#myDetailRecette").data('daterecette'));
 
+   function newDate(days) {
+    return moment().add(days, 'd');
+  }
+
     Date.prototype.formatMMDDYYYY = function() {
-        return (this.getMonth() ) +
-        "/" +  this.getDate() +
+        return (this.getDate() ) +
+        "/" +  this.getMonth() +
         "/" +  this.getFullYear();
     }
     myRecettes=$("#mesRecettes").data('recettes');
@@ -16,9 +20,9 @@ $(document).ready(function () {
         // Split timestamp and data into separate arrays
         var labels = [], data=[];
         myRecettes.forEach(function(recette) {
-          labels.push(recette.createAt['date']);
+          labels.push(new Date(recette.createAt['date']));
           data.push(parseFloat(recette.montantrecette));
-          console.log(recette.createAt['date']);
+          console.log(new Date(recette.createAt['date']));
 
         });
     
@@ -41,7 +45,7 @@ $(document).ready(function () {
     
         // Instantiate a new chart
         //var myLineChart = new Chart(ctx).$(tempData);
-        chartRecette('mes Recettes', tempData, ctx, 'bar')
+        chartRecette('Recettes', tempData, ctx, 'line')
      
 });
     
@@ -61,13 +65,6 @@ function chartRecette(titre, tempData, ctx, typeChart){
                 text: titre,
                 fontSize:25
             },
-            legend:{
-                display:true,
-                position:'right',
-                labels:{
-                    fontColor:'#777',
-                }
-            },
             layaout:{
                 padding:{
                     left:50,
@@ -77,14 +74,17 @@ function chartRecette(titre, tempData, ctx, typeChart){
                 }
             },
             tooltips:{
-                enabled:true
+                enabled:false
             },
             scales: {
-                yAxes: [{
-                    valueFormatString: "#,###"
-                }],
+               
                 xAxes: [{
-                    valueFormatString: "DD-MMM" ,
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            quarter: 'MMM YYYY'
+                        }
+                    }
                 }]
             },
     

@@ -143,7 +143,6 @@
                                 <td></td>
                             </tr>
                              <tr>
-                            
                 <td colspan="4">
                     <canvas id="myCanvas" width="400" height="400" data-montant="{{chartData(previsions, 'montantprevision')|e('html_attr')}}" data-ligne="{{chart(previsions, 'intituleLigne')|e('html_attr')}}"></canvas>
                 
@@ -162,5 +161,6 @@
 {% endblock %}
  {% block javascripts %}
 {{ parent() }}
+<script type="text/javascript" src="{{ asset('build/js/moment.js') }}"></script>
  <script type="text/javascript" src="{{ asset('build/js/chartPrevision.js') }}"></script>
 {% endblock %}
