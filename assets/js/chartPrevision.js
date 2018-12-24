@@ -113,6 +113,10 @@ function chartPrevisions(titre, montantprevision, intituleLigne, ctx, typeChart)
         type: typeChart,
         data: pieData,
         options: {
+            legend:{
+                position:'bottom' 
+
+            },
             title:{
                 display:true,
                 text: titre,
@@ -129,7 +133,6 @@ function chartPrevisions(titre, montantprevision, intituleLigne, ctx, typeChart)
             tooltips:{
                 enabled:true
             },
-    
         }
       });
     

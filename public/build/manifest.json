@@ -1,9 +1,9 @@
 {
-  "build/css/app.css": "/build/css/app.04353234.css",
-  "build/js/app.css": "/build/js/app.04353234.css",
-  "build/js/app.js": "/build/js/app.8e05a935.js",
-  "build/js/chartDetailRecette.js": "/build/js/chartDetailRecette.6b1222dd.js",
-  "build/js/chartPrevision.js": "/build/js/chartPrevision.d684ffe0.js",
-  "build/js/moment.js": "/build/js/moment.4988c085.js",
-  "build/runtime.js": "/build/runtime.6cf710cd.js"
+  "build/css/app.css": "/build/css/app.css",
+  "build/js/app.css": "/build/js/app.css",
+  "build/js/app.js": "/build/js/app.js",
+  "build/js/chartDetailRecette.js": "/build/js/chartDetailRecette.js",
+  "build/js/chartPrevision.js": "/build/js/chartPrevision.js",
+  "build/js/moment.js": "/build/js/moment.js",
+  "build/runtime.js": "/build/runtime.js"
 }

@@ -2,37 +2,37 @@
   "entrypoints": {
     "js/app": {
       "js": [
-        "/build/runtime.6cf710cd.js",
-        "/build/js/app.8e05a935.js"
+        "/build/runtime.js",
+        "/build/js/app.js"
       ],
       "css": [
-        "/build/js/app.04353234.css"
+        "/build/js/app.css"
       ]
     },
     "js/moment": {
       "js": [
-        "/build/runtime.6cf710cd.js",
-        "/build/js/moment.4988c085.js"
+        "/build/runtime.js",
+        "/build/js/moment.js"
       ]
     },
     "js/chartDetailRecette": {
       "js": [
-        "/build/runtime.6cf710cd.js",
-        "/build/js/chartDetailRecette.6b1222dd.js"
+        "/build/runtime.js",
+        "/build/js/chartDetailRecette.js"
       ]
     },
     "js/chartPrevision": {
       "js": [
-        "/build/runtime.6cf710cd.js",
-        "/build/js/chartPrevision.d684ffe0.js"
+        "/build/runtime.js",
+        "/build/js/chartPrevision.js"
       ]
     },
     "css/app": {
       "js": [
-        "/build/runtime.6cf710cd.js"
+        "/build/runtime.js"
       ],
       "css": [
-        "/build/css/app.04353234.css"
+        "/build/css/app.css"
       ]
     }
   }

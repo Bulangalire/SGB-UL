@@ -6,13 +6,8 @@ $(document).ready(function () {
     //chartDetailRecette("Recette", montantrecette, daterecette, ctxrecette,'bar');
    // console.log(daterecette = $("#myDetailRecette").data('daterecette'));
 
-   function newDate(days) {
-    return moment().add(days, 'd');
-  }
-
     Date.prototype.formatMMDDYYYY = function() {
-        return (this.getDate() ) +
-        "/" +  this.getMonth() +
+        return (this.getMonth() + 1) +
         "/" +  this.getFullYear();
     }
     myRecettes=$("#mesRecettes").data('recettes');
@@ -20,9 +15,9 @@ $(document).ready(function () {
         // Split timestamp and data into separate arrays
         var labels = [], data=[];
         myRecettes.forEach(function(recette) {
-          labels.push(new Date(recette.createAt['date']));
+          labels.push(new Date(recette.createAt['date']).formatMMDDYYYY());
           data.push(parseFloat(recette.montantrecette));
-          console.log(new Date(recette.createAt['date']));
+          console.log(new Date(recette.createAt['date']).formatMMDDYYYY());
 
         });
     
@@ -30,13 +25,22 @@ $(document).ready(function () {
         var tempData = {
           labels : labels,
           datasets : [{
-              fillColor             : "rgba(151,187,205,0.2)",
-              strokeColor           : "rgba(151,187,205,1)",
-              pointColor            : "rgba(151,187,205,1)",
-              pointStrokeColor      : "#fff",
-              pointHighlightFill    : "#fff",
-              pointHighlightStroke  : "rgba(151,187,205,1)",
-              data                  : data
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ], borderColor: [
+                'rgba(255,99,132,1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+            ],
+            borderWidth: 1,
+            hoverBorderColor:'#777',         
+            data                  : data
           }]
         };
     
@@ -45,7 +49,7 @@ $(document).ready(function () {
     
         // Instantiate a new chart
         //var myLineChart = new Chart(ctx).$(tempData);
-        chartRecette('Recettes', tempData, ctx, 'line')
+        chartRecette('Recettes', tempData, ctx, 'bar')
      
 });
     
@@ -60,6 +64,11 @@ function chartRecette(titre, tempData, ctx, typeChart){
         type: typeChart,
         data: tempData,
         options: {
+            legend:{
+                display:false,
+                position:'bottom' 
+
+            },
             title:{
                 display:true,
                 text: titre,
@@ -74,17 +83,15 @@ function chartRecette(titre, tempData, ctx, typeChart){
                 }
             },
             tooltips:{
-                enabled:false
+                enabled:true
             },
             scales: {
-               
+                yAxes: [{
+                    valueFormatString: "#,###"
+                }],
                 xAxes: [{
-                    type: 'time',
-                    time: {
-                        displayFormats: {
-                            quarter: 'MMM YYYY'
-                        }
-                    }
+                    valueFormatString: "MMMM YYYY" ,
+                    labelAngle: -50
                 }]
             },
     
