@@ -437,7 +437,7 @@ class SgbController extends AbstractController
                     $queryDepense->setParameters(array('userservice' => $service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
                     $queryDepenseGlobale = $queryDepense->getResult();
 
-                   dump($queryDepenseGlobale);
+                
 
                     $queryRecette = $em->createQuery('SELECT rr as mesrecettes, sum(rr.montantrecette) as montantrecette, pp FROM  App\Entity\Recette rr JOIN rr.lignebudgetrecette pp  WHERE rr.utilisateur =:user AND pp.service=:userservice group by pp.id');
                     $queryRecette->setParameters(array('user'=> $user, 'userservice' => $userServ));
@@ -863,7 +863,6 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
             AND p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision GROUP BY createAt");
     $queryDetailRecetteGraphic->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'idPrevision'=>$recette->getLignebudgetrecette(), 'debut'=> $datedebut, 'fin'=> $datefin ));
     $resultatDetailRecetteGraphic = $queryDetailRecetteGraphic->execute();
-    dump( $resultatDetailRecetteGraphic );
     $queryDetailRecette = $em->createQuery(
         '
         SELECT 
