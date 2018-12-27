@@ -718,8 +718,6 @@ class SgbController extends AbstractController
                         
                             }
                         $queryRecetteGlobale = $queryRecette->getResult();
-
-                        dump($queryRecetteGlobale);
                         
                             if( $formRecette->isSubmitted() &&  $formRecette->isValid()){
                                
