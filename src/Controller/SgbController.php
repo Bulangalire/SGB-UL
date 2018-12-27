@@ -506,7 +506,10 @@ class SgbController extends AbstractController
        ->add('anneebudgetprevision', EntityType::class, array(
             'class'  => Anneebudgetaire::class,
             'data' => $em->getRepository(Anneebudgetaire::class)->find($anneebudgetselect),
-            'choice_label' => 'anneebudget'
+            'choice_label' => 'anneebudget',
+            'attr'=>['readyonly'=>
+                true]
+
         ))
     
        ->add('iscentraliser', ChoiceType::class,[
@@ -715,6 +718,8 @@ class SgbController extends AbstractController
                         
                             }
                         $queryRecetteGlobale = $queryRecette->getResult();
+
+                        dump($queryRecetteGlobale);
                         
                             if( $formRecette->isSubmitted() &&  $formRecette->isValid()){
                                
@@ -768,6 +773,20 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
     }
     $service= $session->get('servicesselect');
     }
+
+    // Période  
+    // Début periode
+    if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
+        $session->set('datedebutselect',$request->request->get('datedebut') );
+    }
+    $datedebut = $session->get('datedebutselect');
+
+    // Fin période
+    if($request->request->get('datefin')!==null && $request->request->get('datefin') <> $session->get('datefinselect') ){
+        $session->set('datefinselect',$request->request->get('datefin') );
+    }
+    $datefin =  $session->get('datefinselect');
+
     $em = $this->getDoctrine()->getManager();
     $formDetailRecette= $this->createFormBuilder($recette)
     ->add('libelle')
@@ -828,6 +847,25 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
     
                                 }
                             }
+    $queryDetailRecetteGraphic = $em->createQuery(
+        "
+        SELECT 
+            r.id,
+            r.libelle, 
+            SUM(r.montantrecette) as  montantrecette, 
+            date_format(r.createAt, '%M %Y') as createAt,
+            u.nom,
+            l.intituleLigne
+        FROM  
+            App\Entity\Recette r
+            LEFT JOIN  App\Entity\Personne u WITH r.utilisateur = u.id 
+            LEFT JOIN App\Entity\Previsionbudget p WITH r.lignebudgetrecette = p.id 
+            LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
+            WHERE r.createAt >=:debut  AND r.createAt <=:fin
+            AND p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision GROUP BY createAt");
+    $queryDetailRecetteGraphic->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'idPrevision'=>$recette->getLignebudgetrecette(), 'debut'=> $datedebut, 'fin'=> $datefin ));
+    $resultatDetailRecetteGraphic = $queryDetailRecetteGraphic->execute();
+    dump( $resultatDetailRecetteGraphic );
     $queryDetailRecette = $em->createQuery(
         '
         SELECT 
@@ -838,16 +876,17 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
             u.nom,
             l.intituleLigne
         FROM  
-             App\Entity\Recette r
-             LEFT JOIN  App\Entity\Personne u WITH r.utilisateur = u.id 
-             LEFT JOIN App\Entity\Previsionbudget p WITH r.lignebudgetrecette = p.id 
-             LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
-             WHERE p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision');
-    $queryDetailRecette->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'idPrevision'=>$recette->getLignebudgetrecette() ));
+            App\Entity\Recette r
+            LEFT JOIN  App\Entity\Personne u WITH r.utilisateur = u.id 
+            LEFT JOIN App\Entity\Previsionbudget p WITH r.lignebudgetrecette = p.id 
+            LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
+            WHERE r.createAt >=:debut  AND r.createAt <=:fin
+            AND p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision');
+    $queryDetailRecette->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'idPrevision'=>$recette->getLignebudgetrecette(), 'debut'=> $datedebut, 'fin'=> $datefin ));
     $resultatDetailRecette = $queryDetailRecette->execute();
 
     return $this->render('sgb/recette/detailRecette.html.twig',[
-        'formDetailRecette'=>$formDetailRecette->createView(), 'resultatDetailRecette'=> $resultatDetailRecette 
+        'formDetailRecette'=>$formDetailRecette->createView(), 'resultatDetailRecetteGraphic'=> $resultatDetailRecetteGraphic, 'resultatDetailRecette'=> $resultatDetailRecette 
     ]);
 }
 

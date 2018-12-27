@@ -304,9 +304,9 @@ class CaisseController extends AbstractController{
                                 return $er->createQueryBuilder('p')
                                 ->join('p.lignebudgetprevision', 'l')
                                 ->where('l.categorieLigne=:thisCat')
+                                ->andWhere('p.anneebudgetprevision=:annee')
                                 //->having('p.recettes - p.recettesUtiliseesEnDepenses > 0')
                                 ->setParameter('thisCat', 'Recette')
-                                ->andWhere('p.anneebudgetprevision=:annee')
                                 ->setParameter('annee', $anneebudgetselect);
                                 }
 

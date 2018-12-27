@@ -1,8 +1,8 @@
 $(document).ready(function () {
    
-    var montantrecette = $("#myDetailRecette").data('montantrecette');
-    var daterecette = $("#myDetailRecette").data('daterecette');
-    var ctxrecette = $("#myDetailRecette");
+    //var montantrecette = $("#myDetailRecette").data('montantrecette');
+    //var daterecette = $("#myDetailRecette").data('daterecette');
+    //var ctxrecette = $("#myDetailRecette");
     //chartDetailRecette("Recette", montantrecette, daterecette, ctxrecette,'bar');
    // console.log(daterecette = $("#myDetailRecette").data('daterecette'));
 
@@ -10,37 +10,34 @@ $(document).ready(function () {
         return (this.getMonth() + 1) +
         "/" +  this.getFullYear();
     }
+    var dynamicColors = function() {
+        var r = Math.floor(Math.random() * 255);
+        var g = Math.floor(Math.random() * 255);
+        var b = Math.floor(Math.random() * 255);
+        return "rgb(" + r + "," + g + "," + b + ")";
+    }
     myRecettes=$("#mesRecettes").data('recettes');
 
         // Split timestamp and data into separate arrays
-        var labels = [], data=[];
+        var labels = [], data=[], couleur=[];
         myRecettes.forEach(function(recette) {
-          labels.push(new Date(recette.createAt['date']).formatMMDDYYYY());
+          labels.push(recette.createAt);
           data.push(parseFloat(recette.montantrecette));
-          console.log(new Date(recette.createAt['date']).formatMMDDYYYY());
+          couleur.push(dynamicColors());
 
         });
+
+       console.log(labels);
     
         // Create the chart.js data structure using 'labels' and 'data'
         var tempData = {
-          labels : labels,
-          datasets : [{
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ], borderColor: [
-                'rgba(255,99,132,1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-            ],
-            borderWidth: 1,
+            labels          : labels,
+            datasets        : [{
+            backgroundColor :couleur,
+            borderColor     :couleur,
+            borderWidth     : 1,
             hoverBorderColor:'#777',         
-            data                  : data
+            data            : data
           }]
         };
     
@@ -48,11 +45,13 @@ $(document).ready(function () {
         var ctx = document.getElementById("mesRecettes").getContext("2d");
     
         // Instantiate a new chart
-        //var myLineChart = new Chart(ctx).$(tempData);
-        chartRecette('Recettes', tempData, ctx, 'bar')
+        // var myLineChart = new Chart(ctx).$(tempData);
+        // Type:  bar, horizontalBar, pie, line, doughnut, radar, polarArea
+        chartRecette('Recettes', tempData, ctx, 'horizontalBar')
      
 });
     
+
 function chartRecette(titre, tempData, ctx, typeChart){
     Chart.defaults.global.defaultBackgroundColor = '#777';
     Chart.defaults.global.defaultFontFamily = 'Lato';
@@ -64,15 +63,15 @@ function chartRecette(titre, tempData, ctx, typeChart){
         type: typeChart,
         data: tempData,
         options: {
-            legend:{
-                display:false,
-                position:'bottom' 
-
-            },
+            
             title:{
                 display:true,
                 text: titre,
                 fontSize:25
+            },
+            legend:{
+                display:false,
+                position:'bottom' 
             },
             layaout:{
                 padding:{

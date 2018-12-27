@@ -20,6 +20,7 @@ Encore
     .addEntry('js/app', './assets/js/app.js')
     .addEntry('js/moment', './assets/js/moment.js')
     .addEntry('js/chartDetailRecette', './assets/js/chartDetailRecette.js')
+    .addEntry('js/chartRecette', './assets/js/chartRecette.js')
     .addEntry('js/chartPrevision', './assets/js/chartPrevision.js')
     .addStyleEntry('css/app', './assets/scss/app.scss')
     // will require an extra script tag for runtime.js

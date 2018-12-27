@@ -116,6 +116,30 @@
                                  </td>
                                 
                             </tr>
+                            <tr>
+                                <td colspan='9'>
+                                
+
+                                {% if planDeTresoreries is not empty %}
+                                {% set ligneBudgetaire = [] %}
+                                {% set ligneBudgetaireTous = [] %}
+                                {% set montantBudgetaire = [] %}
+                                {% set montantBudgetaireTous = [] %}
+                                
+                                {% for i in 0..planDeTresoreries|length - 1 %}
+
+                                       {% set ligneBudgetaire = [planDeTresoreries[i].mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne]   %}
+                                       {% set ligneBudgetaireTous = ligneBudgetaireTous|merge([ligneBudgetaire]) %}
+                                       
+                                       {% set montantBudgetaire = [planDeTresoreries[i].montantrecette]   %}
+                                       {% set montantBudgetaireTous = montantBudgetaireTous|merge([montantBudgetaire]) %}
+                                     
+                                {% endfor %}
+
+                                    <canvas id="ligneRecette" width="400" height="400" data-ligne="{{ligneBudgetaireTous|json_encode}}" data-montant="{{montantBudgetaireTous|json_encode}}"></canvas>
+                                    {% endif %}
+                                 </td>
+                            </tr>
 
                         </tbody>
                     </table>
@@ -126,4 +150,9 @@
 
         </tbody>
     </table>
+{% endblock %}
+ {% block javascripts %}
+{{ parent() }}
+<script type="text/javascript" src="{{ asset('build/js/moment.js') }}"></script>
+ <script type="text/javascript" src="{{ asset('build/js/chartRecette.js') }}"></script>
 {% endblock %}
