@@ -161,6 +161,7 @@
 {% endblock %}
  {% block javascripts %}
 {{ parent() }}
+<script type="text/javascript" src="{{ asset('build/js/chartjs-plugin-datalabels.js') }}"></script>
 <script type="text/javascript" src="{{ asset('build/js/moment.js') }}"></script>
  <script type="text/javascript" src="{{ asset('build/js/chartPrevision.js') }}"></script>
 {% endblock %}

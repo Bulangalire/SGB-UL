@@ -17,13 +17,16 @@ function chartPrevisions(titre, montantprevision, intituleLigne, ctx, typeChart)
     Chart.defaults.global.defaultFontFamily = 'Lato';
     Chart.defaults.global.defaultFontColor = '#777';
     Chart.defaults.global.defaultFontSize = 18;
-    Chart.defaults.global.defaultBorderColor = '#777';
-    
-    couleur=[];
-    intituleLigne.forEach(function() {
+     couleur=[];
+    var i=0;
+    var total =0;
+    montantprevision.forEach(function() {
+        i=i+1;
+        total = total + montantprevision[i];
+        console.log(total);
         couleur.push(dynamicColors());
     });
-    console.log(couleur);
+    
 
     var pieData = {
         labels:intituleLigne,
@@ -36,7 +39,7 @@ function chartPrevisions(titre, montantprevision, intituleLigne, ctx, typeChart)
             data: montantprevision
          }
        ]
-     }
+     };
     
       var chartInstance = new Chart(ctx, {
         type: typeChart,
@@ -59,8 +62,21 @@ function chartPrevisions(titre, montantprevision, intituleLigne, ctx, typeChart)
                     top:0
                 }
             },
+            
             tooltips:{
-                enabled:true
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        var allData = data.datasets[tooltipItem.datasetIndex].data;
+                        var tooltipLabel = data.labels[tooltipItem.index];
+                        var tooltipData = allData[tooltipItem.index];
+                        var total = 0;
+                        for (var i in allData) {
+                            total += parseFloat(allData[i]);
+                        }
+                        var tooltipPercentage = Math.round((tooltipData / total) * 100);
+                        return tooltipLabel + ': ' + tooltipData + ' (' + tooltipPercentage + '%)';
+                    }
+                }
             },
         }
       });

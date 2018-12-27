@@ -21,6 +21,12 @@
         "/build/js/chartDetailRecette.js"
       ]
     },
+    "js/chartjs-plugin-datalabels": {
+      "js": [
+        "/build/runtime.js",
+        "/build/js/chartjs-plugin-datalabels.js"
+      ]
+    },
     "js/chartRecette": {
       "js": [
         "/build/runtime.js",

@@ -20,6 +20,7 @@ Encore
     .addEntry('js/app', './assets/js/app.js')
     .addEntry('js/moment', './assets/js/moment.js')
     .addEntry('js/chartDetailRecette', './assets/js/chartDetailRecette.js')
+    .addEntry('js/chartjs-plugin-datalabels', './assets/js/chartjs-plugin-datalabels.js')
     .addEntry('js/chartRecette', './assets/js/chartRecette.js')
     .addEntry('js/chartPrevision', './assets/js/chartPrevision.js')
     .addStyleEntry('css/app', './assets/scss/app.scss')
