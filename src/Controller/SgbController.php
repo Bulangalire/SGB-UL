@@ -570,6 +570,30 @@ class SgbController extends AbstractController
                      )
                      ->setParameter('catLigne', $categorie )
                      ->setParameter('anneeprev', $anneebudgetselect);
+                     $resultatLigneParService = $queryLigneRecetteParService->execute(); 
+
+                     $queryLigneRecetteParServiceGraphic= $em->createQuery(
+                        '
+                         SELECT
+                                l.intituleLigne,
+                                SUM( p.montantprevision) as montantprevision
+                         FROM
+                           
+                                App\Entity\Previsionbudget p
+                                LEFT JOIN  App\Entity\Service s WITH p.service = s.id
+                                LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
+                                LEFT JOIN  App\Entity\Anneebudgetaire a WITH p.anneebudgetprevision = a.id
+                        WHERE
+                                l.categorieLigne= :catLigne AND p.anneebudgetprevision = :anneeprev
+                        Group BY l.id 
+                      
+                        '
+                         )
+                         ->setParameter('catLigne', $categorie )
+                         ->setParameter('anneeprev', $anneebudgetselect);
+                         $resultatLigneParServiceGraphic = $queryLigneRecetteParServiceGraphic->execute(); 
+
+                     
                     }else{
                             $queryLigneRecetteParService= $em->createQuery(
                             '
@@ -594,8 +618,9 @@ class SgbController extends AbstractController
                              )->setParameter('serviceuser',  $service )
                              ->setParameter('catLigne', $categorie )
                              ->setParameter('anneeprev', $anneebudgetselect);
+                             $resultatLigneParService = $queryLigneRecetteParService->execute(); 
+                             $resultatLigneParServiceGraphic =$resultatLigneParService ;
                     }
-                $resultatLigneParService = $queryLigneRecetteParService->execute(); 
 
                     if( $formPrevision->isSubmitted() &&  $formPrevision->isValid()){
                         if($prevision->getService()==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
@@ -618,6 +643,7 @@ class SgbController extends AbstractController
                    
         return $this->render('sgb/prevision/prevision.html.twig', [
                          'formPrevision'=>$formPrevision->createView(),
+                         'previsionsGraphic'=>$resultatLigneParServiceGraphic,
                          'previsions'=>$resultatLigneParService,
                        ]);
        
