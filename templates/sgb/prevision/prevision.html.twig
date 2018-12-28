@@ -87,9 +87,9 @@
                          {% set labelsNum = 0 %}
                             {% for prevision in previsions %}
                                 <tr>
-                                    <th scope="row">{{prevision.id}}</th>
+                                 {% set labelsNum = labelsNum +1 %}
+                                    <th scope="row">{{labelsNum}}</th>
                                     <td>{{prevision.nom}}</td>
-                                    {% set labelsNum = labelsNum +1 %}
                                     <td>{{prevision.intituleLigne}}</td>
                                     <td>{{prevision.designation}}</td>
                                     <td>{{prevision.anneebudget}}</td>

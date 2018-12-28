@@ -543,29 +543,58 @@ class SgbController extends AbstractController
       
      $formPrevision->handleRequest($request);
                    // $formPrevision;
+
+                   if($service==="*"){
                    $queryLigneRecetteParService= $em->createQuery(
                     '
-                    SELECT
-                                r.nom,
-                                s.designation,
-                                l.intituleLigne,
-                                l.categorieLigne,
-                                a.anneebudget,
-                                p.id,
-                                p.montantprevision
+                     SELECT
+                            r.nom,
+                            s.designation,
+                            l.intituleLigne,
+                            l.categorieLigne,
+                            a.anneebudget,
+                            p.id,
+                            p.montantprevision
                     FROM
-               
+                       
                             App\Entity\Previsionbudget p
-                    LEFT JOIN App\Entity\SousRubrique r WITH p.sousrubrique = r.id
-                    LEFT JOIN  App\Entity\Service s WITH p.service = s.id
-                    LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
-                    LEFT JOIN  App\Entity\Anneebudgetaire a WITH p.anneebudgetprevision = a.id
+                            LEFT JOIN App\Entity\SousRubrique r WITH p.sousrubrique = r.id
+                            LEFT JOIN  App\Entity\Service s WITH p.service = s.id
+                            LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
+                            LEFT JOIN  App\Entity\Anneebudgetaire a WITH p.anneebudgetprevision = a.id
                     WHERE
-                            p.service= :serviceuser AND l.categorieLigne= :catLigne AND p.anneebudgetprevision = :anneeprev
+                            l.categorieLigne= :catLigne AND p.anneebudgetprevision = :anneeprev
+                    ORDER BY s.designation ASC
+                  
                     '
-                     )->setParameter('serviceuser',  $service )
+                     )
                      ->setParameter('catLigne', $categorie )
                      ->setParameter('anneeprev', $anneebudgetselect);
+                    }else{
+                            $queryLigneRecetteParService= $em->createQuery(
+                            '
+                            SELECT
+                                    r.nom,
+                                    s.designation,
+                                    l.intituleLigne,
+                                    l.categorieLigne,
+                                    a.anneebudget,
+                                    p.id,
+                                    p.montantprevision
+                            FROM
+           
+                                    App\Entity\Previsionbudget p
+                                    LEFT JOIN App\Entity\SousRubrique r WITH p.sousrubrique = r.id
+                                    LEFT JOIN  App\Entity\Service s WITH p.service = s.id
+                                    LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
+                                    LEFT JOIN  App\Entity\Anneebudgetaire a WITH p.anneebudgetprevision = a.id
+                            WHERE
+                                    p.service= :serviceuser AND l.categorieLigne= :catLigne AND p.anneebudgetprevision = :anneeprev
+                            '
+                             )->setParameter('serviceuser',  $service )
+                             ->setParameter('catLigne', $categorie )
+                             ->setParameter('anneeprev', $anneebudgetselect);
+                    }
                 $resultatLigneParService = $queryLigneRecetteParService->execute(); 
 
                     if( $formPrevision->isSubmitted() &&  $formPrevision->isValid()){
