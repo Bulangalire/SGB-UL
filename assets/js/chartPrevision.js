@@ -23,7 +23,6 @@ function chartPrevisions(titre, montantprevision, intituleLigne, ctx, typeChart)
     montantprevision.forEach(function() {
         i=i+1;
         total = total + montantprevision[i];
-        console.log(total);
         couleur.push(dynamicColors());
     });
     
@@ -73,7 +72,7 @@ function chartPrevisions(titre, montantprevision, intituleLigne, ctx, typeChart)
                         for (var i in allData) {
                             total += parseFloat(allData[i]);
                         }
-                        var tooltipPercentage = Math.round((tooltipData / total) * 100);
+                        var tooltipPercentage = ((tooltipData / total) * 100 ).toFixed(2);
                         return tooltipLabel + ': ' + tooltipData + ' (' + tooltipPercentage + '%)';
                     }
                 }
