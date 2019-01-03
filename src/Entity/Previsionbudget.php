@@ -68,6 +68,11 @@ class Previsionbudget
      */
     private $recettesUtiliseesEnDepenses;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $isValideted;
+
 
     public function __construct()
     {
@@ -197,5 +202,17 @@ class Previsionbudget
 
     public function __toString(){
         return $this->service. " " .$this->nom;
+    }
+
+    public function getIsValideted(): ?bool
+    {
+        return $this->isValideted;
+    }
+
+    public function setIsValideted(?bool $isValideted): self
+    {
+        $this->isValideted = $isValideted;
+
+        return $this;
     }
 }

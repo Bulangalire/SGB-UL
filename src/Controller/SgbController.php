@@ -520,6 +520,14 @@ class SgbController extends AbstractController
             'expanded'=> false,
             'label'=> 'Centraliser ou Decentraliser',
         ])
+        ->add('isValideted', ChoiceType::class,[
+            'choices'=>array(
+                ""=>false,
+                'Valider'=>true,
+                'Non valider'=>false,
+            ),
+            'label'=> 'Déjà valider',
+        ])
         ->add('montantprevision')
 
         ->add('service', EntityType::class, array(
@@ -554,7 +562,8 @@ class SgbController extends AbstractController
                             l.categorieLigne,
                             a.anneebudget,
                             p.id,
-                            p.montantprevision
+                            p.montantprevision,
+                            p.isValideted
                     FROM
                        
                             App\Entity\Previsionbudget p
@@ -592,7 +601,6 @@ class SgbController extends AbstractController
                          ->setParameter('catLigne', $categorie )
                          ->setParameter('anneeprev', $anneebudgetselect);
                          $resultatLigneParServiceGraphic = $queryLigneRecetteParServiceGraphic->execute(); 
-
                      
                     }else{
                             $queryLigneRecetteParService= $em->createQuery(
@@ -604,7 +612,8 @@ class SgbController extends AbstractController
                                     l.categorieLigne,
                                     a.anneebudget,
                                     p.id,
-                                    p.montantprevision
+                                    p.montantprevision,
+                                    p.isValideted
                             FROM
            
                                     App\Entity\Previsionbudget p
@@ -623,23 +632,44 @@ class SgbController extends AbstractController
                     }
 
                     if( $formPrevision->isSubmitted() &&  $formPrevision->isValid()){
+                        dump($prevision->getIsValideted());
                         if($prevision->getService()==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
                             $prevision->setService($user->getServices());
                          }
-                        if($em->getRepository("\App\Entity\Previsionbudget")->findOneBy(
-                            array('service'=>$prevision->getService(), 
-                            'anneebudgetprevision'=>$prevision->getAnneebudgetprevision(), 
-                            'lignebudgetprevision'=>$prevision->getLignebudgetprevision()) 
-                            ) && $prevision->getId()==null){
-                                echo '<h5 style="color:red;"> la prevision existe déjà </h5>';
+                         if($prevision->getIsValideted()==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
+                            $prevision->setIsValideted(false);
+                        
+                        }
+
+                        if($this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
+                            if($em->getRepository("\App\Entity\Previsionbudget")->findOneBy(
+                                array('service'=>$prevision->getService(), 
+                                'anneebudgetprevision'=>$prevision->getAnneebudgetprevision(), 
+                                'lignebudgetprevision'=>$prevision->getLignebudgetprevision()) 
+                                ) && $prevision->getId()==null){
+                                    echo '<h5 style="color:red;"> la prevision existe déjà </h5>';
                             }else{
                                 
                                 $manager->persist($prevision);
                                 $manager->flush();
                                 return $this->redirectToRoute('sgb_prevision'); 
                             }
+                        }else{
+                                if($em->getRepository("\App\Entity\Previsionbudget")->findOneBy(
+                                    array('service'=>$prevision->getService(), 
+                                    'anneebudgetprevision'=>$prevision->getAnneebudgetprevision(), 
+                                    'lignebudgetprevision'=>$prevision->getLignebudgetprevision(), 
+                                    'isValideted'=>$prevision->getIsValideted()) 
+                                    ) && $prevision->getId()==null){
+                                    echo '<h5 style="color:red;"> la prevision existe déjà </h5>';
+                                }else{
+                                    
+                                    $manager->persist($prevision);
+                                    $manager->flush();
+                                    return $this->redirectToRoute('sgb_prevision'); 
+                                }
+                        }
                     }
-                   
                    
         return $this->render('sgb/prevision/prevision.html.twig', [
                          'formPrevision'=>$formPrevision->createView(),

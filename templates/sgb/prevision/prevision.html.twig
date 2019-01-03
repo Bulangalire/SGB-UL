@@ -44,7 +44,13 @@
                 <td>
                     {{ form_row(formPrevision.montantprevision, {'attr' :{'required':'required'}})}}
                 </td>
-                <td></td>
+                <td>
+                 {% if is_granted('ROLE_COMPTABILITE') or is_granted('ROLE_AB')  or is_granted('ROLE_ADMIN')   %}
+                         {{ form_row(formPrevision.isValideted)}}
+                {% else %}
+                        {{ form_row(formPrevision.isValideted, {'attr': {'disabled': 'disabled' }})}}
+                 {% endif %}
+                </td>
             </tr>
             <tr>
                 <td>
@@ -97,6 +103,9 @@
                                     <td>{{prevision.montantprevision}}</td>
 
                                     <td>
+                                  
+                                    <!-- Permet la modification d'une prevision que si elle n'est pas encore valider ou que pour la comptabilite centrale-->
+                                    {% if prevision.isValideted is same as(false) or is_granted('ROLE_COMPTABILITE') or is_granted('ROLE_ADMIN')%}
                                         <a href="{{path('prevision_edit', {'id':prevision.id})}}"><img src="{{ asset("/img/edit.png")}}" alt="Modifier"></a>
                                         &nbsp; &nbsp;
                                                                             
@@ -104,7 +113,8 @@
                                             <i class="glyphicon glyphicon-trash"></i>
 
                                             <img src="{{ asset("/img/delete1.png")}}" alt="Supprimer"></a>
-
+                                   
+                                    {% endif %}
                                         <div class="modal hide fade" id="confirmModal">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
@@ -123,12 +133,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    
-                                    
-                                    
-                                    
-                                    
-                                    
                                     
                                     </td>
                                 </tr>
