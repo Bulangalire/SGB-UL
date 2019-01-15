@@ -45,6 +45,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Mukadi\Chart\Utils\RandomColorFactory;
 use Mukadi\Chart\Chart;
 
@@ -461,13 +463,14 @@ class SgbController extends AbstractController
      * @Route("/sgb/prevision/new", name="sgb_prevision")
      * @Route("/sgb/prevision/{id}/edit", name="prevision_edit")
      */
-    public function prevision(Session $session, Request $request, Previsionbudget $prevision=null,  ObjectManager $manager){
+    public function prevision(Recette $recette=null, Session $session, Request $request, Previsionbudget $prevision=null,  ObjectManager $manager){
         
         if($this->getUser()===null) {              
             return $this->redirectToRoute('user_login');
            }
       if(!$prevision){
         $prevision = new Previsionbudget();
+        $recette = new Recette();
     }
     $em = $this->getDoctrine()->getManager();
     //Creation de variable de session pour les parametres des requêtes
@@ -507,6 +510,7 @@ class SgbController extends AbstractController
             'class'  => Anneebudgetaire::class,
             'data' => $em->getRepository(Anneebudgetaire::class)->find($anneebudgetselect),
             'choice_label' => 'anneebudget',
+            'label'=>'Année budgetaire',
             'attr'=>['readyonly'=>
                 true]
 
@@ -528,7 +532,11 @@ class SgbController extends AbstractController
             ),
             'label'=> 'Déjà valider',
         ])
-        ->add('montantprevision')
+        ->add('montantprevision', IntegerType::class, array(
+            'label'=> 'Montant',
+        )
+
+        )
 
         ->add('service', EntityType::class, array(
             'class'  => Service::class,
@@ -545,6 +553,7 @@ class SgbController extends AbstractController
                                 ->setParameter('thisCat', $categorie)
                                 ->orderBy('u.intituleLigne', 'ASC');
                 },
+                'label'=>'Ligne budgetaire prevision',
                 'choice_label'=>'intituleLigne'))
   
        ->getForm();
@@ -632,7 +641,6 @@ class SgbController extends AbstractController
                     }
 
                     if( $formPrevision->isSubmitted() &&  $formPrevision->isValid()){
-                        dump($prevision->getIsValideted());
                         if($prevision->getService()==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
                             $prevision->setService($user->getServices());
                          }
@@ -649,8 +657,14 @@ class SgbController extends AbstractController
                                 ) && $prevision->getId()==null){
                                     echo '<h5 style="color:red;"> la prevision existe déjà </h5>';
                             }else{
-                                
                                 $manager->persist($prevision);
+                                $recettePrevision = $em->createQuery('
+                                SELECT r
+                                FROM  App\Entity\Recette r 
+                                WHERE r.lignebudgetrecette=:ligne');
+                                $recettePrevision->setParameters(array('ligne'=>$prevision->getId()));
+                                $recettePrev = $recettePrevision->getResult();
+                                dump($recettePrev);
                                 $manager->flush();
                                 return $this->redirectToRoute('sgb_prevision'); 
                             }
@@ -663,9 +677,23 @@ class SgbController extends AbstractController
                                     ) && $prevision->getId()==null){
                                     echo '<h5 style="color:red;"> la prevision existe déjà </h5>';
                                 }else{
-                                    
                                     $manager->persist($prevision);
                                     $manager->flush();
+                                    $recettePrevision = $em->createQuery('
+                                    SELECT r
+                                    FROM  App\Entity\Recette r 
+                                    WHERE r.lignebudgetrecette=:ligne');
+                                    $recettePrevision->setParameters(array('ligne'=>$prevision->getId()));
+                                    $recettePrev = $recettePrevision->getResult();
+
+                                    if($prevision->getLignebudgetprevision()->getCategorieLigne()=="Recette"){
+                                    $recette->setMontantrecette(0);
+                                    $recette->setCreateAt(new \DateTime());
+                                    $recette->setUtilisateur($this->getUser());
+                                    $recette->setLignebudgetrecette($prevision);
+                                    $manager->persist($recette);
+                                    $manager->flush();
+                                    }
                                     return $this->redirectToRoute('sgb_prevision'); 
                                 }
                         }
@@ -750,8 +778,18 @@ class SgbController extends AbstractController
 
             $formRecette= $this->createFormBuilder($recette)
                             ->add('libelle')
-                            ->add('montantrecette')                            
+                            ->add('montantrecette', IntegerType::class, [
+                                'label'=>'Montant'
+                            ])                           
                             ->add('description')
+                            ->add('createAt', DateType::class, array(
+                                'widget' => 'single_text',
+                                // this is actually the default format for single_text
+                                'format' => 'yyyy-MM-dd',
+                                'label'=>'Date'
+                            )
+                            )
+
                             ->add('utilisateur', EntityType::class, array(
                                 'class'  => Personne::class,
                                 'query_builder'=>function(EntityRepository $er){
@@ -786,6 +824,7 @@ class SgbController extends AbstractController
                                                 }
                                                 },
                                                     'choice_label'=>'lignebudgetprevision.intituleLigne',
+                                                    'label'=>'Ligne budgetaire recette'
                                                     )) 
                                                     ->add('sauvegarder', SubmitType::class,[
                                                         'label'=>'Sauvegarder'
@@ -794,11 +833,11 @@ class SgbController extends AbstractController
                              
                             $formRecette->handleRequest($request);
                             if($service=='*'){   
-                                $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.id order by p.service');
+                                $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE  r.montantrecette > 0 AND  p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.id order by p.service');
                                 $queryRecette->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
                         
                             }else{
-                                $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.id');
+                                $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE r.montantrecette > 0 AND p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.id');
                                 $queryRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
                         
                             }
@@ -815,8 +854,7 @@ class SgbController extends AbstractController
                                     )&& $recette->getId()==null){
                                         echo '<h2 style="color:red;"> la recette existe déjà </h2>';
                                     }else{
-                                       
-                                        $recette->setCreateAt(new \Datetime());
+
                                         $manager->persist($recette);
                                         $manager->flush();
                                         return $this->redirectToRoute('recette_create');
@@ -873,8 +911,16 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
     $em = $this->getDoctrine()->getManager();
     $formDetailRecette= $this->createFormBuilder($recette)
     ->add('libelle')
-    ->add('montantrecette')                            
+    ->add('montantrecette', IntegerType::class, [
+        'label'=>'Montant'
+    ] )                           
     ->add('description')
+    ->add('createAt', DateType::class, array(
+        'widget' => 'single_text',
+        // this is actually the default format for single_text
+        'format' => 'yyyy-MM-dd',
+        'label'=>'Date'
+    ))
     ->add('utilisateur', EntityType::class, array(
         'class'  => Personne::class,
         'query_builder'=>function(EntityRepository $er){
@@ -908,6 +954,7 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
                 }
                         },
                             'choice_label'=>'lignebudgetprevision.intituleLigne',
+                            'label'=>'Recette',
                             )) 
                             ->add('sauvegarder', SubmitType::class,[
                                 'label'=>'Sauvegarder'
@@ -923,7 +970,6 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
                                     echo '<h2 style="color:red;"> la recette existe déjà </h2>';
                                 }else{
                                    
-                                    $recette->setCreateAt(new \Datetime());
                                     $manager->persist($recette);
                                     $manager->flush();
                                     return $this->redirectToRoute('detail_recette', array('id'=>$recette->getId() ));
@@ -955,6 +1001,7 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
             r.libelle, 
             r.montantrecette, 
             r.createAt,
+            r.description,
             u.nom,
             l.intituleLigne
         FROM  

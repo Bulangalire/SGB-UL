@@ -6,6 +6,7 @@
   "build/js/chartPrevision.js": "/build/js/chartPrevision.js",
   "build/js/chartRecette.js": "/build/js/chartRecette.js",
   "build/js/chartjs-plugin-datalabels.js": "/build/js/chartjs-plugin-datalabels.js",
+  "build/js/formatterDate.js": "/build/js/formatterDate.js",
   "build/js/moment.js": "/build/js/moment.js",
   "build/runtime.js": "/build/runtime.js"
 }

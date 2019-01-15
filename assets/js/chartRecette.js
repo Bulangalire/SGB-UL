@@ -61,7 +61,22 @@ $(document).ready(function () {
                         bottom:0,
                         top:0
                     }
-                }
+                },
+                tooltips:{
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            var allData = data.datasets[tooltipItem.datasetIndex].data;
+                            var tooltipLabel = data.labels[tooltipItem.index];
+                            var tooltipData = allData[tooltipItem.index];
+                            var total = 0;
+                            for (var i in allData) {
+                                total += parseFloat(allData[i]);
+                            }
+                            var tooltipPercentage = ((tooltipData / total) * 100 ).toFixed(2);
+                            return tooltipLabel + ': ' + tooltipData + ' (' + tooltipPercentage + '%)';
+                        }
+                    }
+                },
             }
           });
         

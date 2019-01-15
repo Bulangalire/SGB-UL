@@ -33,6 +33,12 @@
         "/build/js/chartRecette.js"
       ]
     },
+    "js/formatterDate": {
+      "js": [
+        "/build/runtime.js",
+        "/build/js/formatterDate.js"
+      ]
+    },
     "js/chartPrevision": {
       "js": [
         "/build/runtime.js",

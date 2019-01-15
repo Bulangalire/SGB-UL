@@ -56,10 +56,7 @@ class Detaildepense
      */
     private $createAt;
 
-    public function __construct(){
-        $this->createAt = new \DateTime();
-    }
-      public function getId(): ?int
+     public function getId(): ?int
     {
         return $this->id;
     }
@@ -140,7 +137,12 @@ class Detaildepense
     {
         return $this->createAt;
     }
+    public function setCreateAt(\DateTimeInterface $createAt): self
+    {
+        $this->createAt = $createAt;
 
+        return $this;
+    }
     
 
     

@@ -209,9 +209,6 @@ class CaisseController extends AbstractController{
         
             }
         $queryListOPNonSigne = $sqlOPNonSigne->getResult();
-
-
-
           // $queryRecette = $em->createQuery('SELECT r as mesrecettes, sum(r.montantrecette) as montantrecette, p FROM  App\Entity\Recette r JOIN r.lignebudgetrecette p  WHERE p.service=:userservice AND p.anneebudgetprevision=:anneebudgetselect AND r.createAt BETWEEN :debut AND :fin group by p.lignebudgetprevision');
           // $queryRecette->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
           // $queryRecetteGlobale = $queryRecette->getResult();
@@ -284,6 +281,7 @@ class CaisseController extends AbstractController{
                                 ->setParameter('id', $depense==null? $detaildepense->getDepenseId()->getLigneBudgetaire()->getId(): $depense->getLigneBudgetaire()->getId() );
                 },
                 'choice_label'=>'lignebudgetprevision.intituleLigne',
+                'label'=>'Depense'
                 ))
 
             ->add('lignebudgetsource', EntityType::class, array(
@@ -295,6 +293,7 @@ class CaisseController extends AbstractController{
                                 ->join('p.lignebudgetprevision', 'l')
                                 ->where('l.categorieLigne=:thisCat')
                                 ->andWhere('p.service=:ceService')
+                                ->andWhere('p.iscentraliser=false')
                                 ->andWhere('p.anneebudgetprevision=:annee')
                                 //->having('p.recettes - recettesUtiliseesEnDepenses > 0')
                                 ->setParameter('thisCat', 'Recette')
@@ -305,24 +304,37 @@ class CaisseController extends AbstractController{
                                 ->join('p.lignebudgetprevision', 'l')
                                 ->where('l.categorieLigne=:thisCat')
                                 ->andWhere('p.anneebudgetprevision=:annee')
+                                ->andWhere('p.iscentraliser=true')
                                 //->having('p.recettes - p.recettesUtiliseesEnDepenses > 0')
                                 ->setParameter('thisCat', 'Recette')
                                 ->setParameter('annee', $anneebudgetselect);
                                 }
 
                         },
-                'choice_label'=>'lignebudgetprevision.intituleLigne'))
+                'choice_label'=>'lignebudgetprevision.intituleLigne',
+                'label'=>'Recette')
+                )
             
             ->add('montantdetail', IntegerType::class, [
                 'data'=> $depense==null?  $detaildepense->getMontantdetail() : $depense->getSoldeDepense(),
-            ])
-            ->add('descriptiondetaildepense')
+                'label'=>'Montant'
+            ] )
+            ->add('descriptiondetaildepense', TextType::class, array(
+                'label'=>'Description'
+                ))
+            ->add('createAt', DateType::class, array(
+                'widget' => 'single_text',
+                // this is actually the default format for single_text
+                'format' => 'yyyy-MM-dd',
+                'label'=>'Date'
+            ))
             ->add('modepayement', ChoiceType::class,[
                 'choices'=>[
                     'CHEQUE'=>'CHEQUE',
                     'CASH'=>'CASH',
                     'VIREMENT'=>'VIREMENT'
-                ]
+                ],
+                'label'=>'Mode de payement'
             ])
             
             ->getForm();
@@ -341,7 +353,8 @@ class CaisseController extends AbstractController{
                 sum(r.montantrecette) as montantrecette, 
                 p FROM  App\Entity\Recette r 
                 JOIN r.lignebudgetrecette p  
-                WHERE p.service=:userservice 
+                WHERE p.service=:userservice
+                AND p.iscentraliser=false  
                 AND p.anneebudgetprevision=:anneebudgetselect 
                 group by p.id');
                 $sqlSoldeCompte->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect));
@@ -382,8 +395,12 @@ class CaisseController extends AbstractController{
 
             $detaildepense->setDepenseId($depense);
             $frmDecaisser->handleRequest($request);
+
+            dump($detaildepense->getDepenseId()->getSoldeDepense() );
             if( $frmDecaisser->isSubmitted() &&  $frmDecaisser->isValid()){
                 
+               
+
                 if($detaildepense->getMontantdetail() > $detaildepense->getDepenseId()->getSoldeDepense() ){
                   echo '<h5 style="color:red;">le montant est superière à celui qui reste !!!'. $detaildepense->getDepenseId()->getSoldeDepense() .' $</h5>' ;
 
@@ -520,7 +537,8 @@ class CaisseController extends AbstractController{
         group by p.id ORDER BY p.service ASC');
         $queryDepense->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
 }else{
-    $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense 
+       $queryDepense= $em->createQuery('
+        SELECT d as mesdep, sum(d.montantdetail) as sommedepense 
         FROM   App\Entity\Detaildepense d 
         JOIN d.lignebudgetdepense p 
         JOIN  p.service s
@@ -531,7 +549,9 @@ class CaisseController extends AbstractController{
         group by p.id ORDER BY p.service ASC');
         $queryDepense->setParameters(array('axeAnalytique' =>$axe,'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
 
-    $queryMaCaisse = $em->createQuery('SELECT r as mesrecettes, 
+    $queryMaCaisse = $em->createQuery('
+          
+    SELECT r as mesrecettes, 
     sum(r.montantrecette) as montantrecette, 
     p FROM  App\Entity\Recette r 
     JOIN r.lignebudgetrecette p  
@@ -539,7 +559,9 @@ class CaisseController extends AbstractController{
     WHERE s.axeAnalytique=:axeAnalytique 
     AND p.anneebudgetprevision=:anneebudgetselect 
     AND r.createAt >=:debut 
-    AND r.createAt <=:fin group by p.id');
+    AND r.createAt <=:fin 
+    
+    group by p.id');
     $queryMaCaisse->setParameters(array('axeAnalytique' =>$axe, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
 
 }

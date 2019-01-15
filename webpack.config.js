@@ -22,6 +22,7 @@ Encore
     .addEntry('js/chartDetailRecette', './assets/js/chartDetailRecette.js')
     .addEntry('js/chartjs-plugin-datalabels', './assets/js/chartjs-plugin-datalabels.js')
     .addEntry('js/chartRecette', './assets/js/chartRecette.js')
+    .addEntry('js/formatterDate', './assets/js/formatterDate.js')
     .addEntry('js/chartPrevision', './assets/js/chartPrevision.js')
     .addStyleEntry('css/app', './assets/scss/app.scss')
     // will require an extra script tag for runtime.js

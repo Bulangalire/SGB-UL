@@ -371,9 +371,6 @@ class Depense
 
         return $this;
     }
-
-
-
    
     public function getDetaildepenses() : ?float
     {

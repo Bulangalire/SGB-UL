@@ -12,6 +12,7 @@
                     {{ form_row(formRecette.libelle)}}
                     {{ form_row(formRecette.lignebudgetrecette)}}
                     {{ form_row(formRecette.utilisateur)}}
+                    {{ form_row(formRecette.createAt)}}
                     {{ form_row(formRecette.description)}}
                     {{ form_row(formRecette.montantrecette, {'attr' :{'required':'required'}})}}
                     {{ form_row(formRecette.sauvegarder)}}
@@ -155,4 +156,6 @@
 {{ parent() }}
 <script type="text/javascript" src="{{ asset('build/js/moment.js') }}"></script>
  <script type="text/javascript" src="{{ asset('build/js/chartRecette.js') }}"></script>
+ <script type="text/javascript" src="{{ asset('build/js/formatterDate.js') }}"></script>
+ 
 {% endblock %}

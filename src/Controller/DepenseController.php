@@ -65,8 +65,15 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
             ->add('id', HiddenType::class
                 ,['mapped'=> false])
             ->add('libele')
-            ->add('createAt', DateType::class)
-            ->add('montantdepense')
+            ->add('createAt', DateType::class, array(
+                'widget' => 'single_text',
+                // this is actually the default format for single_text
+                'format' => 'yyyy-MM-dd',
+                'label'=>'Date '
+            ))
+            ->add('montantdepense', IntegerType::class, array(
+                'label'=>'Montant'
+            ))
             ->add('utilisateurdepense', EntityType::class, array(
                 'class'  => Personne::class,
                
@@ -90,7 +97,12 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
                 'label'=>'Comptable'
             ))
             ->add('numOp')
-            ->add('dateEmission', DateType::class)
+            ->add('dateEmission', DateType::class, array(
+                'widget' => 'single_text',
+                // this is actually the default format for single_text
+                'format' => 'yyyy-MM-dd',
+                'label'=>'Date emission'
+            ))
             ->add('modePaiement', ChoiceType::class, [
                 'choices'=>[
                     'CASH'=>'CASH',
@@ -130,29 +142,29 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
             ])
 
             ->add('autoriserChefService', CheckboxType::class, [
-                'attr'=>[
+               
                 'label'=>'Autorisation du Chef de Service',
-                 ]
+             
             ])
             ->add('autoriserSG', CheckboxType::class, [
-                'attr'=>[
+               
                 'label'=>'Autorisation du SG',
-                 ]
+               
             ])
             ->add('autoriserAB', CheckboxType::class, [
-                'attr'=>[
+               
                 'label'=>'Autorisation de l\'AB',
-                 ]
+                 
             ])
             ->add('autoriserRecteur', CheckboxType::class, [
-                'attr'=>[
+               
                 'label'=>'Autorisation du Recteur',
-                 ]
+               
             ])
             ->add('isCentralyzed', CheckboxType::class, [
-                'attr'=>[
-                'label'=>'centraliser',
-                 ]
+               
+                'label'=>'Centraliser',
+                
             ])
 
             ->add('ligneBudgetaire', EntityType::class, array(

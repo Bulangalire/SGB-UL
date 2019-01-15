@@ -13,6 +13,7 @@
                     {{ form_row(formDetailRecette.lignebudgetrecette)}}
                     {{ form_row(formDetailRecette.utilisateur)}}
                     {{ form_row(formDetailRecette.description)}}
+                    {{ form_row(formDetailRecette.createAt)}}
                     {{ form_row(formDetailRecette.montantrecette, {'attr' :{'required':'required'}})}}
                     {{ form_row(formDetailRecette.sauvegarder)}}
                     {{ form_end(formDetailRecette)}}
@@ -29,7 +30,7 @@
                             </tr>
                             <tr>
                                 <th scope="col">Code</th>
-                                <th scope="col">Libelé</th>
+                                <th scope="col">Description</th>
                                  <th scope="col">Competable</th>
                                 <th scope="col">Date </th>
                                 <th scope="col">Montant</th>
@@ -46,7 +47,7 @@
                                         {{num}}
                                     </td>
                                     <td>
-                                        {{ recette.libelle }}
+                                        {{ recette.description }}
                                     </td>
                                    
                                     <td>
