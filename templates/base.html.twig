@@ -79,6 +79,12 @@
                     </li>
                      {% endif %}
 
+                      {% if (is_authorized(app.user, "Plantresorerie"))   %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{path('selectparamPlantresorerie')}}">Plan Hebdo</a>
+                    </li>
+                     {% endif %}
+
 
 
                     {% if (is_authorized(app.user, "Decaisser"))   %}

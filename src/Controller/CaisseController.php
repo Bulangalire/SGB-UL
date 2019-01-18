@@ -25,6 +25,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -315,7 +316,7 @@ class CaisseController extends AbstractController{
                 'label'=>'Recette')
                 )
             
-            ->add('montantdetail', IntegerType::class, [
+            ->add('montantdetail', NumberType::class, [
                 'data'=> $depense==null?  $detaildepense->getMontantdetail() : $depense->getSoldeDepense(),
                 'label'=>'Montant'
             ] )
@@ -396,7 +397,6 @@ class CaisseController extends AbstractController{
             $detaildepense->setDepenseId($depense);
             $frmDecaisser->handleRequest($request);
 
-            dump($detaildepense->getDepenseId()->getSoldeDepense() );
             if( $frmDecaisser->isSubmitted() &&  $frmDecaisser->isValid()){
                 
                
@@ -486,7 +486,7 @@ class CaisseController extends AbstractController{
             AND r.createAt >=:debut  
             AND r.createAt <=:fin group by p.id ORDER BY p.service ASC');
             $queryMaCaisse->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
-
+           
             $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense 
             FROM   App\Entity\Detaildepense d 
             JOIN d.lignebudgetdepense p 
@@ -506,15 +506,15 @@ class CaisseController extends AbstractController{
             group by p.id ORDER BY p.service ASC');
             $queryDepense->setParameters(array('userservice' =>$service,'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
 
-        $queryMaCaisse = $em->createQuery('SELECT r as mesrecettes, 
-        sum(r.montantrecette) as montantrecette, 
-        p FROM  App\Entity\Recette r 
-        JOIN r.lignebudgetrecette p  
-        WHERE p.service=:userservice 
-        AND p.anneebudgetprevision=:anneebudgetselect 
-        AND r.createAt >=:debut 
-        AND r.createAt <=:fin group by p.id');
-        $queryMaCaisse->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+            $queryMaCaisse = $em->createQuery('SELECT r as mesrecettes, 
+            sum(r.montantrecette) as montantrecette, 
+            p FROM  App\Entity\Recette r 
+            JOIN r.lignebudgetrecette p  
+            WHERE p.service=:userservice 
+            AND p.anneebudgetprevision=:anneebudgetselect 
+            AND r.createAt >=:debut 
+            AND r.createAt <=:fin group by p.id');
+            $queryMaCaisse->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
 
     }
 }elseif($axe!==""){
@@ -577,13 +577,11 @@ class CaisseController extends AbstractController{
     }
 
 
-function dateDifference($datedebut ,  $datefin )
+function dateDifference($datedebut, $datefin)
 {
     $datetime1 = date_create($datedebut);
     $datetime2 = date_create($datefin);
-  
     $interval = $datetime2->diff($datetime1);
-  
     return $interval->days>366? true : false;
 }
 

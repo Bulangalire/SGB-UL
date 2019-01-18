@@ -1,0 +1,62 @@
+  <link rel="stylesheet" href= {{ asset('build/css/app.css') }}>
+{% block body %}
+    <style>
+        .example-wrapper {
+            margin: 1em auto;
+            max-width: 800px;
+            width: 95%;
+            font: 18px/1.5 sans-serif;
+        }
+        .example-wrapper code {
+            background: #F5F5F5;
+            padding: 2px 6px;
+        }
+    </style>
+
+    <div class="example-wrapper">
+        <h1>Choix année budgétaire</h1>
+       
+
+        <form action="{{ path('planTresorerie') }}" method="post">
+            <div class="form-group">
+                <select required="required" name="annees" class="form-control">
+                    <option value="">--Choisir une année budgetaire
+                    </option>
+                    {% for annee in annees %}
+                        <option value="{{annee.id}}">{{annee.anneebudget}}</option>
+                    {% endfor %}
+                </select>
+
+            </div>
+
+             <div class="form-group">
+                 {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE')  %}
+                   <select disabled="disabled" name="services" class="form-control">
+                    <option readonly="true" value="{{app.user.services.id}}">{{app.user.services.designation}}
+                    </option>
+                    {% for service in services %}
+                        <option value="{{service.id}}">{{service.designation}}</option>
+                    {% endfor %}
+                </select>
+                {% else %}
+                <select required="required" name="services" class="form-control">
+                    <option value="{{app.user.services.id}}">{{app.user.services.designation}}
+                    </option>
+                    <option value="*">Tous</option>
+                    {% for service in services %}
+                        <option value="{{service.id}}">{{service.designation}}</option>
+                    {% endfor %}
+                </select>
+                 {% endif %}
+                </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">
+                    Continuer
+                </button>
+
+            </div>
+             <a class="btn btn-success" href="{{path('home')}}">Quitter</a>
+        </form>
+
+    </div>
+{% endblock %}

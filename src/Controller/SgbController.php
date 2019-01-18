@@ -13,6 +13,7 @@ use App\Entity\Detaildepense;
 use App\Entity\Anneebudgetaire;
 use App\Entity\LigneBudgetaire;
 use App\Entity\Previsionbudget;
+use App\Entity\Plantresorerie;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Twig\AppVariable;
@@ -46,6 +47,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Mukadi\Chart\Utils\RandomColorFactory;
 use Mukadi\Chart\Chart;
@@ -470,14 +472,13 @@ class SgbController extends AbstractController
            }
       if(!$prevision){
         $prevision = new Previsionbudget();
-        $recette = new Recette();
-    }
+     }
     $em = $this->getDoctrine()->getManager();
     //Creation de variable de session pour les parametres des requêtes
     // Année budgetaire
     if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
         $session->set('anneeselect',$request->request->get('annees') );
-       }
+    }
     $anneebudgetselect =  $session->get('anneeselect');
 
      // Catégorie
@@ -532,7 +533,7 @@ class SgbController extends AbstractController
             ),
             'label'=> 'Déjà valider',
         ])
-        ->add('montantprevision', IntegerType::class, array(
+        ->add('montantprevision', NumberType::class, array(
             'label'=> 'Montant',
         )
 
@@ -664,7 +665,6 @@ class SgbController extends AbstractController
                                 WHERE r.lignebudgetrecette=:ligne');
                                 $recettePrevision->setParameters(array('ligne'=>$prevision->getId()));
                                 $recettePrev = $recettePrevision->getResult();
-                                dump($recettePrev);
                                 $manager->flush();
                                 return $this->redirectToRoute('sgb_prevision'); 
                             }
@@ -679,21 +679,23 @@ class SgbController extends AbstractController
                                 }else{
                                     $manager->persist($prevision);
                                     $manager->flush();
-                                    $recettePrevision = $em->createQuery('
-                                    SELECT r
-                                    FROM  App\Entity\Recette r 
-                                    WHERE r.lignebudgetrecette=:ligne');
-                                    $recettePrevision->setParameters(array('ligne'=>$prevision->getId()));
-                                    $recettePrev = $recettePrevision->getResult();
 
+                                 
                                     if($prevision->getLignebudgetprevision()->getCategorieLigne()=="Recette"){
-                                    $recette->setMontantrecette(0);
-                                    $recette->setCreateAt(new \DateTime());
-                                    $recette->setUtilisateur($this->getUser());
-                                    $recette->setLignebudgetrecette($prevision);
-                                    $manager->persist($recette);
-                                    $manager->flush();
-                                    }
+
+                                        if(!$em->getRepository(Recette::class)->findByLignebudgetrecette($prevision)){
+                                            if(!$recette){
+                                                $recette = new Recette();
+                                            }
+                                            $recette->setMontantrecette(0);
+                                            $recette->setCreateAt(new \DateTime());
+                                            $recette->setUtilisateur($this->getUser());
+                                            $recette->setLignebudgetrecette($prevision);
+                                            $manager->persist($recette);
+                                            $manager->flush();
+                                        }        
+                                    
+                                        }
                                     return $this->redirectToRoute('sgb_prevision'); 
                                 }
                         }
@@ -778,7 +780,7 @@ class SgbController extends AbstractController
 
             $formRecette= $this->createFormBuilder($recette)
                             ->add('libelle')
-                            ->add('montantrecette', IntegerType::class, [
+                            ->add('montantrecette', NumberType::class, [
                                 'label'=>'Montant'
                             ])                           
                             ->add('description')
@@ -911,7 +913,7 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
     $em = $this->getDoctrine()->getManager();
     $formDetailRecette= $this->createFormBuilder($recette)
     ->add('libelle')
-    ->add('montantrecette', IntegerType::class, [
+    ->add('montantrecette', NumberType::class, [
         'label'=>'Montant'
     ] )                           
     ->add('description')
@@ -1018,6 +1020,182 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
         'formDetailRecette'=>$formDetailRecette->createView(), 'resultatDetailRecetteGraphic'=> $resultatDetailRecetteGraphic, 'resultatDetailRecette'=> $resultatDetailRecette 
     ]);
 }
+
+/**
+ * @Route("/sgb/depense/planTresorerie", name="planTresorerie")
+ *  @Route("/sgb/depense/planTresorerie/{id}", name="planTresorerie_edit")
+ * @Route("/sgb/depense/planTresorerie/{error}", name="electparamPlanError")
+ */
+public function planTresorerie($error=null, Plantresorerie $plantresorerie=null, Request $request, ObjectManager $manager){
+    if($this->getUser()===null) {              
+        return $this->redirectToRoute('user_login');
+       }
+      
+        if($error){
+            $error="Les jours depensent une semaine";
+        }
+     
+     
+    $session = $request->getSession();
+    // Creation de variable de session pour les parametres des requêtes
+    // Année budgetaire
+    if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
+        $session->set('anneeselect',$request->request->get('annees') );
+    }
+    $anneebudgetselect= $session->get('anneeselect');
+        
+   // Service
+   if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+    $session->set('servicesselect', $this->getUser()->getServices()->getId() );
+    $service= $session->get('servicesselect');
+    }else{
+    // Service
+    if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
+        $session->set('servicesselect',$request->request->get('services') );
+    }
+    $service= $session->get('servicesselect');
+    }
+
+    if(!$plantresorerie){
+        $plantresorerie= new Plantresorerie();
+    }
+
+    $em = $this->getDoctrine()->getManager();
+    $formPlanTresorerie= $this->createFormBuilder( $plantresorerie)
+    ->add('lignebudget', EntityType::class, array(
+        'class'  => Previsionbudget::class,
+        'placeholder'=>'Choisissez une ligne budgétaire',
+        'query_builder'=>function(EntityRepository $er)use ($service, $anneebudgetselect){
+            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')  ){
+            return $er->createQueryBuilder('p')
+                        ->join('p.lignebudgetprevision', 'l')
+                        ->where('p.service=:ceService')
+                        ->andWhere('p.iscentraliser=false')
+                        ->andWhere('p.isValideted=true')
+                        ->andWhere('p.anneebudgetprevision=:annee')
+                        ->setParameter('ceService', $service)
+                        ->setParameter('annee', $anneebudgetselect);
+                    }else{
+                        return $er->createQueryBuilder('p')
+                        ->join('p.lignebudgetprevision', 'l')
+                        ->where('p.service=:ceService')
+                        ->andWhere('p.iscentraliser=true')
+                        ->andWhere('p.anneebudgetprevision=:annee')
+                        ->setParameter('ceService', $service)
+                        ->setParameter('annee', $anneebudgetselect);
+                    }
+
+                },
+        'choice_label'=>'lignebudgetprevision.intituleLigne',
+        'label'=>'Compte')
+        )
+    ->add('observation')
+    ->add('faculte', EntityType::class, array(
+        'class'  => Service::class,
+        'data' =>  $em->getRepository(Service::class)->find($service),
+        'choice_label' => 'designation',
+    ))
+   
+    ->add('besoin', NumberType::class, [
+        'label'=>'Besoin'
+    ] )
+    ->add('realisation', NumberType::class, [
+        'label'=>'Realisation',
+        'data'=>0
+    ] ) 
+    ->add('datedebut', DateType::class, array(
+        'widget' => 'single_text',
+        // this is actually the default format for single_text
+        'format' => 'yyyy-MM-dd',
+        'label'=>'Date debut semaine'
+    ))
+    ->add('datefin', DateType::class, array(
+        'widget' => 'single_text',
+        // this is actually the default format for single_text
+        'format' => 'yyyy-MM-dd',
+        'label'=>'Date fin semaine'
+       
+    ))
+
+    ->add('valider', ChoiceType::class,[
+        'choices'=>array(
+            ""=>false,
+            'Valider'=>true,
+            'Non valider'=>false,
+        ),
+        'label'=> 'Déjà valider',
+    ])
+    ->getForm();  
+
+    $formPlanTresorerie->handleRequest($request);
+    
+    if( $formPlanTresorerie->isSubmitted() &&  $formPlanTresorerie->isValid()){
+
+
+
+        if($em->getRepository("\App\Entity\Plantresorerie")->findOneBy(
+            array('lignebudget'=>$plantresorerie->getLignebudget(), 
+            'faculte'=>$plantresorerie->getFaculte(), 
+            'datedebut'=>$plantresorerie->getDatedebut(), 
+            'datefin'=>$plantresorerie->getDatefin()
+            )            )){
+                echo '<h2 style="color:red;"> ce plan de tresorerie existe déjà </h2>';
+            }else{
+
+
+            if($this->dateSemaine($plantresorerie->getDatedebut()->format('Y-m-d H:i:s'),  
+                                    $plantresorerie->getDatefin()->format('Y-m-d H:i:s')
+                                )){
+                                return $this->redirectToRoute('electparamPlanError', array(
+                    'error'=>'error'
+                ));
+            }
+    
+        if($plantresorerie->getFaculte()==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
+            $plantresorerie->setFaculte($this->getUser()->getServices());
+         }
+         if($plantresorerie->getValider()==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
+            $plantresorerie->setValider(false);
+        }
+
+        $manager->persist($plantresorerie);
+        $manager->flush(); 
+     }
+        return $this->redirectToRoute('planTresorerie');
+
+    }                     
+                       
+    return $this->render('sgb/depense/planTresorerie.html.twig',[
+        'formPlanTresorerie'=>$formPlanTresorerie->createView(),
+        'error'=>$error
+        
+]);
+}
+
+
+function dateSemaine($datedebut, $datefin)
+{
+    $datetime1 = date_create($datedebut);
+    $datetime2 = date_create($datefin);
+    $interval = $datetime2->diff($datetime1);
+    return $interval->days>6? true : false;
+}
+
+/**
+ * @Route("/sgb/depense/selectparamPlantresorerie", name="selectparamPlantresorerie")
+ */
+public function setParamPlantresorerie(){
+    
+    $em = $this->getDoctrine()->getManager();
+    $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
+    $services = $em->getRepository(Service::class)->findAll();
+    return $this->render('sgb/depense/selectparamPlantresorerie.html.twig',
+    [
+        'annees'=>$annees,
+        'services'=> $services
+    ]);
+}
+
 
 /**
  * @Route("/sgb/recette/selectparameters", name="selectparameters")

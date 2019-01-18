@@ -22,6 +22,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -71,7 +72,7 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
                 'format' => 'yyyy-MM-dd',
                 'label'=>'Date '
             ))
-            ->add('montantdepense', IntegerType::class, array(
+            ->add('montantdepense', NumberType::class, array(
                 'label'=>'Montant'
             ))
             ->add('utilisateurdepense', EntityType::class, array(

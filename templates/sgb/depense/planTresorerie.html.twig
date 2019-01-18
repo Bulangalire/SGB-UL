@@ -1,0 +1,114 @@
+{% extends 'base.html.twig' %}
+{% form_theme formPlanTresorerie 'bootstrap_4_layout.html.twig' %}
+{% block body %}
+    <h3>Plan de tresorerie hebdomadaire
+    </h3>
+    {{error}}
+        
+            {% if error is not same as (null) %}
+            <h5 style="color:red;"></h5>
+            {% endif %}
+       
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    {{ form_start(formPlanTresorerie)}}
+                    {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE')  %}
+                    {{ form_row(formPlanTresorerie.faculte, {'attr': {'selected':'{{app.user.services.designation }}', 'disabled': 'disabled' }})}}
+                    {% else %}
+                        {{ form_row(formPlanTresorerie.faculte, {'attr': {'selected':'{{ app.user.services.designation }}' }})}}
+                    {% endif %}
+                   
+
+                </td>
+
+                <td>
+                    {{ form_row(formPlanTresorerie.lignebudget)}}
+                </td>
+
+                <td>
+                 {{ form_row(formPlanTresorerie.besoin)}}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    {{ form_row(formPlanTresorerie.realisation)}}
+                </td>
+                <td>
+                    {{ form_row(formPlanTresorerie.datedebut)}}
+                </td>
+                <td>
+                     {{ form_row(formPlanTresorerie.datefin)}}
+                </td>
+            </tr>
+            
+            <tr>
+                <td>
+                  {% if is_granted('ROLE_COMPTABILITE') or is_granted('ROLE_AB')  or is_granted('ROLE_ADMIN')   %}
+                         {{ form_row(formPlanTresorerie.valider)}}
+                {% else %}
+                        {{ form_row(formPlanTresorerie.valider, {'attr': {'disabled': 'disabled' }})}}
+                 {% endif %}
+                </td>
+                <td>
+                  {{ form_row(formPlanTresorerie.observation)}}
+                </td>
+                <td>
+               
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button id="addPlantresorerie" type="submit" name="send" class="btn btn-success">
+                        Sauvegarder</button>
+                </td>
+                <td>
+                    <h5></h5>
+
+                </td>
+                <td></td>
+            </tr>
+
+            {{ form_end(formPlanTresorerie)}}
+
+            <tr>
+                <td colspan='3'>
+                    <table class="table table-hover">
+
+                        <thead>
+                            <tr class="table-primary" >
+                                <th colspan='7'>
+                                    Les previsions budgetaire de {{app.session.get('categorieselect')}}</th>
+                                    
+                                
+                            </tr>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Rubrique</th>
+                                <th scope="col">Ligne</th>
+                                <th scope="col">Service</th>
+                                <th scope="col">Année</th>
+                                <th scope="col">Montant</th>
+                                <th scope="col">Action</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                      
+                        </tbody>
+                    </table>
+
+                </td>
+            </tr>
+
+           
+
+        </tbody>
+    </table>
+{% endblock %}
+ {% block javascripts %}
+{{ parent() }}
+<script type="text/javascript" src="{{ asset('build/js/moment.js') }}"></script>
+ <script type="text/javascript" src="{{ asset('build/js/chartPrevision.js') }}"></script>
+{% endblock %}
