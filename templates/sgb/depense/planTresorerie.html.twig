@@ -11,18 +11,9 @@
        
     <table>
         <tbody>
-            <tr>
-                <td>
                     {{ form_start(formPlanTresorerie)}}
-                    {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE')  %}
-                    {{ form_row(formPlanTresorerie.faculte, {'attr': {'selected':'{{app.user.services.designation }}', 'disabled': 'disabled' }})}}
-                    {% else %}
-                        {{ form_row(formPlanTresorerie.faculte, {'attr': {'selected':'{{ app.user.services.designation }}' }})}}
-                    {% endif %}
-                   
-
-                </td>
-
+            <tr>
+               
                 <td>
                     {{ form_row(formPlanTresorerie.lignebudget)}}
                 </td>
@@ -30,31 +21,32 @@
                 <td>
                  {{ form_row(formPlanTresorerie.besoin)}}
                 </td>
-            </tr>
-            <tr>
                 <td>
                     {{ form_row(formPlanTresorerie.realisation)}}
                 </td>
+            </tr>
+            <tr>
+                
                 <td>
-                    {{ form_row(formPlanTresorerie.datedebut)}}
+                    {{ form_row(formPlanTresorerie.dateDebut)}}
                 </td>
                 <td>
-                     {{ form_row(formPlanTresorerie.datefin)}}
+                     {{ form_row(formPlanTresorerie.dateFin)}}
+                </td>
+                 <td>
+                 {{ form_row(formPlanTresorerie.valider)}}
                 </td>
             </tr>
             
             <tr>
-                <td>
-                  {% if is_granted('ROLE_COMPTABILITE') or is_granted('ROLE_AB')  or is_granted('ROLE_ADMIN')   %}
-                         {{ form_row(formPlanTresorerie.valider)}}
-                {% else %}
-                        {{ form_row(formPlanTresorerie.valider, {'attr': {'disabled': 'disabled' }})}}
-                 {% endif %}
-                </td>
+               
                 <td>
                   {{ form_row(formPlanTresorerie.observation)}}
                 </td>
                 <td>
+               
+                </td>
+                 <td>
                
                 </td>
             </tr>
@@ -64,8 +56,6 @@
                         Sauvegarder</button>
                 </td>
                 <td>
-                    <h5></h5>
-
                 </td>
                 <td></td>
             </tr>
@@ -73,42 +63,199 @@
             {{ form_end(formPlanTresorerie)}}
 
             <tr>
-                <td colspan='3'>
-                    <table class="table table-hover">
-
+            <td colspan='3'>
+    <!--            
+   <a href="{{path('print_plantresor')}}">
+    <img src="{{ asset('/img/add.jpg') }}"/></a>-->
+                <table class="table table-hover">
                         <thead>
-                            <tr class="table-primary" >
-                                <th colspan='7'>
-                                    Les previsions budgetaire de {{app.session.get('categorieselect')}}</th>
-                                    
-                                
-                            </tr>
-                            <tr>
-                                <th scope="col">ID</th>
-                                <th scope="col">Rubrique</th>
-                                <th scope="col">Ligne</th>
-                                <th scope="col">Service</th>
-                                <th scope="col">Année</th>
-                                <th scope="col">Montant</th>
-                                <th scope="col">Action</th>
-
+                            <tr class="table-primary">
+                                <th scope="col">N°</th>
+                                <th scope="col">Compte</th>
+                                <th scope="col">intitulé</th>
+                                <th scope="col">Besoin</th>
+                                <th scope="col">Réalisation</th>
+                                <th scope="col">Observation</th>
+                                <th scope="col">Modifier</th>
                             </tr>
                         </thead>
                         <tbody>
-                      
+
+                            {% set sousTotauxBesoinRecette = 0 %}
+                            {% set sousTotauxRealisationRecette = 0 %}
+
+
+                           
+                            {% set dateDebut = app.session.get('datedebutselect') %}
+                            {% set dateFin = app.session.get('datefinselect') %}
+                            {% set difference = date(dateFin | date()).diff(date(dateDebut)) %}
+                            {% set leftDays = difference.days %}
+
+
+                            {% set numDepense = 0 %}
+                            {% for planTresorerie in planTresorRecette %}
+                                <tr>
+                                    <th scope="row">
+                                        {% set numDepense = numDepense + 1 %}
+                                        {{ numDepense }}
+                                    </th>
+                                  
+                                    <td>
+                                        {{planTresorerie.compteLigne}}</td>
+                                    <td>
+                                        {{planTresorerie.intituleLigne}}</td>
+
+                                    <td>
+                                        {% set sousTotauxBesoinRecette = sousTotauxBesoinRecette + planTresorerie.besoin %}
+                                        {{ planTresorerie.besoin |number_format(2, '.',',')}}
+                                    </td>
+                                    <td>
+                                       {% set sousTotauxRealisationRecette = sousTotauxRealisationRecette + planTresorerie.realisation %}
+                                        {{ planTresorerie.realisation|number_format(2, '.',',')}}
+                                    </td>
+
+                                    
+                                    <td>
+                                        {{ planTresorerie.Observation}}
+                                    </td>
+                                    <td>
+                                <!-- Permet la modification d'un plan de tresorerie que si elle n'est pas encore valider ou que pour l'audit internt ou la comtabilite-->
+                                    {% if planTresorerie.valider is same as(false) or is_granted('ROLE_COMPTABILITE') or is_granted('ROLE_ADMIN') or is_granted('ROLE_AUDIT')%}
+                                       <a href="{{path('planTresorerie_edit', {'id':planTresorerie.id})}}">
+                                            <img src="{{ asset('/img/add.jpg') }}"/></a>
+                                            &nbsp; &nbsp;
+                                        <a class="confirmModalLink" data-toggle="modal" href="{{path('delete_plantresor',{'id':planTresorerie.id})}}">
+                                            <i class="glyphicon glyphicon-trash"></i>
+                                            <img src="{{ asset('/img/delete1.png') }}"/></a>
+                                        {% endif %}
+                                        <div class="modal hide fade" id="confirmModal">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                        <h4 class="modal-title">Confirmation de la suppression</h4>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Etes-vous sur de vouloir supprimer cette information !
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <a href="#" class="btn btn-primary" id="confirmModalNo">Non</a>
+                                                        <a href="#" class="btn btn-primary" id="confirmModalYes">Oui</a>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    
+
+                                    </td>
+                                   
+                                </tr>
+                            {% endfor %}
+                            <tr class="table-primary">
+                                <th scope="row"></th>
+                                <td></td>
+                                <td>Sous-totaux Recette</td>
+                                <td>{{sousTotauxBesoinRecette|number_format(2, '.',',')}}</td>
+                                <td>{{sousTotauxRealisationRecette|number_format(2, '.',',')}}</td>
+                                 <td></td>
+                                 <td></td>
+                            </tr>
+
+                            <!-- LES DEPENSES -->
+                            
+                            {% set sousTotauxBesoinDepense = 0 %}
+                            {% set sousTotauxRealisationDepense = 0 %}
+                            {% set numDepense = 0 %}
+                            {% for planTresorerieDepense in planTresorDepense %}
+
+                                <tr>
+                                    <th scope="row">
+                                        {% set numDepense = numDepense + 1 %}
+                                        {{ numDepense }}
+                                    </th>
+                                     <td>
+                                        {{planTresorerieDepense.compteLigne}}</td>
+                                    <td>
+                                        {{planTresorerieDepense.intituleLigne}}</td>
+
+                                    <td>
+                                        {% set sousTotauxBesoinDepense = sousTotauxBesoinDepense + planTresorerieDepense.besoin %}
+                                        {{ planTresorerieDepense.besoin |number_format(2, '.',',')}}
+                                    </td>
+                                    <td>
+                                       {% set sousTotauxRealisationDepense = sousTotauxRealisationDepense + planTresorerieDepense.realisation %}
+                                        {{ planTresorerieDepense.realisation|number_format(2, '.',',')}}
+                                    </td>
+
+                                    
+                                    <td>
+                                        {{ planTresorerieDepense.Observation}}
+                                    </td>
+                                    <td>
+                                       
+
+                                    <!-- Permet la modification d'un plan de tresorerie que si elle n'est pas encore valider ou que pour l'audit internt ou la comtabilite-->
+                                    {% if planTresorerieDepense.valider is same as(false) or is_granted('ROLE_COMPTABILITE') or is_granted('ROLE_ADMIN') or is_granted('ROLE_AUDIT')%}
+                                       <a href="{{path('planTresorerie_edit', {'id':planTresorerieDepense.id})}}">
+                                            <img src="{{ asset('/img/add.jpg') }}"/></a>
+                                            &nbsp; &nbsp;
+                                        <a class="confirmModalLink" data-toggle="modal" href="{{path('delete_plantresor',{'id':planTresorerieDepense.id})}}">
+                                            <i class="glyphicon glyphicon-trash"></i>
+                                            <img src="{{ asset('/img/delete1.png') }}"/></a>
+                                        {% endif %}
+                                        <div class="modal hide fade" id="confirmModal">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                        <h4 class="modal-title">Confirmation de la suppression</h4>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Etes-vous sur de vouloir supprimer cette information !
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <a href="#" class="btn btn-primary" id="confirmModalNo">Non</a>
+                                                        <a href="#" class="btn btn-primary" id="confirmModalYes">Oui</a>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    
+
+
+
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            <tr class="table-primary">
+                            <th scope="row"></th>
+                                <td></td>
+                                <td>Sous-totaux Depense</td>
+                                <td>{{sousTotauxBesoinDepense|number_format(2, '.',',')}}</td>
+                                <td>{{sousTotauxRealisationDepense|number_format(2, '.',',')}}</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr class="table-primary">
+                            <th scope="row"></th>
+                                <td></td>
+                                <td>Solde</td>
+                                <td>{{(sousTotauxBesoinRecette - sousTotauxBesoinDepense)|number_format(2, '.',',')}}</td>
+                                <td>{{(sousTotauxRealisationRecette - sousTotauxRealisationDepense)|number_format(2, '.',',')}}</td>
+                                   <td></td>
+                                   <td></td>
+                            </tr>
                         </tbody>
                     </table>
-
                 </td>
             </tr>
-
-           
-
         </tbody>
     </table>
 {% endblock %}
  {% block javascripts %}
 {{ parent() }}
 <script type="text/javascript" src="{{ asset('build/js/moment.js') }}"></script>
- <script type="text/javascript" src="{{ asset('build/js/chartPrevision.js') }}"></script>
+
 {% endblock %}

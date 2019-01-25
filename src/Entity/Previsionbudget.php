@@ -200,10 +200,7 @@ class Previsionbudget
         return $this->getRecettes()-$this->getRecettesUtiliseesEnDepenses();
     }
 
-    public function __toString(){
-        return $this->service. " " .$this->nom;
-    }
-
+   
     public function getIsValideted(): ?bool
     {
         return $this->isValideted;

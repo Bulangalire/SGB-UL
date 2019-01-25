@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PlantresorerieRepository")
@@ -19,11 +20,13 @@ class Plantresorerie
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Previsionbudget")
      * @ORM\JoinColumn(nullable=false)
+     * @Assert\NotBlank
      */
     private $lignebudget;
 
     /**
      * @ORM\Column(type="float")
+     * @Assert\NotBlank
      */
     private $besoin;
 
@@ -38,12 +41,6 @@ class Plantresorerie
     private $Observation;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Service")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $faculte;
-
-    /**
      * @ORM\Column(type="datetime")
      */
     private $dateDebut;
@@ -54,7 +51,7 @@ class Plantresorerie
     private $dateFin;
 
     /**
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="boolean", nullable=true)
      */
     private $valider;
 
@@ -107,18 +104,6 @@ class Plantresorerie
     public function setObservation(?string $Observation): self
     {
         $this->Observation = $Observation;
-
-        return $this;
-    }
-
-    public function getFaculte(): ?Service
-    {
-        return $this->faculte;
-    }
-
-    public function setFaculte(?Service $faculte): self
-    {
-        $this->faculte = $faculte;
 
         return $this;
     }

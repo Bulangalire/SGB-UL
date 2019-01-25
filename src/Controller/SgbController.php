@@ -51,6 +51,8 @@ use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Mukadi\Chart\Utils\RandomColorFactory;
 use Mukadi\Chart\Chart;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class SgbController extends AbstractController
 {
@@ -710,7 +712,7 @@ class SgbController extends AbstractController
     }
 
 /**
-     * @Route("/sgb/prevision/prevision{id}/delete", name="delete_prevision")
+     * @Route("/sgb/prevision/prevision/{id}/delete", name="delete_prevision")
      */
     public function deleteprevision(Previsionbudget $prevision = null, Request $request, ObjectManager $manager){
         if(!$prevision){ 
@@ -1023,7 +1025,7 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
 
 /**
  * @Route("/sgb/depense/planTresorerie", name="planTresorerie")
- *  @Route("/sgb/depense/planTresorerie/{id}", name="planTresorerie_edit")
+ * @Route("/sgb/depense/planTresorerie/{id}", name="planTresorerie_edit")
  * @Route("/sgb/depense/planTresorerie/{error}", name="electparamPlanError")
  */
 public function planTresorerie($error=null, Plantresorerie $plantresorerie=null, Request $request, ObjectManager $manager){
@@ -1034,7 +1036,10 @@ public function planTresorerie($error=null, Plantresorerie $plantresorerie=null,
         if($error){
             $error="Les jours depensent une semaine";
         }
-     
+        if(!$plantresorerie){
+            $plantresorerie= new Plantresorerie();
+        }
+    
      
     $session = $request->getSession();
     // Creation de variable de session pour les parametres des requêtes
@@ -1055,11 +1060,26 @@ public function planTresorerie($error=null, Plantresorerie $plantresorerie=null,
     }
     $service= $session->get('servicesselect');
     }
+    // Période  
+    // Début periode
+    if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
+        $session->set('datedebutselect',$request->request->get('datedebut') );
+    }
+    $datedebut = $session->get('datedebutselect');
 
-    if(!$plantresorerie){
-        $plantresorerie= new Plantresorerie();
+    // Fin période
+    if($request->request->get('datefin')!==null && $request->request->get('datefin') <> $session->get('datefinselect') ){
+        $session->set('datefinselect',$request->request->get('datefin') );
+    }
+    $datefin =  $session->get('datefinselect');
+
+    if($this->dateSemaine($datedebut ,  $datefin )){
+        return $this->redirectToRoute('selectparamPlantresoError', array(
+            'error'=>'error'
+        ));
     }
 
+    
     $em = $this->getDoctrine()->getManager();
     $formPlanTresorerie= $this->createFormBuilder( $plantresorerie)
     ->add('lignebudget', EntityType::class, array(
@@ -1079,44 +1099,41 @@ public function planTresorerie($error=null, Plantresorerie $plantresorerie=null,
                         return $er->createQueryBuilder('p')
                         ->join('p.lignebudgetprevision', 'l')
                         ->where('p.service=:ceService')
-                        ->andWhere('p.iscentraliser=true')
+                        ->andWhere('p.iscentraliser=false')
+                        ->andWhere('p.isValideted=true')
                         ->andWhere('p.anneebudgetprevision=:annee')
                         ->setParameter('ceService', $service)
                         ->setParameter('annee', $anneebudgetselect);
                     }
-
                 },
-        'choice_label'=>'lignebudgetprevision.intituleLigne',
-        'label'=>'Compte')
-        )
-    ->add('observation')
-    ->add('faculte', EntityType::class, array(
-        'class'  => Service::class,
-        'data' =>  $em->getRepository(Service::class)->find($service),
-        'choice_label' => 'designation',
+        'choice_label'=>function( Previsionbudget $previsionbudget) {
+            
+                return $previsionbudget->getLignebudgetprevision()->getIntituleLigne(). "  (".$previsionbudget->getLignebudgetprevision()->getCategorieLigne().")";
+            },
+        'label'=>'Compte',
     ))
-   
+    ->add('observation')
+    
     ->add('besoin', NumberType::class, [
         'label'=>'Besoin'
     ] )
     ->add('realisation', NumberType::class, [
         'label'=>'Realisation',
-        'data'=>0
+        'required' => false
     ] ) 
-    ->add('datedebut', DateType::class, array(
+    ->add('dateDebut', DateType::class, array(
         'widget' => 'single_text',
         // this is actually the default format for single_text
         'format' => 'yyyy-MM-dd',
         'label'=>'Date debut semaine'
     ))
-    ->add('datefin', DateType::class, array(
+    ->add('dateFin', DateType::class, array(
         'widget' => 'single_text',
         // this is actually the default format for single_text
         'format' => 'yyyy-MM-dd',
         'label'=>'Date fin semaine'
        
     ))
-
     ->add('valider', ChoiceType::class,[
         'choices'=>array(
             ""=>false,
@@ -1126,52 +1143,180 @@ public function planTresorerie($error=null, Plantresorerie $plantresorerie=null,
         'label'=> 'Déjà valider',
     ])
     ->getForm();  
-
-    $formPlanTresorerie->handleRequest($request);
     
+    if($plantresorerie->getId()!==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
+        $session->set('valideEtat',$em->getRepository(Plantresorerie::class)->find($plantresorerie)->getValider());
+    }
+        $formPlanTresorerie->handleRequest($request);
     if( $formPlanTresorerie->isSubmitted() &&  $formPlanTresorerie->isValid()){
-
-
-
+      
         if($em->getRepository("\App\Entity\Plantresorerie")->findOneBy(
             array('lignebudget'=>$plantresorerie->getLignebudget(), 
-            'faculte'=>$plantresorerie->getFaculte(), 
-            'datedebut'=>$plantresorerie->getDatedebut(), 
-            'datefin'=>$plantresorerie->getDatefin()
-            )            )){
-                echo '<h2 style="color:red;"> ce plan de tresorerie existe déjà </h2>';
+                    'dateDebut'=>$plantresorerie->getDatedebut(), 
+            )       )&& $plantresorerie->getId()==null){
+                echo '<h5 style="color:red;"> ce plan de tresorerie existe déjà </h5>';
+            
             }else{
+                if($this->dateSemaine($plantresorerie->getDatedebut()->format('Y-m-d H:i:s'),  
+                                        $plantresorerie->getDatefin()->format('Y-m-d H:i:s')
+                                    )){
+                                    return $this->redirectToRoute('electparamPlanError', array(
+                        'error'=>'error'
+                    ));
+                }
+                if($plantresorerie->getId()!==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') && $em->getRepository(Plantresorerie::class)->find($plantresorerie)->getValider() !== $plantresorerie->getValider()   ){
+                    $plantresorerie->setValider( $session->get('valideEtat'));
+                }
 
-
-            if($this->dateSemaine($plantresorerie->getDatedebut()->format('Y-m-d H:i:s'),  
-                                    $plantresorerie->getDatefin()->format('Y-m-d H:i:s')
-                                )){
-                                return $this->redirectToRoute('electparamPlanError', array(
-                    'error'=>'error'
-                ));
-            }
-    
-        if($plantresorerie->getFaculte()==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
-            $plantresorerie->setFaculte($this->getUser()->getServices());
-         }
-         if($plantresorerie->getValider()==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
-            $plantresorerie->setValider(false);
+                   $manager->persist($plantresorerie);
+                   $manager->flush(); 
+                  
+                   return $this->redirectToRoute('planTresorerie');
         }
-
-        $manager->persist($plantresorerie);
-        $manager->flush(); 
      }
-        return $this->redirectToRoute('planTresorerie');
+        
+    
 
-    }                     
-                       
+
+    if($service=='*'){
+        $queryPlanTresorRecette = $em->createQuery('SELECT
+         pt.id,
+         l.intituleLigne, 
+         s.designation,
+         pt.besoin,
+         pt.realisation,
+         pt.Observation,
+        l.compteLigne
+        FROM  App\Entity\plantresorerie pt
+        JOIN pt.lignebudget p
+        JOIN p.lignebudgetprevision l
+        WHERE p.anneebudgetprevision=:anneebudgetselect 
+        AND l.categorieLigne=:categorie
+        AND pt.dateDebut >=:debut  
+        AND pt.dateFin <=:fin ORDER BY s.designation ASC');
+        $queryPlanTresorRecette->setParameters(array('categorie'=>'Recette', 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+       
+        $queryPlanTresorDepense= $em->createQuery('SELECT
+        pt.id,
+        l.intituleLigne, 
+        s.designation,
+        pt.besoin,
+        pt.realisation,
+        pt.Observation,
+        l.compteLigne
+       FROM  App\Entity\plantresorerie pt
+       JOIN pt.lignebudget p
+       JOIN p.lignebudgetprevision l
+       WHERE p.anneebudgetprevision=:anneebudgetselect 
+       AND l.categorieLigne=:categorie
+       AND pt.dateDebut >=:debut  
+       AND pt.dateFin <=:fin ORDER BY s.designation ASC');
+        $queryPlanTresorDepense->setParameters(array('categorie'=>'Depense', 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+}else{
+        $queryPlanTresorRecette = $em->createQuery('SELECT
+            pt.id,
+            l.intituleLigne, 
+            s.designation,
+            pt.besoin,
+            pt.realisation,
+            pt.Observation,
+            l.compteLigne,
+            pt.valider
+        FROM  App\Entity\plantresorerie pt
+        JOIN pt.lignebudget p
+        JOIN p.service s 
+        JOIN p.lignebudgetprevision l
+        WHERE p.anneebudgetprevision=:anneebudgetselect 
+        AND p.service=:userservice
+        AND l.categorieLigne=:categorie
+        AND pt.dateDebut >=:debut  
+        AND pt.dateFin <=:fin');
+        $queryPlanTresorRecette->setParameters(array('categorie'=>'Recette', 'userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+
+        $queryPlanTresorDepense= $em->createQuery('SELECT
+        pt.id,
+        l.intituleLigne, 
+        s.designation,
+        pt.besoin,
+        pt.realisation,
+        pt.Observation,
+        l.compteLigne,
+        pt.valider
+        FROM  App\Entity\plantresorerie pt
+        JOIN pt.lignebudget p
+        JOIN p.service s 
+        JOIN p.lignebudgetprevision l
+        WHERE p.anneebudgetprevision=:anneebudgetselect 
+        AND p.service=:userservice
+        AND l.categorieLigne=:categorie
+        AND pt.dateDebut >=:debut  
+        AND pt.dateFin <=:fin ORDER BY s.designation ASC');
+        $queryPlanTresorDepense->setParameters(array('categorie'=>'Depense', 'userservice' =>$service,'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+        }
+    
+        $planTresorRecette = $queryPlanTresorRecette->getResult();
+        $planTresorDepense = $queryPlanTresorDepense->getResult();
+      
+
+            
     return $this->render('sgb/depense/planTresorerie.html.twig',[
         'formPlanTresorerie'=>$formPlanTresorerie->createView(),
-        'error'=>$error
+        'error'=>$error,
+        'planTresorRecette'=>$planTresorRecette,
+        'planTresorDepense'=>$planTresorDepense
+
         
 ]);
 }
+ /**
+  * @Route("/sgb/depense/planTresorerie/print", name="print_plantresor")
+  */
+public function pdfPrinter( Request $request){
 
+    // Configure Dompdf according to your needs
+    $pdfOptions = new Options();
+    $pdfOptions->set('defaultFont', 'Arial');
+    
+    // Instantiate Dompdf with our options
+    $dompdf = new Dompdf($pdfOptions);
+    
+    // Retrieve the HTML generated in our twig file
+    $html = $this->renderView('sgb/depense/planTresorerie.html.twig', [
+        'title' => "Welcome to our PDF Test"
+    ]);
+    
+    // Load HTML to Dompdf
+    $dompdf->loadHtml($html);
+    
+    // (Optional) Setup the paper size and orientation 'portrait' or 'portrait'
+    $dompdf->setPaper('A4', 'portrait');
+
+    // Render the HTML as PDF
+    $dompdf->render();
+
+    // Output the generated PDF to Browser (force download)
+    $dompdf->stream("planTresorerie.pdf", [
+        "Attachment" => false
+    ]);
+    
+}
+
+    /**
+     * @Route("/sgb/depense/planTresorerie/{id}/delete", name="delete_plantresor")
+     */
+    public function deletePlanTresor(PlanTresorerie $planTresorerie = null, Request $request, ObjectManager $manager){
+        if(!$planTresorerie){ 
+          exit;
+       } 
+                       try{
+                           $manager->remove($planTresorerie);
+                           $manager->flush(); 
+                           return $this->redirectToRoute('planTresorerie');  
+                       }catch(\Exception $e){
+                           return $this->redirectToRoute('planTresorerie');  
+                       }
+   }
+    
 
 function dateSemaine($datedebut, $datefin)
 {
@@ -1183,8 +1328,12 @@ function dateSemaine($datedebut, $datefin)
 
 /**
  * @Route("/sgb/depense/selectparamPlantresorerie", name="selectparamPlantresorerie")
+ * @Route("/sgb/depense/selectparamPlantresorerie/{error}", name="selectparamPlantresoError")
  */
-public function setParamPlantresorerie(){
+public function setParamPlantresorerie($error=null){
+    if($error){
+        $error="Les nombres des jours depensent une semaine";
+     }
     
     $em = $this->getDoctrine()->getManager();
     $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
@@ -1192,7 +1341,8 @@ public function setParamPlantresorerie(){
     return $this->render('sgb/depense/selectparamPlantresorerie.html.twig',
     [
         'annees'=>$annees,
-        'services'=> $services
+        'services'=> $services,
+        'error'=>$error
     ]);
 }
 
@@ -1227,10 +1377,6 @@ public function fillforDepenseYears(Request $request){
                     'services'=> $services
     ]);
 }
-
-
-
-
 
 /**
  * @Route("/sgb/depense/selectparametersdepense", name="selectparametersdepense")
