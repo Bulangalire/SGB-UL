@@ -222,9 +222,21 @@ class CaisseController extends AbstractController{
     
         
     /**
-     * @Route("/sgb/caisse/decaisser/{id}", name="add_decaisser")
-     * @Route("/sgb/caisse/decaisser/{id}", name="edit_decaisser")
+     * @Route("/sgb/caisse/decaisser/{id}/new", name="add_decaisser")
      */
+    public function newDecaisser(Depense $depense=null, Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
+
+        return   $this->getOpDecaisser($depense,  null, $session, $request, $manager);
+    }
+
+    /**
+     * @Route("/sgb/caisse/decaisser/{id}/edit", name="edit_decaisser")
+     */
+    public function editDecaisser(Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
+       return $this->getOpDecaisser(null, $detaildepense, $session, $request, $manager);
+    }
+
+
     public function getOpDecaisser( Depense $depense=null, Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
         if($this->getUser()===null) {              
             return $this->redirectToRoute('user_login');
@@ -235,8 +247,8 @@ class CaisseController extends AbstractController{
         }
 
 
-             // Creation de variable de session pour les parametres des requêtes
-         
+           
+            // Creation de variable de session pour les parametres des requêtes
             // Période  
             // Début periode
             if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
@@ -267,10 +279,6 @@ class CaisseController extends AbstractController{
         }
         $anneebudgetselect= $session->get('anneeselectOp');
         $em = $this->getDoctrine()->getManager();
-     
-        
-
-
             $frmDecaisser = $this->createFormBuilder($detaildepense)
             ->add('lignebudgetdepense', EntityType::class, array(
                 'class'  => Previsionbudget::class,
@@ -393,24 +401,32 @@ class CaisseController extends AbstractController{
                 $querySoldeCompteAutres = $sqlSoldeCompteAutres->getResult();
             }
        
-
-            $detaildepense->setDepenseId($depense);
+           
             $frmDecaisser->handleRequest($request);
+          
+if($detaildepense->getDepenseId()==null){
+    $detaildepense->setDepenseId($depense);
+}
 
             if( $frmDecaisser->isSubmitted() &&  $frmDecaisser->isValid()){
-                
-               
+            
+                if($detaildepense->getId()==null){
+                    if($detaildepense->getMontantdetail() >  $detaildepense->getDepenseId()->getSoldeDepense() ){
+                        echo '<h5 style="color:red;">le montant est superière à celui qui reste pour !!!'. $detaildepense->getDepenseId()->getSoldeDepense() .' $</h5>' ;
+                        return $this->redirectToRoute('add_decaisser',['id'=> $detaildepense->getDepenseId()->getId()]);
+                    }
+                }elseif($detaildepense->getMontantdetail()>$detaildepense->getLignebudgetsource()->getLeSolde() ){
+                    echo '<h5 style="color:red;">le montant est superière à celui qui reste en caisse!!!'. $detaildepense->getLignebudgetsource()->getLeSolde() .' $</h5>' ;
+                    return $this->redirectToRoute('add_decaisser',['id'=> $detaildepense->getDepenseId()->getId()]);
 
-                if($detaildepense->getMontantdetail() > $detaildepense->getDepenseId()->getSoldeDepense() ){
-                  echo '<h5 style="color:red;">le montant est superière à celui qui reste !!!'. $detaildepense->getDepenseId()->getSoldeDepense() .' $</h5>' ;
-
-                }else if($detaildepense->getMontantdetail()>$detaildepense->getLignebudgetsource()->getLeSolde() ){
-                    echo '<h5 style="color:red;">le montant est superière à celui qui reste !!!'. $detaildepense->getLignebudgetsource()->getLeSolde() .' $</h5>' ;
-                }else{
+                }
+                if($detaildepense->getDepenseId()==null){
+                    $detaildepense->setDepenseId($em->getRepository(Detaildepense::class)->find($detaildepense)->getDepenseId()->getId());
+                }
                 $manager->persist($detaildepense);
                 $manager->flush(); 
                 return $this->redirectToRoute('add_decaisser',['id'=> $detaildepense->getDepenseId()->getId()]);
-            }
+            
             }         
            
           return $this->render('sgb/caisse/decaisser.html.twig',[

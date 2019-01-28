@@ -1025,8 +1025,8 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
 
 /**
  * @Route("/sgb/depense/planTresorerie", name="planTresorerie")
- * @Route("/sgb/depense/planTresorerie/{id}", name="planTresorerie_edit")
- * @Route("/sgb/depense/planTresorerie/{error}", name="electparamPlanError")
+ * @Route("/sgb/depense/planTresorerie/{id}/edit", name="planTresorerie_edit")
+ * @Route("/sgb/depense/planTresorerie/{error}/error", name="electparamPlanError")
  */
 public function planTresorerie($error=null, Plantresorerie $plantresorerie=null, Request $request, ObjectManager $manager){
     if($this->getUser()===null) {              
@@ -1143,8 +1143,8 @@ public function planTresorerie($error=null, Plantresorerie $plantresorerie=null,
         'label'=> 'Déjà valider',
     ])
     ->getForm();  
-    
-    if($plantresorerie->getId()!==null && $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE')){
+ 
+    if($plantresorerie->getId()!==null && ($this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE'))){
         $session->set('valideEtat',$em->getRepository(Plantresorerie::class)->find($plantresorerie)->getValider());
     }
         $formPlanTresorerie->handleRequest($request);

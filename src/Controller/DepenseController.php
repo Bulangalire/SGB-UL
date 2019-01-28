@@ -70,7 +70,7 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
                 'widget' => 'single_text',
                 // this is actually the default format for single_text
                 'format' => 'yyyy-MM-dd',
-                'label'=>'Date '
+                'label'=>'Date enregistrement'
             ))
             ->add('montantdepense', NumberType::class, array(
                 'label'=>'Montant'
@@ -97,7 +97,10 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
                 'choice_label'=>'nom',
                 'label'=>'Comptable'
             ))
-            ->add('numOp')
+            ->add('numOp', TextType::class, [
+                
+                'label'=>'Numéro OP',
+            ])
             ->add('dateEmission', DateType::class, array(
                 'widget' => 'single_text',
                 // this is actually the default format for single_text
@@ -272,29 +275,31 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
                             $resutatTotalDepense = $queryTotalDepense->getResult();
                             $totaleDepenseParLigne=$resutatTotalDepense[0]['totalDepense'];
                             $SoldeADepense =( $unedepense->getLigneBudgetaire()->getMontantprevision()) - $totaleDepenseParLigne;
-                                
-                            if($SoldeADepense >= $unedepense->getMontantdepense() ){
-                               //$unedepense->setLigneBudgetaire($request->request->get('ligneBudgetaire'));
+                            if($unedepense->getId()==null){
+                                if($unedepense->getMontantdepense() > $SoldeADepense ){
+                                    echo $errorMessage= '<h5 style="color:red;">Le montant de depense depasse le solde à depenser en prevision de cette ligne. reste est de :'.$SoldeADepense .' </h5>';
+                                    return $this->render('sgb/depense/addOp.html.twig',['frmAddOp' =>  $frmDepense->createView(),
+                                    'resutatListOpNonSigne'=>$resutatListOpNonSigne]);
+                                }
+                            }else{  
+                                $SoldeADepense = $SoldeADepense-$unedepense->getMontantdepense();
+                                 if($SoldeADepense>$unedepense->getLigneBudgetaire()->getMontantprevision() ){
+                                    echo $errorMessage= '<h5 style="color:red;">Le montant de depense depasse le solde à depenser pour cette ligne. reste est de :'.$SoldeADepense .' </h5>';
+                                    return $this->render('sgb/depense/addOp.html.twig',['frmAddOp' =>  $frmDepense->createView(),
+                                    'resutatListOpNonSigne'=>$resutatListOpNonSigne]);
+                                 }
+                            }
+                            
                                if($unedepense->getLibele()==null){
                                 $unedepense->setLibele($unedepense->getLigneBudgetaire()->getLignebudgetprevision()->getIntituleLigne());
                                }
                                $manager->persist($unedepense);
                                 $manager->flush();
                                 return $this->redirectToRoute('depense_Op');
-                            }else{
-                              echo $errorMessage= '<h5 style="color:red;">Le montant de depense depasse le solde à depenser pour cette ligne. reste est de :'.$SoldeADepense .' </h5>';
-                               return $this->render('sgb/depense/addOp.html.twig',['frmAddOp' =>  $frmDepense->createView(),
-                               'resutatListOpNonSigne'=>$resutatListOpNonSigne]);
-                            }
-                        }
                 }
-            
-               
-            
-         
+            }
             return $this->render('sgb/depense/addOp.html.twig',['frmAddOp' =>  $frmDepense->createView(),
             'resutatListOpNonSigne'=>$resutatListOpNonSigne,
-           
             ]);
      }
 
