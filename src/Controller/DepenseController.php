@@ -178,7 +178,7 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
                             ->select("p, l")
                             ->join("p.lignebudgetprevision", 'l')
                             ->join("p.anneebudgetprevision", 'a')
-                            ->where("p.service=:userservice AND l.categorieLigne = :ladepense AND a.id = :annnebudget")
+                            ->where("p.isValideted=true AND p.service=:userservice AND l.categorieLigne = :ladepense AND a.id = :annnebudget")
                             ->setParameter('userservice',$service)
                             ->setParameter('ladepense','Depense')
                             ->setParameter('annnebudget', $anneebudgetselect);
