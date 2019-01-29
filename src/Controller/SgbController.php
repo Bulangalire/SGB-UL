@@ -808,24 +808,37 @@ class SgbController extends AbstractController
                                     'class'=>Previsionbudget::class,
                                     'query_builder'=>function(EntityRepository $er)use ($anneebudgetselect, $service) {
                                         
-                                        if($service=='*'){
-                                        return $er->createQueryBuilder('p') 
-                                                    ->select("p, l")
-                                                    ->join("p.lignebudgetprevision", 'l')
-                                                    ->join("p.anneebudgetprevision", 'a')
-                                                    ->where("l.categorieLigne = :larecette AND a.id = :annnebudget")
-                                                    ->setParameter('larecette','Recette')
-                                                    ->setParameter('annnebudget', $anneebudgetselect);
-                                                }else{
+                                        if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+                               
                                                     return $er->createQueryBuilder('p') 
                                                     ->select("p, l")
                                                     ->join("p.lignebudgetprevision", 'l')
                                                     ->join("p.anneebudgetprevision", 'a')
-                                                    ->where("p.service=:userservice AND l.categorieLigne = :larecette AND a.id = :annnebudget")
+                                                    ->where("p.iscentraliser=false AND p.service=:userservice AND l.categorieLigne = :larecette AND a.id = :annnebudget")
                                                     ->setParameter('userservice',$service)
                                                     ->setParameter('larecette','Recette')
                                                     ->setParameter('annnebudget', $anneebudgetselect);
-                                                }
+                                            }else{
+                                                if($service=='*'){
+                                                    return $er->createQueryBuilder('p') 
+                                                                ->select("p, l")
+                                                                ->join("p.lignebudgetprevision", 'l')
+                                                                ->join("p.anneebudgetprevision", 'a')
+                                                                ->where("l.categorieLigne = :larecette AND a.id = :annnebudget")
+                                                                ->setParameter('larecette','Recette')
+                                                                ->setParameter('annnebudget', $anneebudgetselect);
+                                                            }else{
+                                                                return $er->createQueryBuilder('p') 
+                                                                ->select("p, l")
+                                                                ->join("p.lignebudgetprevision", 'l')
+                                                                ->join("p.anneebudgetprevision", 'a')
+                                                                ->where("p.service=:userservice AND l.categorieLigne = :larecette AND a.id = :annnebudget")
+                                                                ->setParameter('userservice',$service)
+                                                                ->setParameter('larecette','Recette')
+                                                                ->setParameter('annnebudget', $anneebudgetselect);
+                                                            }
+
+                                            }
                                                 },
                                                     'choice_label'=>'lignebudgetprevision.intituleLigne',
                                                     'label'=>'Ligne budgetaire recette'
@@ -938,6 +951,17 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
         ->add('lignebudgetrecette', EntityType::class, array(
             'class'=>Previsionbudget::class,
             'query_builder'=>function(EntityRepository $er)use ($anneebudgetselect, $service) {
+            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+                            
+                return $er->createQueryBuilder('p') 
+                ->select("p, l")
+                ->join("p.lignebudgetprevision", 'l')
+                ->join("p.anneebudgetprevision", 'a')
+                ->where("p.iscentraliser=false AND p.service=:userservice AND l.categorieLigne = :larecette AND a.id = :annnebudget")
+                ->setParameter('userservice',$service)
+                ->setParameter('larecette','Recette')
+                ->setParameter('annnebudget', $anneebudgetselect);
+            }else{
                 if($service=='*'){   
                 return $er->createQueryBuilder('p') 
                             ->select("p, l")
@@ -956,6 +980,7 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
                     ->setParameter('larecette','Recette')
                     ->setParameter('annnebudget', $anneebudgetselect);
                 }
+            }
                         },
                             'choice_label'=>'lignebudgetprevision.intituleLigne',
                             'label'=>'Recette',
