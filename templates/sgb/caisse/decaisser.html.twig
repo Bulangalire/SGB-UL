@@ -117,7 +117,7 @@
                                 <td></td>
                                 <td>{{soldeService}}</td>
                             </tr>
-                               {% if is_granted('ROLE_CHEF_SERVICE')== false or  is_granted('ROLE_COMPTE_FAC')== false  %}
+                               {% if is_granted('ROLE_CHEF_COMPTABILITE')== true  or  is_granted('ROLE_AB')== true or  is_granted('ROLE_ADMIN')== true  %}
                                         {% set numDepenseAutre = 0 %}
                                         {% set soldeAutresService = 0 %}
                                         {% if querySoldeCompteAutres is not null %}

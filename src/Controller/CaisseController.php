@@ -314,13 +314,22 @@ class CaisseController extends AbstractController{
                                 ->where('l.categorieLigne=:thisCat')
                                 ->andWhere('p.anneebudgetprevision=:annee')
                                 ->andWhere('p.iscentraliser=true')
-                                //->having('p.recettes - p.recettesUtiliseesEnDepenses > 0')
                                 ->setParameter('thisCat', 'Recette')
                                 ->setParameter('annee', $anneebudgetselect);
                                 }
 
                         },
-                'choice_label'=>'lignebudgetprevision.intituleLigne',
+                          'choice_label'=> function( Previsionbudget $previsionbudget) {
+                           
+                                return    $previsionbudget->getLeSolde()<=0?false: $previsionbudget->getLeSolde()."$ /". $previsionbudget->getLignebudgetprevision()->getIntituleLigne()."/(". $previsionbudget->getService()->getDesignation() .")";
+
+                             
+                        },
+                        'group_by' => function($previsionbudget, $key, $value) {
+                            // randomly assign things into 2 groups
+                            return $previsionbudget->getLeSolde()<=0 ?: 'Caisse';
+                        },
+
                 'label'=>'Recette')
                 )
             
