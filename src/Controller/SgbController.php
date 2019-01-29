@@ -438,6 +438,7 @@ class SgbController extends AbstractController
                     AND p.anneebudgetprevision=:anneebudgetselect 
                     AND d.createAt BETWEEN :debut 
                     AND :fin 
+                    GROUP BY d.lignebudgetsource
                     ORDER BY d.lignebudgetsource DESC');
 
                     $queryDepense->setParameters(array('userservice' => $service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
