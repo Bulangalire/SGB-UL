@@ -419,6 +419,7 @@ if($detaildepense->getDepenseId()==null){
 
             if( $frmDecaisser->isSubmitted() &&  $frmDecaisser->isValid()){
             
+                
                 if($detaildepense->getId()==null){
                     if($detaildepense->getMontantdetail() >  $detaildepense->getDepenseId()->getSoldeDepense() ){
                         echo '<h5 style="color:red;">le montant est superière à celui qui reste pour !!!'. $detaildepense->getDepenseId()->getSoldeDepense() .' $</h5>' ;

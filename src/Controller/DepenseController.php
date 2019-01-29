@@ -418,6 +418,18 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
              $session = $request->getSession();
          
             // Creation de variable de session pour les parametres des requêtes
+            // Service
+            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+                $session->set('servicesselect', $this->getUser()->getServices()->getId() );
+                $service= $session->get('servicesselect');
+            }else{
+            // Service
+            if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
+                $session->set('servicesselect',$request->request->get('services') );
+            }
+            $service= $session->get('servicesselect');
+            }
+
          
             // Période  
             // Début periode
@@ -434,18 +446,55 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
 
             $em = $this->getDoctrine()->getManager();
              // Lister les op déjà paye
-           $sqlOPDejaPaye = $em->createQuery('SELECT dop as lesdetails,
-           sum(  dop.montantdetail) as dejaPayer, p, d 
-           FROM  App\Entity\Detaildepense dop 
-           JOIN dop.depenseId d 
-           JOIN dop.lignebudgetdepense p
-           WHERE 
-             dop.createAt BETWEEN :debut AND :fin 
-           GROUP BY dop.depenseId 
-           HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) = d.montantdepense )
-           ORDER BY p.service ');
-          $sqlOPDejaPaye->setParameters(array( 'debut'=> $datedebut, 'fin'=> $datefin));
-          $queryListOPDejaPaye = $sqlOPDejaPaye->getResult();
+             $sqlOPDejaPaye=null;
+             if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+
+                $sqlOPDejaPaye = $em->createQuery('SELECT dop as lesdetails,
+                sum(  dop.montantdetail) as dejaPayer, p, d 
+                FROM  App\Entity\Detaildepense dop 
+                JOIN dop.depenseId d 
+                JOIN dop.lignebudgetdepense p
+                WHERE 
+                p.service=:ceservice
+                AND  dop.createAt BETWEEN :debut AND :fin 
+                GROUP BY dop.depenseId 
+                HAVING (sum( CASE WHEN d.autoriserChefService=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) = d.montantdepense )
+               ');
+                 $sqlOPDejaPaye->setParameters(array('ceservice'=>$service, 'debut'=> $datedebut, 'fin'=> $datefin));
+              
+             }else{
+                if($service=='*'){
+                    $sqlOPDejaPaye = $em->createQuery('SELECT dop as lesdetails,
+                    sum(  dop.montantdetail) as dejaPayer, p, d 
+                    FROM  App\Entity\Detaildepense dop 
+                    JOIN dop.depenseId d 
+                    JOIN dop.lignebudgetdepense p
+                    WHERE 
+                        dop.createAt BETWEEN :debut AND :fin 
+                    GROUP BY dop.depenseId 
+                    HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) = d.montantdepense )
+                    ORDER BY p.service ');
+                      $sqlOPDejaPaye->setParameters(array('debut'=> $datedebut, 'fin'=> $datefin));
+                }else{
+
+                    $sqlOPDejaPaye = $em->createQuery('SELECT dop as lesdetails,
+                        sum(  dop.montantdetail) as dejaPayer, p, d 
+                        FROM  App\Entity\Detaildepense dop 
+                        JOIN dop.depenseId d 
+                        JOIN dop.lignebudgetdepense p
+                        WHERE 
+                        p.service=:ceservice
+                        AND  dop.createAt BETWEEN :debut AND :fin 
+                        GROUP BY dop.depenseId 
+                        HAVING (sum( CASE WHEN d.autoriserChefService=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) = d.montantdepense )
+                    ');
+                 $sqlOPDejaPaye->setParameters(array('ceservice'=>$service, 'debut'=> $datedebut, 'fin'=> $datefin));
+                }
+                
+             }
+
+           
+             $queryListOPDejaPaye = $sqlOPDejaPaye->getResult();
 
           return $this->render('sgb/depense/opRegles.html.twig',[
             'queryListOPDejaPaye'=>$queryListOPDejaPaye,

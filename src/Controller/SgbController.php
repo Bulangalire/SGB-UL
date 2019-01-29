@@ -438,7 +438,7 @@ class SgbController extends AbstractController
                     AND p.anneebudgetprevision=:anneebudgetselect 
                     AND d.createAt BETWEEN :debut 
                     AND :fin 
-                    group by d.id ORDER BY d.lignebudgetsource DESC');
+                    ORDER BY d.lignebudgetsource DESC');
 
                     $queryDepense->setParameters(array('userservice' => $service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
                     $queryDepenseGlobale = $queryDepense->getResult();
@@ -448,13 +448,8 @@ class SgbController extends AbstractController
                     $queryRecette = $em->createQuery('SELECT rr as mesrecettes, sum(rr.montantrecette) as montantrecette, pp FROM  App\Entity\Recette rr JOIN rr.lignebudgetrecette pp  WHERE rr.utilisateur =:user AND pp.service=:userservice group by pp.id');
                     $queryRecette->setParameters(array('user'=> $user, 'userservice' => $userServ));
                     $queryRecetteGlobale = $queryRecette->getResult();
-                    for($i=0; $i<count($queryDepenseGlobale); $i++){
-
-                    $fussion[] =  $queryDepenseGlobale[$i];
-                }
-                    if( $frmDepense->isSubmitted() &&  $frmDepense->isValid()){
-                        
-                    } 
+            
+                    
                            
             return $this->render('sgb/depense/depense.html.twig',['frmDepense' =>  $frmDepense->createView(),
             'queryRecetteGlobale'=>$queryRecetteGlobale,
