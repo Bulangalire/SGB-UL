@@ -19,10 +19,8 @@
                             <tr class="table-primary">
                                 <th scope="col">ID</th>
                                 <th scope="col">Libelé depense</th>
-                                <th scope="col">Libelé recette</th>
-                                <th scope="col">Débit</th>
-                                <th scope="col">Crédit</th>
-                                <th scope="col">Solde</th>
+                                <th scope="col">Montant</th>
+                                 <th scope="col">Date</th>
                                 <th scope="col">Observation</th>
 
                             </tr>
@@ -39,64 +37,26 @@
                                         {{ numDepense }}
                                     </th>
                                     <td>{{dep.mesdep.lignebudgetdepense.lignebudgetprevision.intituleLigne}}</td>
-
-                                    <td>{{dep.mesdep.lignebudgetsource.lignebudgetprevision.intituleLigne}}</td>
-                                    <td>
-                                        {{dep.mesdep.lignebudgetsource.recettes}}
-                                        {% set totaleEntree = totaleEntree + dep.mesdep.lignebudgetsource.recettes %}
-                                    </td>
+                                    
                                     <td>{{dep.sommedepense}}</td>
                                     {% set totaleSortie = totaleSortie + dep.sommedepense %}
+                                      <td>{{dep.mesdep.createAt|date('d/m/Y')}}</td>
                                     <td>
-                                        {% set solde = dep.mesdep.lignebudgetsource.recettes - dep.sommedepense %}
-                                        {% set SoldeGlobal = SoldeGlobal + solde %}
-                                        {% if solde <= 0 %}
-                                            <h5 style="color:red;">
-                                               {{solde}}
-                                            </h5>
-                                        {% else %}
-                                            <h5 style="color:black;">
+                                           
+                                                {{ converssion(dep.sommedepense, "USD") }}
                                             
-                                                {{ solde }}
-                                            </h5>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% set solde = dep.mesdep.lignebudgetsource.recettes - dep.sommedepense %}
-                                           {% if solde <= 0 %}
-                                            <h5 style="color:red;">
-                                               {{ converssion(-solde, "USD") }}
-                                            </h5>
-                                        {% else %}
-                                            <h5 style="color:black;">
-                                            
-                                                {{ converssion(solde, "USD") }}
-                                            </h5>
-                                        {% endif %}
+                                       
                                     </td>
                                 </tr>
                             {% endfor %}
                             <tr class="table-primary">
                                 <th scope="row"></th>
                                 <td></td>
-                                <td></td>
-                                <td>
-                                    {{totaleEntree}}
-                                </td>
+
                                 <td>
                                     {{totaleSortie}}
                                 </td>
-                                <td>
-                                    {% if SoldeGlobal <= 0 %}
-                                        <h5 style="color:red;">
-                                            {{SoldeGlobal }}
-                                        </h5>
-                                    {% else %}
-                                        <h5 style="color:black;">
-                                            {{SoldeGlobal }}
-                                        </h5>
-                                    {% endif %}
-                                </td>
+                               <td> {{ converssion(totaleSortie, "USD") }}</td>
                                 <td>
                                 
                                 </td>
