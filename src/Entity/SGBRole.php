@@ -21,6 +21,7 @@ class SGBRole
     public const ROLE_CAISSE = "ROLE_CAISSE";
     public const ROLE_CHEF_SERVICE = "ROLE_CHEF_SERVICE";
     public const ROLE_COMPTE_FAC = "ROLE_COMPTE_FAC";
+    public const ROLE_AUDIT = "ROLE_AUDIT";
     
     /**
      * @ORM\Id()

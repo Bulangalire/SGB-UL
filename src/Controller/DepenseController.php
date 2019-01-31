@@ -174,16 +174,32 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
             ->add('ligneBudgetaire', EntityType::class, array(
                 'class'=>Previsionbudget::class,
                 'query_builder'=>function(EntityRepository $er)use ($anneebudgetselect, $service) {
+            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
                  return $er->createQueryBuilder('p') 
                             ->select("p, l")
                             ->join("p.lignebudgetprevision", 'l')
                             ->join("p.anneebudgetprevision", 'a')
-                            ->where("p.isValideted=true AND p.service=:userservice AND l.categorieLigne = :ladepense AND a.id = :annnebudget")
+                            ->where("p.iscentraliser=false AND p.isValideted=true AND p.service=:userservice AND l.categorieLigne = :ladepense AND a.id = :annnebudget")
                             ->setParameter('userservice',$service)
                             ->setParameter('ladepense','Depense')
                             ->setParameter('annnebudget', $anneebudgetselect);
+            }else{
+                return $er->createQueryBuilder('p') 
+                ->select("p, l")
+                ->join("p.lignebudgetprevision", 'l')
+                ->join("p.anneebudgetprevision", 'a')
+                ->where("p.isValideted=true AND p.service=:userservice AND l.categorieLigne = :ladepense AND a.id = :annnebudget")
+                ->setParameter('userservice',$service)
+                ->setParameter('ladepense','Depense')
+                ->setParameter('annnebudget', $anneebudgetselect);
+            }
                             },
-                            'choice_label'=>'lignebudgetprevision.intituleLigne',
+                            'choice_label'=>function( Previsionbudget $previsionbudget) {
+                                //revoie uniquement les lignes de depense dont il le solde est >0
+                                return    $previsionbudget->getLeSoldeEnPrevision()<=0?false: $previsionbudget->getLeSoldeEnPrevision()."$ /". $previsionbudget->getLignebudgetprevision()->getIntituleLigne();
+                        },'group_by' => function($previsionbudget, $key, $value) {
+                               return $previsionbudget->getLeSoldeEnPrevision()<=0 ?false: 'Previsions';
+                        },
                             )) 
             ->add('service', EntityType::class, array(
                 'class'  => Service::class,

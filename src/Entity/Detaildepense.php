@@ -34,7 +34,7 @@ class Detaildepense
     private $descriptiondetaildepense;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Previsionbudget")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Previsionbudget" , inversedBy="depenseUtiliseesEnDepenses")
      * @ORM\JoinColumn(nullable=false)
      */
     private $lignebudgetdepense;
@@ -117,7 +117,6 @@ class Detaildepense
     public function setLignebudgetsource(?Previsionbudget $lignebudgetsource): self
     {
         $this->lignebudgetsource = $lignebudgetsource;
-
         return $this;
     }
 

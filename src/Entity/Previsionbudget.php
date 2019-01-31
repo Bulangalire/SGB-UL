@@ -67,6 +67,11 @@ class Previsionbudget
      * @ORM\OneToMany(targetEntity="App\Entity\Detaildepense", mappedBy="lignebudgetsource")
      */
     private $recettesUtiliseesEnDepenses;
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Detaildepense", mappedBy="lignebudgetdepense")
+     */
+    private $depenseUtiliseesEnDepenses;
+
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
@@ -78,6 +83,7 @@ class Previsionbudget
     {
         $this->recettes = new ArrayCollection();
         $this->recettesUtiliseesEnDepenses = new ArrayCollection();
+        $this->depenseUtiliseesEnDepenses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -173,6 +179,14 @@ class Previsionbudget
         return $totalRecetteUtilisee;
     }
 
+    public function getDepenseUtiliseesEnDepenses(){
+        $totalDepenseUtilisee=0;
+        foreach($this->depenseUtiliseesEnDepenses as $depenseUtiliseesEnDepense)
+        
+        $totalDepenseUtilisee += $depenseUtiliseesEnDepense->getMontantdetail();
+        return $totalDepenseUtilisee;
+    }
+
     public function addRecette(Recette $recette): self
     {
         if (!$this->recettes->contains($recette)) {
@@ -199,8 +213,10 @@ class Previsionbudget
     {
         return $this->getRecettes()-$this->getRecettesUtiliseesEnDepenses();
     }
-
-   
+    public function getLeSoldeEnPrevision()
+    {
+        return $this->getMontantprevision()-$this->getDepenseUtiliseesEnDepenses();
+    }
     public function getIsValideted(): ?bool
     {
         return $this->isValideted;
