@@ -180,7 +180,7 @@ class Previsionbudget
 
     public function getDepenseUtiliseesEnDepenses(){
         $totalDepenseUtilisee=0;
-        if(!is_array($this->depenseUtiliseesEnDepenses)){
+        if(is_array($this->depenseUtiliseesEnDepenses)){
          foreach($this->depenseUtiliseesEnDepenses as $depenseUtiliseesEnDepense)
           $totalDepenseUtilisee += $depenseUtiliseesEnDepense->getMontantdetail();
             return $totalDepenseUtilisee;
