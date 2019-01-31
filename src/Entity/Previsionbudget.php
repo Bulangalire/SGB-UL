@@ -174,17 +174,20 @@ class Previsionbudget
     public function getRecettesUtiliseesEnDepenses(){
         $totalRecetteUtilisee=0;
         foreach($this->recettesUtiliseesEnDepenses as $recettesUtiliseesEnDepense)
-        
         $totalRecetteUtilisee += $recettesUtiliseesEnDepense->getMontantdetail();
         return $totalRecetteUtilisee;
     }
 
     public function getDepenseUtiliseesEnDepenses(){
         $totalDepenseUtilisee=0;
-        foreach($this->depenseUtiliseesEnDepenses as $depenseUtiliseesEnDepense)
-        
-        $totalDepenseUtilisee += $depenseUtiliseesEnDepense->getMontantdetail();
-        return $totalDepenseUtilisee;
+        if(!is_array($this->depenseUtiliseesEnDepenses)){
+         foreach($this->depenseUtiliseesEnDepenses as $depenseUtiliseesEnDepense)
+          $totalDepenseUtilisee += $depenseUtiliseesEnDepense->getMontantdetail();
+            return $totalDepenseUtilisee;
+        }else{
+            return  $totalDepenseUtilisee=0;
+        }
+       
     }
 
     public function addRecette(Recette $recette): self
