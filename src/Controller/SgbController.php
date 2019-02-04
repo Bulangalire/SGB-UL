@@ -438,8 +438,8 @@ class SgbController extends AbstractController
                     AND p.anneebudgetprevision=:anneebudgetselect 
                     AND d.createAt BETWEEN :debut 
                     AND :fin 
-                    GROUP BY d.lignebudgetsource
-                    ORDER BY d.lignebudgetsource DESC');
+                    GROUP BY d.createAt
+                    ORDER BY d.createAt DESC');
 
                     $queryDepense->setParameters(array('userservice' => $service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
                     $queryDepenseGlobale = $queryDepense->getResult();
@@ -1289,6 +1289,150 @@ public function planTresorerie($error=null, Plantresorerie $plantresorerie=null,
         
 ]);
 }
+
+//suivi de compte
+//---------------
+ /**
+  * @Route("/sgb/analyse/test", name="quelleAnalise")
+  */
+  public function quelleAnalise(Request $request, ObjectManager $manager){
+    dump($request->request->get('analyseBudget'));
+
+        if($request->request->get('analyseBudget')=='analyseBudget'){
+            return $this->redirectToRoute('dataAnalys');
+        }else{
+            return $this->redirectToRoute('analyseCompte');
+
+            }
+  }
+
+
+//suivi de compte
+//---------------
+ /**
+  * @Route("/sgb/analyse/analyseCompte", name="analyseCompte")
+  */
+public function etatCompte(Request $request, ObjectManager $manager){
+
+    $session = $request->getSession();
+         
+    // Creation de variable de session pour les parametres des requêtes
+    // Année budgetaire
+    if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
+     
+        $session->set('anneeselect',$request->request->get('annees') );
+       }
+      $anneebudgetselect= $session->get('anneeselect');
+    
+        // Service
+        if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+            $session->set('servicesselect', $this->getUser()->getServices()->getId() );
+            $service= $session->get('servicesselect');
+        }else{
+        // Service
+        if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
+            $session->set('servicesselect',$request->request->get('services') );
+        }
+        $service= $session->get('servicesselect');
+        }
+        // Période  
+        // Début periode
+        if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
+            $session->set('datedebutselect',$request->request->get('datedebut') );
+        }
+        $datedebut = $session->get('datedebutselect');
+
+        // Fin période
+        if($request->request->get('datefin')!==null && $request->request->get('datefin') <> $session->get('datefinselect') ){
+            $session->set('datefinselect',$request->request->get('datefin') );
+        }
+        $datefin =  $session->get('datefinselect');
+    $comptesRecettes=array();
+    $comptesDepenses=array();
+    $em = $this->getDoctrine()->getManager();
+    $comptesRecettes= $em->createQuery(' SELECT DISTINCT r as recette, sum(r.montantrecette) as entree
+                       FROM  App\Entity\Recette r
+                       JOIN r.lignebudgetrecette p
+                       JOIN  p.lignebudgetprevision l
+                       WHERE p.anneebudgetprevision=:anneebudgetselect
+                       AND r.createAt >=:debut  
+                       AND r.createAt <=:fin 
+                       GROUP BY l.id ORDER BY l.intituleLigne ASC');
+    $comptesRecettes->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+    $resulEtatcomptesRecettes = $comptesRecettes->getResult();
+
+ return $this->render('sgb/analyse/analyseCompte.html.twig',[
+        'comptesRecettes'=>$resulEtatcomptesRecettes,
+       
+        
+]);
+
+}
+
+
+//suivi de compte par service
+//---------------
+ /**
+  * @Route("/sgb/analyse/analyseCompteParService/{id}", name="zoomSurCompte")
+  */
+  public function etatCompteParservice(Request $request, ObjectManager $manager){
+
+    $session = $request->getSession();
+         
+    // Creation de variable de session pour les parametres des requêtes
+    // Année budgetaire
+    if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
+     
+        $session->set('anneeselect',$request->request->get('annees') );
+       }
+      $anneebudgetselect= $session->get('anneeselect');
+    
+        // Service
+        if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+            $session->set('servicesselect', $this->getUser()->getServices()->getId() );
+            $service= $session->get('servicesselect');
+        }else{
+        // Service
+        if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
+            $session->set('servicesselect',$request->request->get('services') );
+        }
+        $service= $session->get('servicesselect');
+        }
+        // Période  
+        // Début periode
+        if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
+            $session->set('datedebutselect',$request->request->get('datedebut') );
+        }
+        $datedebut = $session->get('datedebutselect');
+
+        // Fin période
+        if($request->request->get('datefin')!==null && $request->request->get('datefin') <> $session->get('datefinselect') ){
+            $session->set('datefinselect',$request->request->get('datefin') );
+        }
+        $datefin =  $session->get('datefinselect');
+    $comptesRecettes=array();
+    $comptesDepenses=array();
+    $em = $this->getDoctrine()->getManager();
+    $comptesRecettes= $em->createQuery(' SELECT DISTINCT r as recette, sum(r.montantrecette) as entree
+                       FROM  App\Entity\Recette r
+                       JOIN r.lignebudgetrecette p
+                       JOIN  p.lignebudgetprevision l
+                       WHERE p.anneebudgetprevision=:anneebudgetselect
+                       AND r.createAt >=:debut  
+                       AND r.createAt <=:fin 
+                       GROUP BY l.id ORDER BY l.intituleLigne ASC');
+    $comptesRecettes->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+    $resulEtatcomptesRecettes = $comptesRecettes->getResult();
+
+ return $this->render('sgb/analyse/analyseCompte.html.twig',[
+        'comptesRecettes'=>$resulEtatcomptesRecettes,
+       
+        
+]);
+
+}
+
+
  /**
   * @Route("/sgb/depense/planTresorerie/print", name="print_plantresor")
   */

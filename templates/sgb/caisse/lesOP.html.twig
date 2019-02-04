@@ -53,11 +53,11 @@
 
                                     <td>
                                     {% set totalDejaSortie = totalDejaSortie + op.dejaPayer %}
-                                        {{op.dejaPayer}}
+                                        {{op.dejaPayer|number_format(2, '.',',')}}
                                     </td>
                                     <td>
                                     {% set totalSolde = totalSolde + (op.lesdetails.depenseid.montantdepense - op.dejaPayer)%}
-                                        {{op.lesdetails.depenseid.montantdepense - op.dejaPayer}}
+                                        {{(op.lesdetails.depenseid.montantdepense - op.dejaPayer)|number_format(2, '.',',')}}
                                     </td>
                                     <td>
                                    

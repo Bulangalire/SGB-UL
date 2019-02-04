@@ -580,7 +580,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                     GROUP BY dop.depenseId 
                     HAVING (sum( CASE WHEN d.autoriserChefService=true 
                         THEN dop.montantdetail
-                        ELSE  d.montantdepense + 1 END) < d.montantdepense ) ');
+                        ELSE  d.montantdepense + 1 END) <= d.montantdepense ) ');
                     
                 }else{
                     $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
@@ -593,7 +593,8 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                     AND d.isCentralyzed=false
                     AND d.service=:ceservice
                     GROUP BY dop.depenseId 
-                    HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
+                    HAVING (sum( CASE WHEN d.autoriserAB=true
+                     AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
                  
                 }
                 $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'ceservice'=> $service));

@@ -481,7 +481,6 @@ if($detaildepense->getDepenseId()==null){
             $session->set('axeselect',$request->request->get('axe') );
         }
         $axe= $session->get('axeselect');
-      dump($axe);
         // Période  
         // Début periode
         if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
@@ -602,7 +601,6 @@ if($detaildepense->getDepenseId()==null){
     
         $maCaisse = $queryMaCaisse->getResult();
         $mesDepense = $queryDepense->getResult();
-        dump( $mesDepense);
         return $this->render('sgb/analyse/analyseGlobale.html.twig',[
             'tblCaisse'=>$maCaisse,
             'tblDepense'=>$mesDepense

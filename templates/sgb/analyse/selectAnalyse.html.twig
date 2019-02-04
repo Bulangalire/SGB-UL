@@ -22,7 +22,7 @@
         
         
         <h4></h4>
-        <form action="{{ path('dataAnalys') }}" method="post">
+        <form action="{{ path('quelleAnalise') }}" method="post">
             <div class="form-group">
                 <select required="required" name="annees" class="form-control">
                     <option value="">--Choisir une année budgetaire
@@ -75,8 +75,14 @@
             </div>
 
             <div class="form-group">
-                <button type="submit" class="btn btn-success">
-                    Continuer
+                <button type="submit" name="analyseBudget" value="analyseBudget" class="btn btn-success">
+                    Analyse Budget
+                </button>
+
+            </div>
+            <div class="form-group">
+                <button type="submit" name="analyseCompte" value="analyseCompte" class="btn btn-success">
+                    Analyse Compte
                 </button>
 
             </div>
