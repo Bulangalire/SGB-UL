@@ -568,7 +568,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                 
                 if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
                     $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
-                     round(sum(  dop.montantdetail)) as dejaPayer, p, d 
+                     round(sum(  dop.montantdetail), 2) as dejaPayer, p, d 
                     FROM  App\Entity\Detaildepense dop 
                     JOIN dop.depenseId d 
                     JOIN dop.lignebudgetdepense p
