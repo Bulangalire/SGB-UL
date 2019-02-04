@@ -568,7 +568,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                 
                 if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
                     $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
-                    sum(  dop.montantdetail) as dejaPayer, p, d 
+                     round(sum(  dop.montantdetail)) as dejaPayer, p, d 
                     FROM  App\Entity\Detaildepense dop 
                     JOIN dop.depenseId d 
                     JOIN dop.lignebudgetdepense p
@@ -580,7 +580,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                     GROUP BY dop.depenseId 
                     HAVING (sum( CASE WHEN d.autoriserChefService=true 
                         THEN dop.montantdetail
-                        ELSE  d.montantdepense + 1 END) <= d.montantdepense ) ');
+                        ELSE  d.montantdepense + 1 END) < d.montantdepense ) ');
                     
                 }else{
                     $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
