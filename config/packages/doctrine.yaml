@@ -33,6 +33,7 @@ doctrine:
                 second_string: App\DQL\SecondStringFunction
             numeric_functions:
                 test_numeric: App\DQL\NumericFunction
+                round: DoctrineExtensions\Query\Mysql\Round
             datetime_functions:
                 test_datetime: App\DQL\DatetimeFunction
                 date_format: DoctrineExtensions\Query\Mysql\DateFormat
