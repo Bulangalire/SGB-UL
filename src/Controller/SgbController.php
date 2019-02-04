@@ -431,7 +431,7 @@ class SgbController extends AbstractController
 
                     $em = $this->getDoctrine()->getManager();
              
-                    $queryDepense= $em->createQuery('SELECT d as mesdep, sum(d.montantdetail) as sommedepense 
+                    $queryDepense= $em->createQuery('SELECT d as mesdep, round(sum(d.montantdetail),2) as sommedepense 
                     FROM   App\Entity\Detaildepense d 
                     JOIN d.lignebudgetsource p 
                     WHERE p.service=:userservice
@@ -446,7 +446,7 @@ class SgbController extends AbstractController
 
                 
 
-                    $queryRecette = $em->createQuery('SELECT rr as mesrecettes, sum(rr.montantrecette) as montantrecette, pp FROM  App\Entity\Recette rr JOIN rr.lignebudgetrecette pp  WHERE rr.utilisateur =:user AND pp.service=:userservice group by pp.id');
+                    $queryRecette = $em->createQuery('SELECT rr as mesrecettes, round(sum(rr.montantrecette),2) as montantrecette, pp FROM  App\Entity\Recette rr JOIN rr.lignebudgetrecette pp  WHERE rr.utilisateur =:user AND pp.service=:userservice group by pp.id');
                     $queryRecette->setParameters(array('user'=> $user, 'userservice' => $userServ));
                     $queryRecetteGlobale = $queryRecette->getResult();
             
