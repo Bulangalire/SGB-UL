@@ -466,7 +466,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
              if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
 
                 $sqlOPDejaPaye = $em->createQuery('SELECT dop as lesdetails,
-                sum(  dop.montantdetail) as dejaPayer, p, d 
+                round(sum(  dop.montantdetail), 2) as dejaPayer, p, d 
                 FROM  App\Entity\Detaildepense dop 
                 JOIN dop.depenseId d 
                 JOIN dop.lignebudgetdepense p
@@ -474,27 +474,27 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                 p.service=:ceservice
                 AND  dop.createAt BETWEEN :debut AND :fin 
                 GROUP BY dop.depenseId 
-                HAVING (sum( CASE WHEN d.autoriserChefService=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) = d.montantdepense )
+                HAVING (round(sum( CASE WHEN d.autoriserChefService=true THEN dop.montantdetail ELSE  d.montantdepense +1 END), 2) = d.montantdepense )
                ');
                  $sqlOPDejaPaye->setParameters(array('ceservice'=>$service, 'debut'=> $datedebut, 'fin'=> $datefin));
               
              }else{
                 if($service=='*'){
                     $sqlOPDejaPaye = $em->createQuery('SELECT dop as lesdetails,
-                    sum(  dop.montantdetail) as dejaPayer, p, d 
+                    round(sum(  dop.montantdetail), 2) as dejaPayer, p, d 
                     FROM  App\Entity\Detaildepense dop 
                     JOIN dop.depenseId d 
                     JOIN dop.lignebudgetdepense p
                     WHERE 
                         dop.createAt BETWEEN :debut AND :fin 
                     GROUP BY dop.depenseId 
-                    HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) = d.montantdepense )
+                    HAVING (round(sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END), 2) = d.montantdepense )
                     ORDER BY p.service ');
                       $sqlOPDejaPaye->setParameters(array('debut'=> $datedebut, 'fin'=> $datefin));
                 }else{
 
                     $sqlOPDejaPaye = $em->createQuery('SELECT dop as lesdetails,
-                        sum(  dop.montantdetail) as dejaPayer, p, d 
+                        round(sum(  dop.montantdetail),2) as dejaPayer, p, d 
                         FROM  App\Entity\Detaildepense dop 
                         JOIN dop.depenseId d 
                         JOIN dop.lignebudgetdepense p
@@ -502,7 +502,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                         p.service=:ceservice
                         AND  dop.createAt BETWEEN :debut AND :fin 
                         GROUP BY dop.depenseId 
-                        HAVING (sum( CASE WHEN d.autoriserChefService=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) = d.montantdepense )
+                        HAVING (round(sum( CASE WHEN d.autoriserChefService=true THEN dop.montantdetail ELSE  d.montantdepense +1 END),2 ) = d.montantdepense )
                     ');
                  $sqlOPDejaPaye->setParameters(array('ceservice'=>$service, 'debut'=> $datedebut, 'fin'=> $datefin));
                 }
@@ -554,14 +554,14 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
            // Lister les op encours de paiement
            if($service=='*'){   
                 $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
-                sum(  dop.montantdetail) as dejaPayer, p, d 
+                round(sum(  dop.montantdetail), 2) as dejaPayer, p, d 
                 FROM  App\Entity\Detaildepense dop 
                 JOIN dop.depenseId d 
                 JOIN dop.lignebudgetdepense p
                 WHERE 
                     p.anneebudgetprevision=:anneebudgetselect 
                 GROUP BY dop.depenseId 
-                HAVING (sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
+                HAVING (round(sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END), 2) < d.montantdepense ) ');
                 $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
           
             }else{
@@ -584,7 +584,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                     
                 }else{
                     $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
-                    sum(  dop.montantdetail) as dejaPayer, p, d 
+                    round(sum(  dop.montantdetail),2) as dejaPayer, p, d 
                     FROM  App\Entity\Detaildepense dop 
                     JOIN dop.depenseId d 
                     JOIN dop.lignebudgetdepense p
@@ -593,8 +593,8 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                     AND d.isCentralyzed=false
                     AND d.service=:ceservice
                     GROUP BY dop.depenseId 
-                    HAVING (sum( CASE WHEN d.autoriserAB=true
-                     AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END) < d.montantdepense ) ');
+                    HAVING (round(sum( CASE WHEN d.autoriserAB=true
+                     AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END),2) < d.montantdepense ) ');
                  
                 }
                 $sqlOPAPaye->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'ceservice'=> $service));
@@ -775,7 +775,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
            $sqlDetailSortieParLigne->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
           
            $sqlSoldeCompte = $em->createQuery('SELECT r as mesrecettes, 
-            sum(r.montantrecette) as montantrecette, 
+            round(sum(r.montantrecette), 2) as montantrecette, 
             p FROM  App\Entity\Recette r 
             JOIN r.lignebudgetrecette p  
             WHERE p.service=:userservice 
@@ -784,7 +784,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
             $sqlSoldeCompte->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect));
          
             $sqlSoldeCompteAutres = $em->createQuery('SELECT r as mesrecettes, 
-            sum(r.montantrecette) as montantrecette, 
+            round(sum(r.montantrecette),2) as montantrecette, 
             p FROM  App\Entity\Recette r 
             JOIN r.lignebudgetrecette p  
             WHERE p.anneebudgetprevision=:anneebudgetselect 
