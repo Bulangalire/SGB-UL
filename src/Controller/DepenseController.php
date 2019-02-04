@@ -578,9 +578,9 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                     AND 
                         d.service=:ceservice
                     GROUP BY dop.depenseId 
-                    HAVING (sum( CASE WHEN d.autoriserChefService=true 
+                    HAVING ( round(sum( CASE WHEN d.autoriserChefService=true 
                         THEN dop.montantdetail
-                        ELSE  d.montantdepense + 1 END) < d.montantdepense ) ');
+                        ELSE  d.montantdepense + 1 END),2) < d.montantdepense ) ');
                     
                 }else{
                     $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
