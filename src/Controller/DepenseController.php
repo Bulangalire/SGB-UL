@@ -478,7 +478,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                ');
                  $sqlOPDejaPaye->setParameters(array('ceservice'=>$service, 'debut'=> $datedebut, 'fin'=> $datefin));
               
-             }else{
+             }elseif( $this->isGranted('ROLE_COMPTABILITE') or $this->isGranted('ROLE_ADMIN') or $this->isGranted('ROLE_AB') ){
                 if($service=='*'){
                     $sqlOPDejaPaye = $em->createQuery('SELECT dop as lesdetails,
                     round(sum(  dop.montantdetail), 2) as dejaPayer, p, d 
