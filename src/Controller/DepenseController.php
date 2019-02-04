@@ -487,7 +487,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                     JOIN dop.lignebudgetdepense p
                     WHERE 
                         dop.createAt BETWEEN :debut AND :fin 
-                    GROUP BY dop.depenseId 
+                    GROUP BY dop.depenseIzd 
                     HAVING (round(sum( CASE WHEN d.autoriserAB=true AND d.autoriserSG=true AND d.autoriserRecteur=true THEN dop.montantdetail ELSE  d.montantdepense +1 END), 2) = d.montantdepense )
                     ORDER BY p.service ');
                       $sqlOPDejaPaye->setParameters(array('debut'=> $datedebut, 'fin'=> $datefin));
