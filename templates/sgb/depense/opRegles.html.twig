@@ -19,7 +19,7 @@
                                 <th scope="col">Ligne de depense</th>
                                 <th scope="col">Montant OP</th>
                                 <th scope="col">Déjà décaisser</th>
-                                <th scope="col">Solde</th>
+                                <th scope="col">Modifier</th>
                               
 
                             </tr>
@@ -53,7 +53,35 @@
                                         {{op.dejaPayer}}
                                     </td>
                                     <td>
-                                        {{op.lesdetails.depenseid.montantdepense - op.dejaPayer}}
+                                       
+                                        <!-- Permet la modification d'une prevision que si elle n'est pas encore valider ou que pour la comptabilite centrale-->
+                                    {% if is_granted('ROLE_COMPTABILITE') or is_granted('ROLE_ADMIN')%}
+                                        <a  class="confirmModalLink" href="{{path('edit_decaisser', {'id':op.lesdetails.id})}}">
+                                        <img src="{{ asset("/img/edit.png")}}" alt="Modifier"></a>
+                                        &nbsp; &nbsp;
+                                   
+                                    {% endif %}
+                                        <div class="modal hide fade" id="confirmModal">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                        <h4 class="modal-title">Confirmation de la modification</h4>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Etes-vous sur de vouloir modifier ce decaissement?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <a href="#" class="btn btn-primary" id="confirmModalNo">Non</a>
+                                                        <a href="#" class="btn btn-primary" id="confirmModalYes">Oui</a>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    
+
+
                                     </td>
                                  
 
