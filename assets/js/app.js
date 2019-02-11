@@ -7,7 +7,7 @@
 
 const $ = require('jquery');
 require('../js/Chart.bundle.min.js');
-require('../../node_modules/bootstrap/');
+require('../../node_modules/bootstrap/scss/bootstrap.scss');
 require('../scss/app.scss');
 require('../js/confirm.js');
 /*

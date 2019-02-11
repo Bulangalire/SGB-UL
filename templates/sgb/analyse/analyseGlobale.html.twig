@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    <h4>Analyse budgétaire du  {{ app.session.get('datedebutselect')|localizeddate('none', 'none', null, null, 'd MMMM Y') }} au {{ app.session.get('datefinselect')|localizeddate('none', 'none', null, null, 'd MMMM Y') }} 
+    <h4>Analyse budgétaire du  {{ app.session.get('datedebutselect')|date('d/m/Y') }} au {{ app.session.get('datefinselect')|date('d/m/Y') }} 
     </h4>
     <table class="table table-hover">
         <thead>
@@ -86,9 +86,15 @@
                     <td>
                         {{soldeParLigne.mesrecettes.lignebudgetrecette.service.designation}}</td>
                     <td>
-                        {{soldeParLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.compteLigne}}</td>
+                     
+                       {{soldeParLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.compteLigne}}
+                                       
+                       
+                        </td>
                     <td>
-                        {{soldeParLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}</td>
+                    <a href="{{path('zoomSurCompte', {'id':soldeParLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.id})}}">
+                        {{soldeParLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
+                             <img src="{{ asset('/img/add.jpg') }}"/></a></td>
 
                     <td>
                         {% set sousTotauxAnnuelRecette = sousTotauxAnnuelRecette + soldeParLigne.mesrecettes.lignebudgetrecette.montantprevision %}
@@ -151,8 +157,10 @@
                     <td>
                         {{depenseBudget.mesdep.lignebudgetdepense.lignebudgetprevision.compteLigne}}</td>
                     <td>
-                        {{depenseBudget.mesdep.lignebudgetdepense.lignebudgetprevision.intituleLigne}}</td>
-
+                    <a href="{{path('zoomSurCompte', {'id':depenseBudget.mesdep.lignebudgetdepense.lignebudgetprevision.id})}}">
+                        {{depenseBudget.mesdep.lignebudgetdepense.lignebudgetprevision.intituleLigne}}
+                                            <img src="{{ asset('/img/add.jpg') }}"/></a>
+                                            </td>
                     <td>
                            {% set sousTotauxAnnuelDepense = sousTotauxAnnuelDepense + depenseBudget.mesdep.lignebudgetdepense.montantprevision %}
                         {{depenseBudget.mesdep.lignebudgetdepense.montantprevision|number_format(2, '.',',')}}

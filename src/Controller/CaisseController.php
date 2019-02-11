@@ -608,6 +608,187 @@ if($detaildepense->getDepenseId()==null){
     }
 
 
+    //suivi de compte
+//---------------
+ /**
+  * @Route("/sgb/analyse/analyseCompte/{id}", name="analyseCompte")
+  */
+public function etatCompte(Request $request, ObjectManager $manager){
+
+    $session = $request->getSession();
+         dump($request->request->get('annees'));
+    // Creation de variable de session pour les parametres des requêtes
+    // Année budgetaire
+    if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
+     
+        $session->set('anneeselect',$request->request->get('annees') );
+       }
+      $anneebudgetselect= $session->get('anneeselect');
+    
+        // Service
+        if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+            $session->set('servicesselect', $this->getUser()->getServices()->getId() );
+            $service= $session->get('servicesselect');
+        }else{
+        // Service
+        if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
+            $session->set('servicesselect',$request->request->get('services') );
+        }
+        $service= $session->get('servicesselect');
+        }
+        // Période  
+        // Début periode
+        if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
+            $session->set('datedebutselect',$request->request->get('datedebut') );
+        }
+        $datedebut = $session->get('datedebutselect');
+
+        // Fin période
+        if($request->request->get('datefin')!==null && $request->request->get('datefin') <> $session->get('datefinselect') ){
+            $session->set('datefinselect',$request->request->get('datefin') );
+        }
+        $datefin =  $session->get('datefinselect');
+    $comptesRecettes=array();
+    $comptesDepenses=array();
+    $em = $this->getDoctrine()->getManager();
+    $comptesRecettes= $em->createQuery(' SELECT DISTINCT r as recette, sum(r.montantrecette) as entree
+                       FROM  App\Entity\Recette r
+                       JOIN r.lignebudgetrecette p
+                       JOIN  p.lignebudgetprevision l
+                       WHERE p.anneebudgetprevision=:anneebudgetselect
+                       AND r.createAt >=:debut  
+                       AND r.createAt <=:fin 
+                       GROUP BY l.id ORDER BY l.intituleLigne ASC');
+    $comptesRecettes->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+    $resulEtatcomptesRecettes = $comptesRecettes->getResult();
+
+ return $this->render('sgb/analyse/analyseCompte.html.twig',[
+        'comptesRecettes'=>$resulEtatcomptesRecettes,
+       
+        
+]);
+
+}
+
+
+//suivi de compte par service
+//---------------
+ /**
+  * @Route("/sgb/analyse/analyseCompteParService/{id}", name="zoomSurCompte")
+  */
+  public function etatCompteParservice($id, Request $request, ObjectManager $manager){
+
+    $session = $request->getSession();
+         
+    // Creation de variable de session pour les parametres des requêtes
+    // Année budgetaire
+    if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
+     
+        $session->set('anneeselect',$request->request->get('annees') );
+       }
+      $anneebudgetselect= $session->get('anneeselect');
+    
+        // Service
+        if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+            $session->set('servicesselect', $this->getUser()->getServices()->getId() );
+            $service= $session->get('servicesselect');
+        }else{
+        // Service
+        if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
+            $session->set('servicesselect',$request->request->get('services') );
+        }
+        $service= $session->get('servicesselect');
+        }
+        // Période  
+        // Début periode
+        if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
+            $session->set('datedebutselect',$request->request->get('datedebut') );
+        }
+        $datedebut = $session->get('datedebutselect');
+
+        // Fin période
+        if($request->request->get('datefin')!==null && $request->request->get('datefin') <> $session->get('datefinselect') ){
+            $session->set('datefinselect',$request->request->get('datefin') );
+        }
+        $datefin =  $session->get('datefinselect');
+    $comptesRecettes=array();
+    $comptesDepenses=array();
+    $em = $this->getDoctrine()->getManager();
+    if( $this->isGranted('ROLE_COMPTABILITE') or $this->isGranted('ROLE_AB') or $this->isGranted('ROLE_ADMIN') or $this->isGranted('ROLE_RECTOR')  or $this->isGranted('ROLE_SG')  ){
+    $comptesRecettes= $em->createQuery(' SELECT DISTINCT r as recette, sum(r.montantrecette) as entree
+                       FROM  App\Entity\Recette r
+                       JOIN r.lignebudgetrecette p
+                       JOIN  p.lignebudgetprevision l
+                       WHERE p.anneebudgetprevision=:anneebudgetselect
+                       AND l.id=:cetteLigne
+                       AND r.createAt >=:debut  
+                       AND r.createAt <=:fin 
+                       GROUP BY p.service ORDER BY p.service ASC');
+    $comptesRecettes->setParameters(array('cetteLigne'=>$id, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+
+    $comptesRecettesparservice = $comptesRecettes->getResult();
+
+    $comptesRecettesparserviceGraphic = $em->createQuery(
+        "
+        SELECT 
+            SUM(r.montantrecette) as  montantrecette, 
+            date_format(r.createAt, '%M %Y') as createAt
+        FROM  
+        App\Entity\Recette r
+        JOIN r.lignebudgetrecette p
+        JOIN  p.lignebudgetprevision l
+        WHERE p.anneebudgetprevision=:anneebudgetselect
+        AND l.id=:cetteLigne
+        AND r.createAt >=:debut  
+        AND r.createAt <=:fin 
+        GROUP BY p.service ORDER BY p.service ASC");    
+        
+        $comptesRecettesparserviceGraphic->setParameters(array('cetteLigne'=>$id, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+    $resultatRecettesparserviceGraphic = $comptesRecettesparserviceGraphic->execute();
+    }else{
+                    $comptesRecettes= $em->createQuery(" SELECT DISTINCT r as recette, sum(r.montantrecette) as entree,
+                    date_format(r.createAt, '%M %Y') as createAt
+                    FROM  App\Entity\Recette r
+                    JOIN r.lignebudgetrecette p
+                    JOIN  p.lignebudgetprevision l
+                    WHERE p.anneebudgetprevision=:anneebudgetselect
+                    AND l.id=:cetteLigne
+                    AND r.createAt >=:debut  
+                    AND r.createAt <=:fin 
+                    GROUP BY createAt  ORDER BY createAt ASC ");
+            $comptesRecettes->setParameters(array('cetteLigne'=>$id, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+
+            $comptesRecettesparservice = $comptesRecettes->getResult();
+
+            $comptesRecettesparserviceGraphic = $em->createQuery(
+            "
+            SELECT 
+            SUM(r.montantrecette) as  montantrecette, 
+            date_format(r.createAt, '%M %Y') as createAt
+            FROM  
+            App\Entity\Recette r
+            JOIN r.lignebudgetrecette p
+            JOIN  p.lignebudgetprevision l
+            WHERE p.anneebudgetprevision=:anneebudgetselect
+            AND l.id=:cetteLigne
+            AND r.createAt >=:debut  
+            AND r.createAt <=:fin 
+            GROUP BY createAt ORDER BY createAt ASC");    
+
+            $comptesRecettesparserviceGraphic->setParameters(array('cetteLigne'=>$id, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+            $resultatRecettesparserviceGraphic = $comptesRecettesparserviceGraphic->execute();
+
+    }
+
+ return $this->render('sgb/analyse/analyseCompteParService.html.twig',[
+        'comptesRecettesparservice'=>$comptesRecettesparservice,
+        'resultatRecettesparserviceGraphic'=>$resultatRecettesparserviceGraphic
+       
+        
+]);
+
+}
+
 function dateDifference($datedebut, $datefin)
 {
     $datetime1 = date_create($datedebut);

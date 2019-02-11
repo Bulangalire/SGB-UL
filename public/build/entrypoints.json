@@ -33,6 +33,12 @@
         "/build/js/chartRecette.js"
       ]
     },
+    "js/chartRecettesUnCompteParservice": {
+      "js": [
+        "/build/runtime.js",
+        "/build/js/chartRecettesUnCompteParservice.js"
+      ]
+    },
     "js/formatterDate": {
       "js": [
         "/build/runtime.js",

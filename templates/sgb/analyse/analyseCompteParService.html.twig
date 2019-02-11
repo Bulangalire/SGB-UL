@@ -1,7 +1,8 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    <h4>Analyse budgétaire du  {{ app.session.get('datedebutselect')|localizeddate('none', 'none', null, null, 'd MMMM Y') }} au {{ app.session.get('datefinselect')|localizeddate('none', 'none', null, null, 'd MMMM Y') }} 
+    <h4>Analyse du compte {{comptesRecettesparservice[0].recette.lignebudgetrecette.lignebudgetprevision.intituleLigne}} {{ app.session.get('datedebutselect')|date('d/m/Y') }} au {{ app.session.get('datefinselect')|date('d/m/Y')}} 
     </h4>
+  
     <table class="table table-hover">
         <thead>
             <tr class="table-primary">
@@ -16,7 +17,7 @@
 
      {% set numDepense = 0 %}
      {% set total = 0 %}
-          {% for comptesRecette in comptesRecettes %}
+          {% for comptesRecette in comptesRecettesparservice %}
 {% if comptesRecette.entree > 0 %}
 
                 <tr>
@@ -25,16 +26,20 @@
                         {{ numDepense }}
                     </th>
                     <td>
-                     {{comptesRecette.recette.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
+                     {% if is_granted('ROLE_COMPTE_FAC')or is_granted('ROLE_CHEF') %}
+                     {{comptesRecette.createAt}}
+                      {% else %}
+                           {{comptesRecette.recette.lignebudgetrecette.service.designation}}
+                      {% endif %}
                        </td>
                     <td>
                      {{comptesRecette.entree}}
                        {% set total = total + comptesRecette.entree %}
                        </td>
                        <td>
-                        <a href="{{path('add_decaisser', {'id':opDeux.id})}}">
-                                            <img src="{{ asset('/img/add.jpg') }}"/></a>
-                       
+                        {% if is_granted('ROLE_COMPTABILITE')or is_granted('ROLE_AB')or is_granted('ROLE_ADMIN') or is_granted('ROLE_RECTOR') or is_granted('ROLE_SG')%}
+                        <a href=""><img src="{{ asset('/img/add.jpg') }}"/></a>
+                       {% endif %}
                        </td>
                 </tr>
                 {% endif %}
@@ -45,6 +50,18 @@
 <td>{{total}}</td>
 <td></td>
 </tr>
+<tr>
+                <td colspan="4">
+
+                 <canvas id="myCompte" width="400" height="400" 
+                                    data-mescomptes="{{resultatRecettesparserviceGraphic|json_encode}}"></canvas>
+                </td>
         </tbody>
     </table>
+{% endblock %}
+{% block javascripts %}
+{{ parent() }}
+<script type="text/javascript" src="{{ asset('build/js/moment.js') }}"></script>
+ <script type="text/javascript" src="{{ asset('build/js/chartRecettesUnCompteParservice.js') }}"></script>
+
 {% endblock %}
