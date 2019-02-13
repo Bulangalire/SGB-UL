@@ -426,7 +426,8 @@ if($detaildepense->getDepenseId()==null){
                         echo '<h5 style="color:red;">le montant est superière à celui qui reste pour !!!'. $detaildepense->getDepenseId()->getSoldeDepense() .' $</h5>' ;
                         return $this->redirectToRoute('add_decaisser',['id'=> $detaildepense->getDepenseId()->getId()]);
                     }
-                }elseif($detaildepense->getMontantdetail()>$detaildepense->getLignebudgetsource()->getLeSolde() ){
+                }
+                if($detaildepense->getMontantdetail()>$detaildepense->getLignebudgetsource()->getLeSolde() ){
                     echo '<h5 style="color:red;">le montant est superière à celui qui reste en caisse!!!'. $detaildepense->getLignebudgetsource()->getLeSolde() .' $</h5>' ;
                     return $this->redirectToRoute('add_decaisser',['id'=> $detaildepense->getDepenseId()->getId()]);
 
