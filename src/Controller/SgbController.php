@@ -1023,7 +1023,7 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
             LEFT JOIN App\Entity\Previsionbudget p WITH r.lignebudgetrecette = p.id 
             LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
             WHERE r.createAt >=:debut  AND r.createAt <=:fin
-            AND p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision GROUP BY createAt");
+            AND p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision GROUP BY createAt ORDER BY createAt ASC");
     $queryDetailRecetteGraphic->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'idPrevision'=>$recette->getLignebudgetrecette(), 'debut'=> $datedebut, 'fin'=> $datefin ));
     $resultatDetailRecetteGraphic = $queryDetailRecetteGraphic->execute();
     $queryDetailRecette = $em->createQuery(
