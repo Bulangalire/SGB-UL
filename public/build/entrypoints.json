@@ -1,12 +1,9 @@
 {
   "entrypoints": {
-    "js/app": {
+    "js/chartRecette": {
       "js": [
         "/build/runtime.js",
-        "/build/js/app.js"
-      ],
-      "css": [
-        "/build/js/app.css"
+        "/build/js/chartRecette.js"
       ]
     },
     "js/moment": {
@@ -27,16 +24,25 @@
         "/build/js/chartjs-plugin-datalabels.js"
       ]
     },
-    "js/chartRecette": {
+    "js/app": {
       "js": [
         "/build/runtime.js",
-        "/build/js/chartRecette.js"
+        "/build/js/app.js"
+      ],
+      "css": [
+        "/build/js/app.css"
       ]
     },
     "js/chartRecettesUnCompteParservice": {
       "js": [
         "/build/runtime.js",
         "/build/js/chartRecettesUnCompteParservice.js"
+      ]
+    },
+    "js/chartDepenseUnCompteParservice": {
+      "js": [
+        "/build/runtime.js",
+        "/build/js/chartDepenseUnCompteParservice.js"
       ]
     },
     "js/formatterDate": {

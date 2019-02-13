@@ -27,8 +27,7 @@ $(document).ready(function () {
 
         });
 
-       console.log(labels);
-    
+      
         // Create the chart.js data structure using 'labels' and 'data'
         var tempData = {
             labels          : labels,
@@ -47,7 +46,7 @@ $(document).ready(function () {
         // Instantiate a new chart
         // var myLineChart = new Chart(ctx).$(tempData);
         // Type:  bar, horizontalBar, pie, line, doughnut, radar, polarArea
-        chartRecette('Recettes', tempData, ctx, 'horizontalBar')
+        chartRecette('Recettes', tempData, ctx, 'bar')
      
 });
     
@@ -86,7 +85,10 @@ function chartRecette(titre, tempData, ctx, typeChart){
             },
             scales: {
                 yAxes: [{
-                    valueFormatString: "#,###"
+                    valueFormatString: "#,###",
+                    ticks: {
+                        beginAtZero:true
+                    }
                 }],
                 xAxes: [{
                     valueFormatString: "MMMM YYYY" ,

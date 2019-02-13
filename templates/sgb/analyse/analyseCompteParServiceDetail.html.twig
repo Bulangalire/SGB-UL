@@ -30,20 +30,14 @@
                                 {{ numDepense }}
                             </th>
                             <td>
-                                {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE') %}
                                     {{comptesRecette.createAt}}
-                                    {% else %}
-                                    {{comptesRecette.recette.lignebudgetrecette.service.designation}}
-                                {% endif %}
                             </td>
                             <td>
                                 {{comptesRecette.entree}}
                                 {% set total = total + comptesRecette.entree %}
                             </td>
                             <td>
-                                {% if is_granted('ROLE_COMPTABILITE') or is_granted('ROLE_AB') or is_granted('ROLE_ADMIN') or is_granted('ROLE_RECTOR') or is_granted('ROLE_SG')%}
-                                    <a href="{{path('zoomSurCompteDetail', {'id':comptesRecette.recette.lignebudgetrecette.id})}}"><img src="{{ asset('/img/add.jpg') }}"/></a>
-                                {% endif %}
+                             
                             </td>
                         </tr>
                     {% endif %}
@@ -65,8 +59,9 @@
             <script type="text/javascript" src="{{ asset('build/js/chartRecettesUnCompteParservice.js') }}"></script>
         {% endif %}
         <!-- cas où c'est la ligne de depense-->
-        {% if comptesDepenseparservice is not empty %}
         
+        {% if comptesDepenseparservice is not empty %}
+                
             <h4>Analyse du compte
                 {{comptesDepenseparservice[0].mesdep.lignebudgetdepense.lignebudgetprevision.intituleLigne}}
                 {{ app.session.get('datedebutselect')|date('d/m/Y') }}
@@ -93,20 +88,15 @@
                                 {{ numDepense }}
                             </th>
                             <td>
-                                {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE') %}
                                     {{comptesDepense.createAt}}
-                                    {% else %}
-                                    {{comptesDepense.mesdep.lignebudgetdepense.service.designation}}
-                                {% endif %}
+                                
                             </td>
                             <td>
                                 {{comptesDepense.sommedepense}}
                                 {% set total = total + comptesDepense.sommedepense %}
                             </td>
                             <td>
-                                {% if is_granted('ROLE_COMPTABILITE') or is_granted('ROLE_AB') or is_granted('ROLE_ADMIN') or is_granted('ROLE_RECTOR') or is_granted('ROLE_SG')%}
-                                    <a href="{{path('zoomSurCompteDetail', {'id':comptesDepense.mesdep.lignebudgetdepense.id})}}"><img src="{{ asset('/img/add.jpg') }}"/></a>
-                                {% endif %}
+                              
                             </td>
                         </tr>
                    

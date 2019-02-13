@@ -16,17 +16,13 @@ $(document).ready(function () {
         var b = Math.floor(Math.random() * 255);
         return "rgb(" + r + "," + g + "," + b + ")";
     }
-   
-    myCompte=$("#myCompte").data('mescomptes');
- 
+    myCompteDepense=$("#myCompteDepense").data('mescomptesdepense');
         // Split timestamp and data into separate arrays
         var labels = [], data=[], couleur=[];
-        myCompte.forEach(function(recette) {
-            if(recette.montantrecette>0){
-            labels.push(recette.createAt);
-            data.push(parseFloat(recette.montantrecette));
-            couleur.push(dynamicColors());
-        }
+        myCompteDepense.forEach(function(mesdep) {
+          labels.push(mesdep.createAt);
+          data.push(parseFloat(mesdep.sommedepense));
+          couleur.push(dynamicColors());
 
         });
 
@@ -34,13 +30,7 @@ $(document).ready(function () {
     
         // Create the chart.js data structure using 'labels' and 'data'
         var tempData = {
-            labels          : labels.sort(function(a,b){
-                // Turn your strings into dates, and then subtract them
-                // to get a value that is either negative, positive, or zero.
-                da=new Date(a.createAt);
-                db=new Date(b.createAt);
-                return  (da>db)?1:-1;
-              }),
+            labels          : labels,
             datasets        : [{
             backgroundColor :couleur,
             borderColor     :couleur,
@@ -51,17 +41,17 @@ $(document).ready(function () {
         };
     
         // Get the context of the canvas element we want to select
-        var ctx = document.getElementById("myCompte").getContext("2d");
+        var ctx = document.getElementById("myCompteDepense").getContext("2d");
     
         // Instantiate a new chart
         // var myLineChart = new Chart(ctx).$(tempData);
         // Type:  bar, horizontalBar, pie, line, doughnut, radar, polarArea
-        chartRecette('Recettes', tempData, ctx, 'bar')
+        chartDepense('Depense', tempData, ctx, 'bar')
      
 });
     
 
-function chartRecette(titre, tempData, ctx, typeChart){
+function chartDepense(titre, tempData, ctx, typeChart){
     Chart.defaults.global.defaultBackgroundColor = '#777';
     Chart.defaults.global.defaultFontFamily = 'Lato';
     Chart.defaults.global.defaultFontColor = '#777';
@@ -122,6 +112,8 @@ function chartRecette(titre, tempData, ctx, typeChart){
                     }
                 }]
             }
+    
+       
     
         }
       });

@@ -821,6 +821,7 @@ class SgbController extends AbstractController
                                                                 ->join("p.lignebudgetprevision", 'l')
                                                                 ->join("p.anneebudgetprevision", 'a')
                                                                 ->where("l.categorieLigne = :larecette AND a.id = :annnebudget")
+                                                                ->orderBy('p.service')
                                                                 ->setParameter('larecette','Recette')
                                                                 ->setParameter('annnebudget', $anneebudgetselect);
                                                             }else{
@@ -829,6 +830,7 @@ class SgbController extends AbstractController
                                                                 ->join("p.lignebudgetprevision", 'l')
                                                                 ->join("p.anneebudgetprevision", 'a')
                                                                 ->where("p.service=:userservice AND l.categorieLigne = :larecette AND a.id = :annnebudget")
+                                                                ->orderBy('p.service')
                                                                 ->setParameter('userservice',$service)
                                                                 ->setParameter('larecette','Recette')
                                                                 ->setParameter('annnebudget', $anneebudgetselect);
@@ -836,7 +838,12 @@ class SgbController extends AbstractController
 
                                             }
                                                 },
-                                                    'choice_label'=>'lignebudgetprevision.intituleLigne',
+                                                    'choice_label'=> function( Previsionbudget $previsionbudget) {
+                                                        return   $previsionbudget->getLignebudgetprevision()->getIntituleLigne()."/(". $previsionbudget->getService()->getDesignation() .")";
+                        
+                                                     
+                                                }
+                                                    ,
                                                     'label'=>'Ligne budgetaire recette'
                                                     )) 
                                                     ->add('sauvegarder', SubmitType::class,[

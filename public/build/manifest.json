@@ -2,6 +2,7 @@
   "build/css/app.css": "/build/css/app.css",
   "build/js/app.css": "/build/js/app.css",
   "build/js/app.js": "/build/js/app.js",
+  "build/js/chartDepenseUnCompteParservice.js": "/build/js/chartDepenseUnCompteParservice.js",
   "build/js/chartDetailRecette.js": "/build/js/chartDetailRecette.js",
   "build/js/chartPrevision.js": "/build/js/chartPrevision.js",
   "build/js/chartRecette.js": "/build/js/chartRecette.js",

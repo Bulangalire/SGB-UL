@@ -23,6 +23,7 @@ Encore
     .addEntry('js/chartjs-plugin-datalabels', './assets/js/chartjs-plugin-datalabels.js')
     .addEntry('js/chartRecette', './assets/js/chartRecette.js')
     .addEntry('js/chartRecettesUnCompteParservice', './assets/js/chartRecettesUnCompteParservice.js')
+    .addEntry('js/chartDepenseUnCompteParservice', './assets/js/chartDepenseUnCompteParservice.js')
     .addEntry('js/formatterDate', './assets/js/formatterDate.js')
     .addEntry('js/chartPrevision', './assets/js/chartPrevision.js')
     .addStyleEntry('css/app', './assets/scss/app.scss')
