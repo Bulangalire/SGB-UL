@@ -745,7 +745,7 @@ public function etatCompte(Request $request, ObjectManager $manager){
         AND l.id=:cetteLigne
         AND r.createAt >=:debut  
         AND r.createAt <=:fin 
-        GROUP BY createAt ORDER BY r.createAt  DESC");    
+        GROUP BY createAt ORDER BY r.createAt  ASC");    
         
         $comptesRecettesparserviceGraphic->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
     $resultatRecettesparserviceGraphic = $comptesRecettesparserviceGraphic->execute();
