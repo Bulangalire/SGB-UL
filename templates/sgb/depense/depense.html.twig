@@ -1,81 +1,101 @@
 {% extends 'base.html.twig' %}
 {% form_theme frmDepense 'bootstrap_4_layout.html.twig' %}
 {% block body %}
-
     <table>
         <tbody>
             <tr>
+                <td></td>
                 <td>
-
-                    
-                   
-
-                </td>
-                <td>
-                <h3>Depense
+                    <h3>Depense
                     </h3>
                     <table class="table table-hover">
                         <thead>
                             <tr class="table-primary">
                                 <th scope="col">ID</th>
+                                <th scope="col">Compte</th>
                                 <th scope="col">Libelé depense</th>
-                                <th scope="col">Montant</th>
-                                 <th scope="col">Date</th>
-                                <th scope="col">Observation</th>
-
+                                <th scope="col">Prévisions</th>
+                                <th scope="col">Réalisations</th>
+                                <th scope="col">Ecarts</th>
+                                <th scope="col">Taux de réalisation</th>
+                                <th scope="col">En lettre</th>
+                                <th scope="col"></th>
                             </tr>
                         </thead>
                         <tbody>
                             {% set numDepense = 0 %}
-                            {% set totaleEntree = 0 %}
+                            {% set totalePrevision = 0 %}
+                            {% set totaleRealisation = 0 %}
                             {% set totaleSortie = 0 %}
-                            {% set SoldeGlobal = 0 %}
                             {% for dep in queryDepenseGlobale %}
                                 <tr>
                                     <th scope="row">
                                         {% set numDepense = numDepense + 1 %}
                                         {{ numDepense }}
                                     </th>
-                                    <td>{{dep.mesdep.lignebudgetdepense.lignebudgetprevision.intituleLigne}}</td>
-                                    
-                                    <td>{{dep.sommedepense}}</td>
-                                    {% set totaleSortie = totaleSortie + dep.sommedepense %}
-                                      <td>{{dep.mesdep.createAt|date('d/m/Y')}}</td>
                                     <td>
-                                           
-                                                {{ converssion(dep.sommedepense, "USD") }}
-                                            
+                                        {{dep.mesdep.lignebudgetdepense.lignebudgetprevision.compteLigne }}</td>
+                                    <td>
+                                        {{dep.mesdep.lignebudgetdepense.lignebudgetprevision.intituleLigne}}</td>
+                                    <td>
+                                        {{dep.mesdep.lignebudgetdepense.montantprevision|number_format(2, '.',',')}}</td>
+                                         {% set totalePrevision = totalePrevision + dep.mesdep.lignebudgetdepense.montantprevision %}
+                                    {% if dep.sommedepense > dep.mesdep.lignebudgetdepense.montantprevision %}
+                                        
+                                            <td><h6 style="color:red">
+                                                {{dep.sommedepense|number_format(2, '.',',')}} </h6></td>
+                                            <td><h6 style="color:red">
+                                                {{(dep.mesdep.lignebudgetdepense.montantprevision - dep.sommedepense)|number_format(2, '.',',')}}</h6></td>
+                                            <td><h6 style="color:red">
+                                                {% if dep.mesdep.lignebudgetdepense.montantprevision > 0 %}
+                                                    {{((dep.sommedepense / dep.mesdep.lignebudgetdepense.montantprevision ) * 100 )|number_format(2, '.', ',') }}%
+                                                {% endif %}</h6>
+                                            </td>
                                        
+                                        {% else %}
+                                        <td>
+                                            {{dep.sommedepense|number_format(2, '.',',')}}</td>
+                                        <td>
+                                            {{(dep.mesdep.lignebudgetdepense.montantprevision - dep.sommedepense)|number_format(2, '.',',')}}</td>
+                                        <td>
+                                            {% if dep.mesdep.lignebudgetdepense.montantprevision > 0 %}
+                                                {{((dep.sommedepense / dep.mesdep.lignebudgetdepense.montantprevision ) * 100 )|number_format(2, '.', ',') }}%
+                                            {% endif %}
+                                        </td>
+                                    {% endif %}
+                                    {% set totaleSortie = totaleSortie + dep.sommedepense %}
+                                  
+                                    <td>
+                                        {{ converssion(dep.sommedepense, "USD") }}
                                     </td>
                                 </tr>
                             {% endfor %}
                             <tr class="table-primary">
                                 <th scope="row"></th>
                                 <td></td>
-
+                                <td></td>
+                                <td>{{totalePrevision|number_format(2, '.', ',')}}</td>
                                 <td>
-                                    {{totaleSortie}}
+                                    {{totaleSortie|number_format(2, '.', ',')}}
                                 </td>
-                               <td colspan="2"> {{ converssion(totaleSortie, "USD") }}</td>
-                                <td>
-                                
-                                </td>
+                                <td>{{(totalePrevision - totaleSortie)|number_format(2, '.', ',')}} </td>
+                                <td> {% if totalePrevision > 0 %}
+                                                {{((totaleSortie / totalePrevision ) * 100 )|number_format(2, '.', ',') }}%
+                                            {% endif %}</td>
+                                <td colspan="1">
+                                    {{ converssion(totaleSortie, "USD") }}</td>
+                                <td></td>
                             </tr>
-
                         </tbody>
                     </table>
-
                 </td>
             </tr>
             <tr>
                 <td></td>
                 <td>
-
                     <td></td>
                 </td>
             </tr>
-
         </tbody>
     </table>
-
 {% endblock %}

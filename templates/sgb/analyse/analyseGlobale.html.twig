@@ -1,6 +1,9 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    <h4>Analyse budgétaire du  {{ app.session.get('datedebutselect')|date('d/m/Y') }} au {{ app.session.get('datefinselect')|date('d/m/Y') }} 
+    <h4>Analyse budgétaire du
+        {{ app.session.get('datedebutselect')|date('d/m/Y') }}
+        au
+        {{ app.session.get('datefinselect')|date('d/m/Y') }}
     </h4>
     <table class="table table-hover">
         <thead>
@@ -14,39 +17,26 @@
                 <th scope="col">Réalisation</th>
                 <th scope="col">Ecarts</th>
                 <th scope="col">% Réalisation</th>
-
             </tr>
         </thead>
         <tbody>
-
-
             {% set sousTotauxAnnuelRecette = 0 %}
             {% set sousTotauxPeriodeRecette = 0 %}
             {% set sousTotauxRealisationRecette = 0 %}
             {% set sousTotauxEcartRecette = 0 %}
             {% set sousPoucentageRecette = 0 %}
-
-
             {% set joursAnnee = 0 %}
             {% set leftDays = 0 %}
             {% set numDepense = 0 %}
-
-           
-
             {% set dateDebut = app.session.get('datedebutselect') %}
             {% set dateFin = app.session.get('datefinselect') %}
             {% set difference = date(dateFin | date()).diff(date(dateDebut)) %}
             {% set leftDays = difference.days %}
-
             {% if leftDays == 364 %}
                 {% set leftDays = leftDays + 1 %}
-
                 {% elseif leftDays == 181 %}
-
                 {% set leftDays = leftDays + 1.5 %}
-
                 {% elseif leftDays == 211 %}
-
                 {% set leftDays = leftDays + 1.91 %}
                 {% elseif leftDays == 30 %}
                 {% set leftDays = leftDays + 0.41666 %}
@@ -58,25 +48,20 @@
                 {% set leftDays = leftDays + 1 %}
                 {% elseif leftDays == 242 %}
                 {% set leftDays = leftDays + 1 %}
-
             {% endif %}
-
             {% set annee = app.session.get('datefinselect') | localizeddate('none', 'none', null, null, 'Y') %}
             {% set thisYear = date()|localizeddate('none', 'none', null, null, 'Y') %}
-                      
             {% if annee == thisYear  %}
                 {% set annee = app.session.get('datefinselect') | localizeddate('none', 'none', null, null, 'Y') %}
-            {% else %}
+                {% else %}
                 {% set annee = app.session.get('datedebutselect') | localizeddate('none', 'none', null, null, 'Y') %}
             {% endif %}
-
             <!-- Année bixestulle non utilisee-->
             {% if IsLeapYear(annee) %}
                 {% set joursAnnee = 365 %}
-            {% else %}
+                {% else %}
                 {% set joursAnnee = 365 %}
             {% endif %}
-
             {% for soldeParLigne in tblCaisse %}
                 <tr>
                     <th scope="row">
@@ -86,28 +71,24 @@
                     <td>
                         {{soldeParLigne.mesrecettes.lignebudgetrecette.service.designation}}</td>
                     <td>
-                     
-                       {{soldeParLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.compteLigne}}
-                                       
-                       
-                        </td>
+                        {{soldeParLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.compteLigne}}
+                    </td>
                     <td>
-                    <a href="{{path('zoomSurCompte', {'id':soldeParLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.id})}}">
-                        {{soldeParLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
-                             <img src="{{ asset('/img/add.jpg') }}"/></a></td>
-
+                        <a href="{{path('zoomSurCompte', {'id':soldeParLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.id})}}">
+                            {{soldeParLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
+                            <img src="{{ asset('/img/add.jpg') }}"/></a>
+                    </td>
                     <td>
                         {% set sousTotauxAnnuelRecette = sousTotauxAnnuelRecette + soldeParLigne.mesrecettes.lignebudgetrecette.montantprevision %}
                         {{soldeParLigne.mesrecettes.lignebudgetrecette.montantprevision|number_format(2, '.',',')}}
                     </td>
                     <td>
-                         {% set previsionPeriode = (soldeParLigne.mesrecettes.lignebudgetrecette.montantprevision / joursAnnee) * (leftDays) %}
-                         {% set sousTotauxPeriodeRecette = sousTotauxPeriodeRecette + previsionPeriode %}
+                        {% set previsionPeriode = (soldeParLigne.mesrecettes.lignebudgetrecette.montantprevision / joursAnnee) * (leftDays) %}
+                        {% set sousTotauxPeriodeRecette = sousTotauxPeriodeRecette + previsionPeriode %}
                         {{ previsionPeriode|number_format(2, '.',',')}}
                     </td>
-
                     <td>
-                          {% set sousTotauxRealisationRecette = sousTotauxRealisationRecette + soldeParLigne.montantrecette %}
+                        {% set sousTotauxRealisationRecette = sousTotauxRealisationRecette + soldeParLigne.montantrecette %}
                         {{soldeParLigne.montantrecette |number_format(2, '.',',')}}
                     </td>
                     <td>
@@ -123,30 +104,31 @@
                 <td></td>
                 <td></td>
                 <td>Sous-totaux Recette</td>
-                <td>{{sousTotauxAnnuelRecette|number_format(2, '.',',')}}</td>
-                <td>{{sousTotauxPeriodeRecette|number_format(2, '.',',')}}</td>
-                <td>{{sousTotauxRealisationRecette|number_format(2, '.',',')}}</td>
                 <td>
-                     {% set sousTotauxEcartRecette = sousTotauxPeriodeRecette  - sousTotauxRealisationRecette %}
-                     {{sousTotauxEcartRecette|number_format(2, '.',',')}}
+                    {{sousTotauxAnnuelRecette|number_format(2, '.',',')}}</td>
+                <td>
+                    {{sousTotauxPeriodeRecette|number_format(2, '.',',')}}</td>
+                <td>
+                    {{sousTotauxRealisationRecette|number_format(2, '.',',')}}</td>
+                <td>
+                    {% set sousTotauxEcartRecette = sousTotauxPeriodeRecette  - sousTotauxRealisationRecette %}
+                    {{sousTotauxEcartRecette|number_format(2, '.',',')}}
                 </td>
                 <td>
-                     {% if sousTotauxPeriodeRecette is not same as(0) %}
-                     {% set sousPoucentageRecette = (sousTotauxRealisationRecette * 100 ) / sousTotauxPeriodeRecette %}
-                     {{sousPoucentageRecette|number_format(2, '.',',')}} {{"%"}}
+                    {% if sousTotauxPeriodeRecette is not same as(0) %}
+                        {% set sousPoucentageRecette = (sousTotauxRealisationRecette * 100 ) / sousTotauxPeriodeRecette %}
+                        {{sousPoucentageRecette|number_format(2, '.',',')}}
+                        {{"%"}}
                     {% endif %}
                 </td>
             </tr>
-
             <!-- LES DEPENSES -->
             {% set sousTotauxAnnuelDepense = 0 %}
             {% set sousTotauxPeriodeDepense = 0 %}
             {% set sousTotauxRealisationDepense = 0 %}
             {% set sousTotauxEcartDepense = 0 %}
             {% set sousPoucentageDepense = 0 %}
-
             {% for depenseBudget in tblDepense %}
-
                 <tr>
                     <th scope="row">
                         {% set numDepense = numDepense + 1 %}
@@ -157,75 +139,93 @@
                     <td>
                         {{depenseBudget.mesdep.lignebudgetdepense.lignebudgetprevision.compteLigne}}</td>
                     <td>
-                    <a href="{{path('zoomSurCompte', {'id':depenseBudget.mesdep.lignebudgetdepense.lignebudgetprevision.id})}}">
-                        {{depenseBudget.mesdep.lignebudgetdepense.lignebudgetprevision.intituleLigne}}
-                                            <img src="{{ asset('/img/add.jpg') }}"/></a>
-                                            </td>
+                        <a href="{{path('zoomSurCompte', {'id':depenseBudget.mesdep.lignebudgetdepense.lignebudgetprevision.id})}}">
+                            {{depenseBudget.mesdep.lignebudgetdepense.lignebudgetprevision.intituleLigne}}
+                            <img src="{{ asset('/img/add.jpg') }}"/></a>
+                    </td>
                     <td>
-                           {% set sousTotauxAnnuelDepense = sousTotauxAnnuelDepense + depenseBudget.mesdep.lignebudgetdepense.montantprevision %}
+                        {% set sousTotauxAnnuelDepense = sousTotauxAnnuelDepense + depenseBudget.mesdep.lignebudgetdepense.montantprevision %}
                         {{depenseBudget.mesdep.lignebudgetdepense.montantprevision|number_format(2, '.',',')}}
                     </td>
-
                     <td>
                         {% set previsionPeriodeDepense = (depenseBudget.mesdep.lignebudgetdepense.montantprevision / joursAnnee) * (leftDays | round(2, 'ceil')) %}
                         {{ previsionPeriodeDepense|number_format(2, '.',',')}}
-                         {% set sousTotauxPeriodeDepense = sousTotauxPeriodeDepense + previsionPeriodeDepense  %}
-                        
+                        {% set sousTotauxPeriodeDepense = sousTotauxPeriodeDepense + previsionPeriodeDepense  %}
                     </td>
-
                     <td>
-                        {{depenseBudget.sommedepense|number_format(2, '.',',')}}
+                        {% if depenseBudget.sommedepense > depenseBudget.mesdep.lignebudgetdepense.montantprevision %}
+                            <h6 style="color:red">
+                                {{depenseBudget.sommedepense|number_format(2, '.',',')}}</h6>
+                            {% else %}
+                            {{depenseBudget.sommedepense|number_format(2, '.',',')}}
+                        {% endif %}
                         {% set sousTotauxRealisationDepense = sousTotauxRealisationDepense + depenseBudget.sommedepense %}
                     </td>
                     <td>
-                    {% set previsionPeriodeDepenseEffectuee = previsionPeriodeDepense - depenseBudget.sommedepense %}
-                        {{ previsionPeriodeDepenseEffectuee|number_format(2, '.',',')}}
-                        
+                        {% set previsionPeriodeDepenseEffectuee = previsionPeriodeDepense - depenseBudget.sommedepense %}
+                        {% if depenseBudget.sommedepense > depenseBudget.mesdep.lignebudgetdepense.montantprevision %}
+                            <h6 style="color:red">
+                                {{ previsionPeriodeDepenseEffectuee|number_format(2, '.',',')}}</h6>
+                                          {% else %}
+                            {{ previsionPeriodeDepenseEffectuee|number_format(2, '.',',')}}
+                        {% endif %}
                     </td>
-
                     <td>
                         {% if previsionPeriodeDepense is not same as(0) %}
-                        {{  ((depenseBudget.sommedepense * 100) / previsionPeriodeDepense)|number_format(2, '.',',') }}{{" % "}}
+                            {% if depenseBudget.sommedepense > depenseBudget.mesdep.lignebudgetdepense.montantprevision %}
+                            <h6 style="color:red">
+                            {{  ((depenseBudget.sommedepense * 100) / previsionPeriodeDepense)|number_format(2, '.',',') }}{{" % "}}</h6>
+                             {% else %}
+                              {{  ((depenseBudget.sommedepense * 100) / previsionPeriodeDepense)|number_format(2, '.',',') }}{{" % "}}
+                             {% endif %}
                         {% endif %}
                     </td>
                 </tr>
             {% endfor %}
             <tr class="table-primary">
-               <th scope="row"></th>
+                <th scope="row"></th>
                 <td></td>
                 <td></td>
                 <td>Sous-totaux Depense</td>
-                <td>{{sousTotauxAnnuelDepense|number_format(2, '.',',')}}</td>
-                <td>{{sousTotauxPeriodeDepense|number_format(2, '.',',')}}</td>
-                <td>{{sousTotauxRealisationDepense|number_format(2, '.',',')}}</td>
                 <td>
-                     {% set sousTotauxEcartDepense = sousTotauxPeriodeDepense  - sousTotauxRealisationDepense %}
-                     {{sousTotauxEcartDepense|number_format(2, '.',',')}}
+                    {{sousTotauxAnnuelDepense|number_format(2, '.',',')}}</td>
+                <td>
+                    {{sousTotauxPeriodeDepense|number_format(2, '.',',')}}</td>
+                <td>
+                    {{sousTotauxRealisationDepense|number_format(2, '.',',')}}</td>
+                <td>
+                    {% set sousTotauxEcartDepense = sousTotauxPeriodeDepense  - sousTotauxRealisationDepense %}
+                    {{sousTotauxEcartDepense|number_format(2, '.',',')}}
                 </td>
                 <td>
                     {% if sousTotauxPeriodeDepense is not same as(0) %}
-                     {% set sousPoucentageDepense = (sousTotauxRealisationDepense * 100 ) / sousTotauxPeriodeDepense %}
-                     {{sousPoucentageDepense|number_format(2, '.',',')}} {{"%"}}
-                     {% endif %}
+                        {% set sousPoucentageDepense = (sousTotauxRealisationDepense * 100 ) / sousTotauxPeriodeDepense %}
+                        {{sousPoucentageDepense|number_format(2, '.',',')}}
+                        {{"%"}}
+                    {% endif %}
                 </td>
             </tr>
             <tr class="table-primary">
-               <th scope="row"></th>
+                <th scope="row"></th>
                 <td></td>
                 <td></td>
                 <td>Résultat budgétaire</td>
-                <td>{{(sousTotauxAnnuelRecette - sousTotauxAnnuelDepense)|number_format(2, '.',',')}}</td>
-                <td>{{(sousTotauxPeriodeRecette - sousTotauxPeriodeDepense)|number_format(2, '.',',')}}</td>
-                <td>{{(sousTotauxRealisationRecette - sousTotauxRealisationDepense)|number_format(2, '.',',')}}</td>
                 <td>
-                     {% set ecartGlobal = (sousTotauxRealisationRecette - sousTotauxRealisationDepense) - (sousTotauxPeriodeRecette - sousTotauxPeriodeDepense) %}
-                     {{ecartGlobal|number_format(2, '.',',')}}
+                    {{(sousTotauxAnnuelRecette - sousTotauxAnnuelDepense)|number_format(2, '.',',')}}</td>
+                <td>
+                    {{(sousTotauxPeriodeRecette - sousTotauxPeriodeDepense)|number_format(2, '.',',')}}</td>
+                <td>
+                    {{(sousTotauxRealisationRecette - sousTotauxRealisationDepense)|number_format(2, '.',',')}}</td>
+                <td>
+                    {% set ecartGlobal = (sousTotauxRealisationRecette - sousTotauxRealisationDepense) - (sousTotauxPeriodeRecette - sousTotauxPeriodeDepense) %}
+                    {{ecartGlobal|number_format(2, '.',',')}}
                 </td>
                 <td>
                     {% if  (sousTotauxPeriodeRecette - sousTotauxPeriodeDepense) is not same as(0) %}
-                     {% set poucentageGlobal = ((sousTotauxRealisationRecette - sousTotauxRealisationDepense) * 100 ) / (sousTotauxPeriodeRecette - sousTotauxPeriodeDepense) %}
-                     {{poucentageGlobal|number_format(2, '.',',')}} {{"%"}}
-                     {% endif %}
+                        {% set poucentageGlobal = ((sousTotauxRealisationRecette - sousTotauxRealisationDepense) * 100 ) / (sousTotauxPeriodeRecette - sousTotauxPeriodeDepense) %}
+                        {{poucentageGlobal|number_format(2, '.',',')}}
+                        {{"%"}}
+                    {% endif %}
                 </td>
             </tr>
         </tbody>
