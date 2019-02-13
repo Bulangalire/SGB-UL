@@ -34,13 +34,7 @@ $(document).ready(function () {
     
         // Create the chart.js data structure using 'labels' and 'data'
         var tempData = {
-            labels          : labels.sort(function(a,b){
-                // Turn your strings into dates, and then subtract them
-                // to get a value that is either negative, positive, or zero.
-                da=new Date(a.createAt);
-                db=new Date(b.createAt);
-                return  (da>db)?1:-1;
-              }),
+            labels          : labels,
             datasets        : [{
             backgroundColor :couleur,
             borderColor     :couleur,

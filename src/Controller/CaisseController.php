@@ -971,7 +971,7 @@ public function etatCompte(Request $request, ObjectManager $manager){
        AND p.id=:cettePrevision
        AND d.createAt >=:debut 
        AND d.createAt <=:fin 
-       GROUP BY createAt ORDER BY d.createAt  DESC");    
+       GROUP BY createAt ORDER BY d.createAt  ASC");    
        $comptesDepenseparserviceGraphic->setParameters(array('sonService'=>$service,  'cettePrevision'=>$previsionbudget->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
     $resultatDepenseparserviceGraphic = $comptesDepenseparserviceGraphic->execute();
 }
