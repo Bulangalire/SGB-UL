@@ -28,6 +28,7 @@
                             {% set totaleRealisation = 0 %}
                             {% set totaleSortie = 0 %}
                             {% for dep in queryDepenseGlobale %}
+                           
                                 <tr>
                                     <th scope="row">
                                         {% set numDepense = numDepense + 1 %}
@@ -54,7 +55,7 @@
                                        
                                         {% else %}
                                         <td>
-                                            {{dep.sommedepense|number_format(2, '.',',')}}</td>
+                                            {{dep.sommedepense   |number_format(2, '.',',')}}</td>
                                         <td>
                                             {{(dep.mesdep.lignebudgetdepense.montantprevision - dep.sommedepense)|number_format(2, '.',',')}}</td>
                                         <td>

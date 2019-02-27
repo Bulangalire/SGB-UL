@@ -14,8 +14,10 @@
                     {{ form_row(formRecette.utilisateur)}}
                     {{ form_row(formRecette.createAt)}}
                     {{ form_row(formRecette.description)}}
+                    {{ form_row(formRecette.codeJournaux)}}
                     {{ form_row(formRecette.montantrecette, {'attr' :{'required':'required'}})}}
                     {{ form_row(formRecette.sauvegarder)}}
+                     
                     {{ form_end(formRecette)}}
                 </td>
 
@@ -26,7 +28,7 @@
                         <thead>
                             <tr class="table-primary">
                                 <th colspan='9'>
-                                    Plan de trésorerie du : {{ app.session.get('datedebutselect')|localizeddate('none', 'none', null, null, 'd MMMM Y') }} au {{ app.session.get('datefinselect')|localizeddate('none', 'none', null, null, 'd MMMM Y') }}  </th>
+                                    Plan de trésorerie du : {{ app.session.get('datedebutselect')|date('d/m/Y') }} au {{ app.session.get('datefinselect')|date('d/m/Y') }}  </th>
                                
                             </tr>
                             <tr>

@@ -79,13 +79,16 @@ public function frmOp(Session $session, Depense $unedepense = null, Request $req
                 'class'  => Personne::class,
                
                 'query_builder'=>function(EntityRepository $er)use ( $unedepense) {
-                    if($this->isGranted('ROLE_COMPTABILITE') or $this->isGranted('ROLE_COMPTE_FAC')){
+                    if($this->isGranted('ROLE_COMPTE_FAC')){
                             return $er->createQueryBuilder('p')
                             ->select("p")
                             ->where("p.id=:user")
                             ->setParameter('user',  $unedepense->getUtilisateurdepense()!== $this->getUser()? 
-                            $unedepense->getUtilisateurdepense(): $unedepense == null? $this->getUser():$this->getUser()
+                            $unedepense->getUtilisateurdepense(): $unedepense === null? $this->getUser():$this->getUser()
                              );
+                    }elseif($this->isGranted('ROLE_COMPTABILITE')){
+                        return $er->createQueryBuilder('p')
+                        ->select("p");
                     }elseif($this->isGranted('ROLE_RECTOR') or $this->isGranted('ROLE_SG') or $this->isGranted('ROLE_AB') or $this->isGranted('ROLE_CHEF_SERVICE')){
                         return $er->createQueryBuilder('p')
                         ->select("p")
@@ -590,7 +593,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                     JOIN dop.lignebudgetdepense p
                     WHERE 
                         p.anneebudgetprevision=:anneebudgetselect
-                    AND d.isCentralyzed=false
+                    AND d.isCentralyzed=true
                     AND d.service=:ceservice
                     GROUP BY dop.depenseId 
                     HAVING (round(sum( CASE WHEN d.autoriserAB=true
@@ -656,10 +659,14 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
             FROM  App\Entity\Depense d 
             JOIN d.ligneBudgetaire p
             WHERE
-            d.autoriserAB=false 
-            AND d.autoriserSG=false 
-            AND d.autoriserRecteur=false
+             (CASE WHEN 
+                d.autoriserAB=false OR
+                d.autoriserSG=false OR
+                d.autoriserRecteur=false 
+                THEN FALSE ELSE  TRUE END)=FALSE
+
             AND p.anneebudgetprevision=:anneebudgetselect
+            AND d.isCentralyzed=true
             AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
                 FROM App\Entity\Detaildepense dd ) 
             ');
@@ -683,17 +690,17 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                 $sqlOPNonSigne = $em->createQuery('SELECT d
                 FROM  App\Entity\Depense d 
                 JOIN d.ligneBudgetaire p
-                WHERE d.service=:ceservice
-                AND d.isCentralyzed=true 
-                AND p.anneebudgetprevision=:anneebudgetselect
-                AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
-                    FROM App\Entity\Detaildepense dd ) 
-                    HAVING (CASE WHEN 
+                WHERE 
+                (CASE WHEN 
                 d.autoriserAB=false OR
                 d.autoriserSG=false OR
                 d.autoriserRecteur=false 
                 THEN FALSE ELSE  TRUE END)=FALSE
-                
+                AND d.service=:ceservice
+                AND d.isCentralyzed=true
+                AND p.anneebudgetprevision=:anneebudgetselect
+                AND d.id NOT IN( SELECT IDENTITY(dd.depenseId)
+                    FROM App\Entity\Detaildepense dd ) 
                 ');
 
             }

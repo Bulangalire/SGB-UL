@@ -7,10 +7,12 @@ use App\Entity\Service;
 use App\Entity\Personne;
 use App\Entity\Etatbesoin;
 use App\Entity\Axeanalytique;
-use App\Entity\Detaildepense;
+use App\Entity\CompteJournaux;
+use App\Entity\CaisseCentrale;
 use App\Entity\Anneebudgetaire;
 use App\Entity\LigneBudgetaire;
 use App\Entity\Previsionbudget;
+use App\Entity\Detaildepense;
 use Doctrine\DBAL\Types\FloatType;
 use Doctrine\ORM\EntityRepository;
 use App\Repository\DepenseRepository;
@@ -220,33 +222,20 @@ class CaisseController extends AbstractController{
           ]);
         }
     
-        
+     
+
     /**
      * @Route("/sgb/caisse/decaisser/{id}/new", name="add_decaisser")
+     * @Route("/sgb/caisse/decaisser/{id}/{error}", name="add_decaisser_error")
      */
-    public function newDecaisser(Depense $depense=null, Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
-
-        return   $this->getOpDecaisser($depense,  null, $session, $request, $manager);
-    }
-
-    /**
-     * @Route("/sgb/caisse/decaisser/{id}/edit", name="edit_decaisser")
-     */
-    public function editDecaisser(Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
-       return $this->getOpDecaisser(null, $detaildepense, $session, $request, $manager);
-    }
-
-
-    public function getOpDecaisser( Depense $depense=null, Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
+    public function getOpDecaisser(Depense $depense, Detaildepense $detaildepense=null, Request $request, ObjectManager $manager, $error=null  ){
         if($this->getUser()===null) {              
             return $this->redirectToRoute('user_login');
         }
-        if(!$detaildepense && $depense){
-
-        $detaildepense= new Detaildepense();
+        if(!$detaildepense){
+         $detaildepense = new Detaildepense();
         }
-
-
+        $session = $request->getSession();
            
             // Creation de variable de session pour les parametres des requêtes
             // Période  
@@ -282,7 +271,6 @@ class CaisseController extends AbstractController{
             $frmDecaisser = $this->createFormBuilder($detaildepense)
             ->add('lignebudgetdepense', EntityType::class, array(
                 'class'  => Previsionbudget::class,
-                'placeholder'=>'Choisissez une ligne de depense',
                 'query_builder'=>function(EntityRepository $er) use ($depense, $detaildepense){
                     return $er->createQueryBuilder('p')
                                 ->leftJoin('p.lignebudgetprevision', 'l')
@@ -295,6 +283,286 @@ class CaisseController extends AbstractController{
 
             ->add('lignebudgetsource', EntityType::class, array(
                 'class'  => Previsionbudget::class,
+                'placeholder' => 'Choix source',
+                'required' => false,
+                'empty_data' => null,
+                'query_builder'=>function(EntityRepository $er)use ($service, $anneebudgetselect){
+                    if( $this->isGranted('ROLE_COMPTE_FAC') ){
+                    return $er->createQueryBuilder('p')
+                                ->select("p, l")
+                                ->join('p.lignebudgetprevision', 'l')
+                                ->where('l.categorieLigne=:thisCat')
+                                ->andWhere('p.service=:ceService')
+                                ->andWhere('p.iscentraliser=false')
+                                ->andWhere('p.anneebudgetprevision=:annee')
+                                //->having('p.recettes - recettesUtiliseesEnDepenses > 0')
+                                ->setParameter('thisCat', 'Recette')
+                                ->setParameter('ceService', $service)
+                                ->setParameter('annee', $anneebudgetselect)
+                                ->orderBy('l.categorieLigne');
+                            }else{
+                                return $er->createQueryBuilder('p')
+                                ->join('p.lignebudgetprevision', 'l')
+                                ->where('l.categorieLigne=:thisCat')
+                                ->andWhere('p.anneebudgetprevision=:annee')
+                                ->andWhere('p.iscentraliser=true')
+                                ->setParameter('thisCat', 'Recette')
+                                ->setParameter('annee', $anneebudgetselect);
+                                }
+
+                        },
+                          'choice_label'=> function( Previsionbudget $previsionbudget) {
+                           
+                                return   $previsionbudget->getLeSolde()<=0?false: $previsionbudget->getLeSolde()."$ /". $previsionbudget->getLignebudgetprevision()->getIntituleLigne()."/(". $previsionbudget->getService()->getDesignation() .")";
+
+                             
+                        },
+                        'group_by' => function($previsionbudget, $key, $value) {
+                            // randomly assign things into 2 groups
+                            return $previsionbudget->getLeSolde()<=0 ?false: 'Caisse';
+                        },
+
+                'label'=>'Recette')
+                )
+            
+            ->add('montantdetail', NumberType::class, [
+                'data'=> $depense==null?  $detaildepense->getMontantdetail() : $depense->getSoldeDepense(),
+                'label'=>'Montant'
+            ] )
+            ->add('descriptiondetaildepense', TextType::class, array(
+                'label'=>'Description'
+                ))
+            ->add('createAt', DateType::class, array(
+                'widget' => 'single_text',
+                // this is actually the default format for single_text
+                'format' => 'yyyy-MM-dd',
+                'label'=>'Date'
+            ))
+            ->add('modepayement', ChoiceType::class,[
+                'choices'=>[
+                    'CASH'=>'CASH',
+                    'CHEQUE'=>'CHEQUE',
+                    'VIREMENT'=>'VIREMENT'
+                ],
+                'label'=>'Mode de payement'
+            ])
+            ->add('caisseCentrale', EntityType::class, array(
+                'class'  => CompteJournaux::class,
+                'placeholder' => 'Choix journal',
+                'required' => false,
+                'empty_data' => null,
+                'choice_label' => 'intitule',
+                'label'=>'code Journaux' 
+    
+            ))
+            
+            ->getForm();
+            $querySoldeCompteAutres=null;
+            if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
+                $sqlDetailSortie = $em->createQuery('SELECT dop as lesdetails, d 
+                FROM  App\Entity\Detaildepense dop 
+                JOIN dop.depenseId d 
+                WHERE dop.depenseId=:depense
+                ');
+                $sqlDetailSortie->setParameters(array('depense'=> $depense==null? $detaildepense->getDepenseId()->getId(): $depense->getId()));
+                $queryListDetailSortie = $sqlDetailSortie->getResult();
+    
+
+                $sqlSoldeCompte = $em->createQuery('SELECT r as mesrecettes, 
+                sum(r.montantrecette) as montantrecette, 
+                p FROM  App\Entity\Recette r 
+                JOIN r.lignebudgetrecette p  
+                WHERE p.service=:userservice
+                AND p.iscentraliser=false  
+                AND p.anneebudgetprevision=:anneebudgetselect 
+                group by p.id');
+                $sqlSoldeCompte->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect));
+                $querySoldeCompte = $sqlSoldeCompte->getResult();
+
+                $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
+                sum(r.montantrecette) as totalrecette
+                FROM  App\Entity\CompteJournaux caisse 
+                JOIN caisse.recettes r  
+                JOIN r.lignebudgetrecette p 
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                group by caisse.id');
+                $sqlCaisseCentrale->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+                $resultatCaisseCentrale = $sqlCaisseCentrale->getResult();    
+                $isCentralized = $em->createQuery('SELECT ca.isCentraleCaisse  as central 
+                                                    FROM  App\Entity\ConfigSgb ca') ;
+                                     $resultatIsCentralized  =     $isCentralized->getResult();        
+            }else{
+
+                $sqlDetailSortie = $em->createQuery('SELECT dop as lesdetails, d 
+                FROM  App\Entity\Detaildepense dop 
+                JOIN dop.depenseId d 
+                WHERE dop.depenseId=:depense
+                ');
+                $sqlDetailSortie->setParameters(array('depense'=> $depense==null? $detaildepense->getDepenseId()->getId(): $depense->getId()));
+                $queryListDetailSortie = $sqlDetailSortie->getResult();
+    
+
+                $sqlSoldeCompte = $em->createQuery('SELECT r as mesrecettes, 
+                sum(r.montantrecette) as montantrecette, 
+                p FROM  App\Entity\Recette r 
+                JOIN r.lignebudgetrecette p  
+                WHERE p.service=:userservice 
+                AND p.anneebudgetprevision=:anneebudgetselect 
+                group by p.id');
+                $sqlSoldeCompte->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect));
+                $querySoldeCompte = $sqlSoldeCompte->getResult();
+
+                $sqlSoldeCompteAutres = $em->createQuery('SELECT r as mesrecettes, 
+                sum(r.montantrecette) as montantrecette, 
+                p FROM  App\Entity\Recette r 
+                JOIN r.lignebudgetrecette p  
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                group by p.id');
+                $sqlSoldeCompteAutres->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+                $querySoldeCompteAutres = $sqlSoldeCompteAutres->getResult();
+            
+                $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
+                sum(r.montantrecette) as totalrecette
+                FROM  App\Entity\CompteJournaux caisse 
+                JOIN caisse.recettes r  
+                JOIN r.lignebudgetrecette p 
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                group by caisse.id');
+                $sqlCaisseCentrale->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+                $resultatCaisseCentrale = $sqlCaisseCentrale->getResult(); 
+                $isCentralized = $em->createQuery('SELECT ca.isCentraleCaisse  as central 
+                FROM  App\Entity\ConfigSgb ca') ;
+       $resultatIsCentralized  =   $isCentralized->getResult();        
+            }
+            $frmDecaisser->handleRequest($request);
+          
+            if($detaildepense->getDepenseId()==null){
+                $detaildepense->setDepenseId($depense);
+            }
+
+            if( $frmDecaisser->isSubmitted() &&  $frmDecaisser->isValid()){
+                
+                if($detaildepense->getId()==null){
+                    if($detaildepense->getMontantdetail() >  $detaildepense->getDepenseId()->getSoldeDepense() ){
+                        return $this->redirectToRoute('add_decaisser_error',['id'=> $detaildepense->getDepenseId()->getId(),
+                        'error'=>"le montant est superière à celui de l'OP !!!". $detaildepense->getDepenseId()->getSoldeDepense().'$' ]);
+                    }
+                if($detaildepense->getLignebudgetsource()!==null){
+                    if($detaildepense->getMontantdetail()>$detaildepense->getLignebudgetsource()->getLeSolde() ){
+                        return $this->redirectToRoute('add_decaisser_error',['id'=> $detaildepense->getDepenseId()->getId(),
+                        'error'=>'le montant est superière à celui qui reste en caisse!!!'. $detaildepense->getLignebudgetsource()->getLeSolde() .'$' ]);
+    
+                    }
+                }
+                }elseif($detaildepense->getLignebudgetsource()!==null){
+
+                if($detaildepense->getMontantdetail()>$detaildepense->getLignebudgetsource()->getLeSolde() ){
+                        return $this->redirectToRoute('add_decaisser_error',['id'=> $detaildepense->getDepenseId()->getId(),
+                        'error'=>'le montant est superière à celui qui reste en caisse!!!'. $detaildepense->getLignebudgetsource()->getLeSolde() .'$' ]);
+    
+                    }
+                }
+                if($detaildepense->getCaisseCentrale()===null && $detaildepense->getLignebudgetsource()===null ){
+                    return $this->redirectToRoute('add_decaisser_error',['id'=> $detaildepense->getDepenseId()->getId(),
+                    'error'=>'Veuillez indiquez la source svp !!!']);
+
+                }
+                
+                if($detaildepense->getDepenseId()==null){
+                    $detaildepense->setDepenseId($em->getRepository(Detaildepense::class)->find($detaildepense)->getDepenseId()->getId());
+                }
+                $manager->persist($detaildepense);
+                $manager->flush(); 
+                if($detaildepense->getCaisseCentrale()!==null){
+                    $caisseCentrale = new CaisseCentrale();
+                    $caisseCentrale->setDateSortie($detaildepense->getCreateAt());
+                    $caisseCentrale->setMontantSortie($detaildepense->getMontantdetail());
+                    $caisseCentrale->setDepense($detaildepense);
+                    $manager->persist($caisseCentrale);
+                    $manager->flush();
+                }
+                return $this->redirectToRoute('add_decaisser',['id'=> $detaildepense->getDepenseId()->getId()
+                ]);
+            
+            }         
+           
+          return $this->render('sgb/caisse/decaisser.html.twig',[
+            'frmDecaisser'=> $frmDecaisser->createView(),
+            'editMode'=> $detaildepense->getId()!==null,
+            'queryListDetailSortie'=>$queryListDetailSortie,
+            'querySoldeCompte'=>$querySoldeCompte,
+            'querySoldeCompteAutres' =>$querySoldeCompteAutres,
+            'resultatCaisseCentrale'=>$resultatCaisseCentrale,
+            'resultatIsCentralized'=>$resultatIsCentralized,
+            'error'=>$error
+          ]);
+        
+    }
+
+/**
+     * @Route("/sgb/caisse/decaisser/{id}/edit/", name="edit_decaisser")
+     * @Route("/sgb/caisse/decaisser/{id}/{error}", name="edit_decaisser_error")
+     */
+    public function editDecaisser( Detaildepense $detaildepense, Request $request, ObjectManager $manager, $error=null){
+        if($this->getUser()===null) {              
+            return $this->redirectToRoute('user_login');
+        }
+
+        if(!$detaildepense){
+
+            $detaildepense= new Detaildepense();
+            }
+            $session = $request->getSession();
+           
+            // Creation de variable de session pour les parametres des requêtes
+            // Période  
+            // Début periode
+            if($request->request->get('datedebut')!==null && $request->request->get('datedebut') <> $session->get('datedebutselect') ){
+                $session->set('datedebutselect',$request->request->get('datedebut') );
+            }
+            $datedebut = $session->get('datedebutselect');
+    
+            // Fin période
+            if($request->request->get('datefin')!==null && $request->request->get('datefin') <> $session->get('datefinselect') ){
+                $session->set('datefinselect',$request->request->get('datefin') );
+            }
+            $datefin =  $session->get('datefinselect');
+            // Service
+            if( $this->isGranted('ROLE_COMPTE_FAC') ){
+                $session->set('servicesselectOp', $this->getUser()->getServices()->getId() );
+                $service= $session->get('servicesselectOp');
+            }else{
+            // Service
+            if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselectOp') ){
+                $session->set('servicesselectOp',$request->request->get('services') );
+            }
+            $service= $session->get('servicesselectOp');
+            }
+
+        // Année budgetaire
+        if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselectOp') ){
+            $session->set('anneeselectOp', $request->request->get('annees') );
+        }
+        $anneebudgetselect= $session->get('anneeselectOp');
+        $em = $this->getDoctrine()->getManager();
+            $frmDecaisser = $this->createFormBuilder($detaildepense)
+            ->add('lignebudgetdepense', EntityType::class, array(
+                'class'  => Previsionbudget::class,
+                'query_builder'=>function(EntityRepository $er) use ($detaildepense){
+                    return $er->createQueryBuilder('p')
+                                ->leftJoin('p.lignebudgetprevision', 'l')
+                                ->where('p.id=:id')
+                                ->setParameter('id',$detaildepense->getDepenseId()->getLigneBudgetaire()->getId() );
+                },
+                'choice_label'=>'lignebudgetprevision.intituleLigne',
+                'label'=>'Depense'
+                ))
+
+            ->add('lignebudgetsource', EntityType::class, array(
+                'class'  => Previsionbudget::class,
+                'placeholder' => 'Choix source',
+                'required' => false,
+                'empty_data' => null,
                 'query_builder'=>function(EntityRepository $er)use ($service, $anneebudgetselect){
                     if( $this->isGranted('ROLE_COMPTE_FAC') ){
                     return $er->createQueryBuilder('p')
@@ -335,7 +603,7 @@ class CaisseController extends AbstractController{
                 )
             
             ->add('montantdetail', NumberType::class, [
-                'data'=> $depense==null?  $detaildepense->getMontantdetail() : $depense->getSoldeDepense(),
+                'data'=>  $detaildepense->getMontantdetail(),
                 'label'=>'Montant'
             ] )
             ->add('descriptiondetaildepense', TextType::class, array(
@@ -349,12 +617,21 @@ class CaisseController extends AbstractController{
             ))
             ->add('modepayement', ChoiceType::class,[
                 'choices'=>[
-                    'CHEQUE'=>'CHEQUE',
                     'CASH'=>'CASH',
+                    'CHEQUE'=>'CHEQUE',
                     'VIREMENT'=>'VIREMENT'
                 ],
                 'label'=>'Mode de payement'
             ])
+            ->add('caisseCentrale', EntityType::class, array(
+                'class'  => CompteJournaux::class,
+                'placeholder' => 'Choix journal',
+                'required' => false,
+                'empty_data' => null,
+                'choice_label' => 'intitule',
+                'label'=>'code Journaux' 
+    
+            ))
             
             ->getForm();
             $querySoldeCompteAutres=null;
@@ -364,7 +641,7 @@ class CaisseController extends AbstractController{
                 JOIN dop.depenseId d 
                 WHERE dop.depenseId=:depense
                 ');
-                $sqlDetailSortie->setParameters(array('depense'=> $depense==null? $detaildepense->getDepenseId()->getId(): $depense->getId()));
+                $sqlDetailSortie->setParameters(array('depense'=> $detaildepense->getDepenseId()->getId()));
                 $queryListDetailSortie = $sqlDetailSortie->getResult();
     
 
@@ -379,6 +656,18 @@ class CaisseController extends AbstractController{
                 $sqlSoldeCompte->setParameters(array('userservice' =>$service, 'anneebudgetselect'=> $anneebudgetselect));
                 $querySoldeCompte = $sqlSoldeCompte->getResult();
 
+                $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
+                sum(r.montantrecette) as totalrecette
+                FROM  App\Entity\CompteJournaux caisse 
+                JOIN caisse.recettes r  
+                JOIN r.lignebudgetrecette p 
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                group by caisse.id');
+                $sqlCaisseCentrale->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+                $resultatCaisseCentrale = $sqlCaisseCentrale->getResult();
+                $isCentralized = $em->createQuery('SELECT ca.isCentraleCaisse  as central 
+                FROM  App\Entity\ConfigSgb ca') ;
+        $resultatIsCentralized  =  $isCentralized->getResult();         
 
             }else{
 
@@ -387,7 +676,7 @@ class CaisseController extends AbstractController{
                 JOIN dop.depenseId d 
                 WHERE dop.depenseId=:depense
                 ');
-                $sqlDetailSortie->setParameters(array('depense'=> $depense==null? $detaildepense->getDepenseId()->getId(): $depense->getId()));
+                $sqlDetailSortie->setParameters(array('depense'=> $detaildepense->getDepenseId()->getId() ));
                 $queryListDetailSortie = $sqlDetailSortie->getResult();
     
 
@@ -409,35 +698,78 @@ class CaisseController extends AbstractController{
                 group by p.id');
                 $sqlSoldeCompteAutres->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
                 $querySoldeCompteAutres = $sqlSoldeCompteAutres->getResult();
+            
+                $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
+                sum(r.montantrecette) as totalrecette 
+                FROM  App\Entity\CompteJournaux caisse 
+                JOIN caisse.recettes r  
+                JOIN r.lignebudgetrecette p 
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                group by caisse.id');
+                $sqlCaisseCentrale->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+                $resultatCaisseCentrale = $sqlCaisseCentrale->getResult();    
+                
+                $isCentralized = $em->createQuery('SELECT ca.isCentraleCaisse  as central 
+                                                    FROM  App\Entity\ConfigSgb ca') ;
+                                            $resultatIsCentralized  =  $isCentralized->getResult();            
             }
        
            
             $frmDecaisser->handleRequest($request);
           
-if($detaildepense->getDepenseId()==null){
-    $detaildepense->setDepenseId($depense);
-}
+            if($detaildepense->getDepenseId()==null){
+                $detaildepense->setDepenseId($depense);
+            }
 
             if( $frmDecaisser->isSubmitted() &&  $frmDecaisser->isValid()){
             
-                
-                if($detaildepense->getId()==null){
-                    if($detaildepense->getMontantdetail() >  $detaildepense->getDepenseId()->getSoldeDepense() ){
-                        echo '<h5 style="color:red;">le montant est superière à celui qui reste pour !!!'. $detaildepense->getDepenseId()->getSoldeDepense() .' $</h5>' ;
-                        return $this->redirectToRoute('add_decaisser',['id'=> $detaildepense->getDepenseId()->getId()]);
+                if($detaildepense->getCaisseCentrale()===null && $detaildepense->getLignebudgetsource()===null){
+                    return $this->redirectToRoute('edit_decaisser_error',['id'=> $detaildepense->getDepenseId()->getId(),
+                        'error'=>'Veuillez indiquez la source svp !!!']);
+                }else{
+                        if($detaildepense->getId()===null){
+                            if($detaildepense->getMontantdetail() >  $detaildepense->getDepenseId()->getSoldeDepense() ){
+                                return $this->redirectToRoute('edit_decaisser_error',['id'=> $detaildepense->getDepenseId()->getId(),
+                                'error'=>"le montant est superière à celui de l'OP !!!". $detaildepense->getDepenseId()->getSoldeDepense().'$' ]);
+                            }
+                            //Test si la caisse par ligne est superieure à la somme saisie
+                            if($detaildepense->getCaisseCentrale()===null && $detaildepense->getLignebudgetsource()!==null){
+                                if($detaildepense->getMontantdetail()>$detaildepense->getLignebudgetsource()->getLeSolde() ){
+                                    return $this->redirectToRoute('edit_decaisser_error',['id'=> $detaildepense->getDepenseId()->getId(),
+                                    'error'=>'le montant est superière à celui qui reste en caisse!!!'. $detaildepense->getLignebudgetsource()->getLeSolde() .'$' ]);
+                                }
+                            }
+                            //Test si la caisse centrale est superieure à la somme saisie
+                            if($detaildepense->getCaisseCentrale()!==null && $detaildepense->getLignebudgetsource()===null){
+                                if($detaildepense->getMontantdetail()>$detaildepense->getLignebudgetsource()->getLeSolde() ){
+                                    return $this->redirectToRoute('edit_decaisser_error',['id'=> $detaildepense->getDepenseId()->getId(),
+                                    'error'=>'le montant est superière à celui qui reste en caisse!!!'. $detaildepense->getLignebudgetsource()->getLeSolde() .'$' ]);
+                                }
+                            }
+                        }elseif($detaildepense->getCaisseCentrale()===null &&  $detaildepense->getMontantdetail()>$detaildepense->getLignebudgetsource()->getLeSolde() ){
+                                return $this->redirectToRoute('edit_decaisser_error',['id'=> $detaildepense->getDepenseId()->getId(),
+                                'error'=>'le montant est superière à celui qui reste en caisse!!!'. $detaildepense->getLignebudgetsource()->getLeSolde() .'$' ]);
+                        }
                     }
-                }
-                if($detaildepense->getMontantdetail()>$detaildepense->getLignebudgetsource()->getLeSolde() ){
-                    echo '<h5 style="color:red;">le montant est superière à celui qui reste en caisse!!!'. $detaildepense->getLignebudgetsource()->getLeSolde() .' $</h5>' ;
-                    return $this->redirectToRoute('add_decaisser',['id'=> $detaildepense->getDepenseId()->getId()]);
-
-                }
-                if($detaildepense->getDepenseId()==null){
+                        
+                if($detaildepense->getDepenseId()===null){
                     $detaildepense->setDepenseId($em->getRepository(Detaildepense::class)->find($detaildepense)->getDepenseId()->getId());
                 }
                 $manager->persist($detaildepense);
                 $manager->flush(); 
-                return $this->redirectToRoute('add_decaisser',['id'=> $detaildepense->getDepenseId()->getId()]);
+                if($detaildepense->getCaisseCentrale()!==null){
+                    
+                    $caisseCentrale=$em->getRepository(CaisseCentrale::class)->findOneBy(['depense'=>$detaildepense->getId()]);
+            
+                   // $caisseCentrale = new CaisseCentrale();
+                    $caisseCentrale->setDateSortie($detaildepense->getCreateAt());
+                    $caisseCentrale->setMontantSortie($detaildepense->getMontantdetail());
+                    $caisseCentrale->setDepense($detaildepense);
+                    $manager->persist($caisseCentrale);
+                    $manager->flush();
+                }
+                return $this->redirectToRoute('edit_decaisser',['id'=> $detaildepense->getId()
+                ]);
             
             }         
            
@@ -446,10 +778,15 @@ if($detaildepense->getDepenseId()==null){
             'editMode'=> $detaildepense->getId()!==null,
             'queryListDetailSortie'=>$queryListDetailSortie,
             'querySoldeCompte'=>$querySoldeCompte,
-            'querySoldeCompteAutres' =>$querySoldeCompteAutres
+            'querySoldeCompteAutres' =>$querySoldeCompteAutres,
+            'resultatCaisseCentrale'=>$resultatCaisseCentrale,
+            'resultatIsCentralized'=>$resultatIsCentralized,
+            'error'=>$error
           ]);
-        
+            
     }
+
+
     /**
      * @Route("/sgb/analyse/analyseGlobale", name="dataAnalys")
      */
@@ -1023,20 +1360,26 @@ public function getAnalyse($error=null){
  }
  
     /**
-     * @Route("/sgb/caisse/decaisser/{id}/delete", name="delete_caisser")
+     * @Route("/sgb/caisse/decaisser/{id}/delete/", name="delete_caisser")
      */
-    public function deleteprevision(Detaildepense $detaildepense = null, Request $request, ObjectManager $manager){
+    public function deleteCaisser(Detaildepense $detaildepense, Request $request, ObjectManager $manager){
         if(!$detaildepense){ 
           exit;
        } 
-                       try{
-                           $manager->remove($detaildepense);
-                           $manager->flush(); 
-                           return $this->redirectToRoute('servireOp');  
-                       }catch(\Exception $e){
-                        return $this->redirectToRoute('servireOp');  
-                       }
-   }
+      $em = $this->getDoctrine()->getManager();
+      try{
+           if($detaildepense->getCaisseCentrale()!==null){
+            $caisseCentrale=$em->getRepository(CaisseCentrale::class)->findOneBy(['depense'=>$detaildepense->getId()]);
+            $manager->remove($caisseCentrale);
+            $manager->flush();
+            }
+                $manager->remove($detaildepense);
+                $manager->flush(); 
+                return $this->redirectToRoute('servireOp');  
+            }catch(\Exception $e){
+            return $this->redirectToRoute('servireOp');  
+            }
+    }
 
    /**
  * @Route("/sgb/caisse/selectdecaissercentrale", name="selectdecaissercentrale")

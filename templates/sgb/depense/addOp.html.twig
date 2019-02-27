@@ -31,7 +31,7 @@
 
                 </td>
                 <td>
-                    {% if is_granted('ROLE_COMPTE_FAC')or is_granted('ROLE_CHEF') %}
+                    {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE') %}
                         {{ form_row(frmAddOp.utilisateurdepense, {'attr': {'selected':'{{app.user.nom}}', 'disabled': 'disabled' }})}}
                     {% else %}
                         {{ form_row(frmAddOp.utilisateurdepense)}}
@@ -44,7 +44,7 @@
 
                 </td>
                 <td>
-                    {% if is_granted('ROLE_COMPTE_FAC')or is_granted('ROLE_CHEF') %}
+                    {% if is_granted('ROLE_COMPTE_FAC')or is_granted('ROLE_CHEF_SERVICE') %}
                         {{ form_row(frmAddOp.service, {'attr': {'selected':'{{app.user.services.designation }}', 'disabled': 'disabled' }})}}
                     {% else %}
                         {{ form_row(frmAddOp.service)}}
@@ -201,7 +201,7 @@
                             Enregistrer
                         </button>
 
-                    {% elseif frmAddOp.vars.value.utilisateurdepense.nom is not same as(app.user.nom)  and  is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_COMPTABILITE') %}
+                    {% elseif frmAddOp.vars.value.utilisateurdepense.nom is not same as(app.user.nom)  and  is_granted('ROLE_COMPTE_FAC') %}
                         <button type="submit" disabled="disabled" class="btn btn-success" formnovalidate="formnovalidate">
                             Enregistrer
                         </button>
@@ -243,14 +243,4 @@
         </tbody>
     </table>
 
-{% endblock %}
-{% block javascripts %}
-    <script>
-        $(document).ready(function () {
-            $('#montant').onChange(function () {
-                alert("tesr");
-            }
-        });
-    });
-    </script>
 {% endblock %}

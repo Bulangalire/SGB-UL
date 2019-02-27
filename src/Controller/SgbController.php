@@ -14,6 +14,8 @@ use App\Entity\Anneebudgetaire;
 use App\Entity\LigneBudgetaire;
 use App\Entity\Previsionbudget;
 use App\Entity\Plantresorerie;
+use App\Entity\CaisseCentrale;
+use App\Entity\CompteJournaux;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Twig\AppVariable;
@@ -417,11 +419,17 @@ class SgbController extends AbstractController
                     ->add('montantdepense')
                     ->add('utilisateurdepense', EntityType::class, array(
                         'class'  => Personne::class,
-
                         'query_builder'=>function(EntityRepository $er){
+                            // Service
+                         if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
                             return $er->createQueryBuilder('u')
                                         ->where('u.services=:id')
                                         ->setParameter('id',$this->getUser()->getServices());
+                          } else{
+                                        return $er->createQueryBuilder('u');
+                                    }
+                                        
+                                        
                         },
                         'choice_label'=>'nom'
                     ))
@@ -433,7 +441,7 @@ class SgbController extends AbstractController
              
                     $queryDepense= $em->createQuery('SELECT d as mesdep, round(sum(d.montantdetail),2) as sommedepense 
                     FROM   App\Entity\Detaildepense d 
-                    JOIN d.lignebudgetsource p 
+                    LEFT JOIN d.lignebudgetdepense p 
                     WHERE p.service=:userservice
                     AND p.anneebudgetprevision=:anneebudgetselect 
                     AND d.createAt BETWEEN :debut 
@@ -790,6 +798,17 @@ class SgbController extends AbstractController
                             )
                             )
 
+                                ->add('codeJournaux', EntityType::class, array(
+                                   
+                                    'class'  => CompteJournaux::class,
+                                    'placeholder' => 'Choix journal',
+                                    'required' => false,
+                                    'empty_data' => null,
+                                    'choice_label' => 'intitule',
+                                    'label'=>'code Journaux' 
+                        
+                                ))
+
                             ->add('utilisateur', EntityType::class, array(
                                 'class'  => Personne::class,
                                 'query_builder'=>function(EntityRepository $er){
@@ -868,6 +887,7 @@ class SgbController extends AbstractController
                                 if($em->getRepository("\App\Entity\Recette")->findOneBy(
                                     array('lignebudgetrecette'=>$recette->getLignebudgetrecette(), 
                                     'montantrecette'=>$recette->getMontantrecette(),
+                                    'createAt'=>$recette->getCreateAt(),
                                     'libelle'=>$recette->getLibelle(),
                                     'description'=>$recette->getDescription()
                                 ) 
@@ -875,8 +895,17 @@ class SgbController extends AbstractController
                                         echo '<h2 style="color:red;"> la recette existe déjà </h2>';
                                     }else{
 
+
                                         $manager->persist($recette);
                                         $manager->flush();
+                                        if($recette->getCodeJournaux()!==null){
+                                            $caisseCentrale = new CaisseCentrale();
+                                            $caisseCentrale->setDateEntree($recette->getCreateAt());
+                                            $caisseCentrale->setMontantEntre($recette->getMontantrecette());
+                                            $caisseCentrale->setRecette($recette);
+                                            $manager->persist($caisseCentrale);
+                                            $manager->flush();
+                                        }
                                         return $this->redirectToRoute('recette_create');
         
                                     }
@@ -893,9 +922,14 @@ class SgbController extends AbstractController
  * @Route("/sgb/recette/detailRecette/{id}/new", name="detail_recette")
  * @Route("/sgb/recette/detailRecette/{id}", name="edit_recette")
  */
-public function detailRecette(Recette $recette=null, Request $request, ObjectManager $manager){
+public function detailRecette(Recette $recette=null, Request $request, ObjectManager $manager, CaisseCentrale $caisseCentrale=null){
 
+    $em = $this->getDoctrine()->getManager();
     $session = $request->getSession();
+    if($recette){
+        $caisseCentrale=$em->getRepository(CaisseCentrale::class)->findOneBy(['recette' => $recette]);
+    }
+
     // Creation de variable de session pour les parametres des requêtes
     // Année budgetaire
     if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselect') ){
@@ -928,7 +962,7 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
     }
     $datefin =  $session->get('datefinselect');
 
-    $em = $this->getDoctrine()->getManager();
+   
     $formDetailRecette= $this->createFormBuilder($recette)
     ->add('libelle')
     ->add('montantrecette', NumberType::class, [
@@ -950,6 +984,15 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
         },
         'choice_label'=>'nom'
         
+        ))
+        ->add('codeJournaux', EntityType::class, array(
+            'class'  => CompteJournaux::class,
+            'placeholder' => 'Choix journal',
+            'required' => false,
+            'empty_data' => null,
+            'choice_label' => 'intitule',
+            'label'=>'code Journaux' 
+
         ))
         ->add('lignebudgetrecette', EntityType::class, array(
             'class'=>Previsionbudget::class,
@@ -1001,9 +1044,21 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
                                 )){
                                     echo '<h2 style="color:red;"> la recette existe déjà </h2>';
                                 }else{
-                                   
                                     $manager->persist($recette);
                                     $manager->flush();
+
+                                    if($recette->getCodeJournaux()!==null){
+
+                                       if($em->getRepository(CaisseCentrale::class)->findByRecette($recette)==null){
+                                        $caisseCentrale = new CaisseCentrale();
+                                        }
+                                      
+                                        $caisseCentrale->setDateEntree($recette->getCreateAt());
+                                        $caisseCentrale->setMontantEntre($recette->getMontantrecette());
+                                        $caisseCentrale->setRecette($recette);
+                                        $manager->persist($caisseCentrale);
+                                        $manager->flush();
+                                    }
                                     return $this->redirectToRoute('detail_recette', array('id'=>$recette->getId() ));
     
                                 }
@@ -1023,7 +1078,7 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
             LEFT JOIN App\Entity\Previsionbudget p WITH r.lignebudgetrecette = p.id 
             LEFT JOIN  App\Entity\LigneBudgetaire l WITH p.lignebudgetprevision = l.id
             WHERE r.createAt >=:debut  AND r.createAt <=:fin
-            AND p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision GROUP BY createAt ORDER BY createAt ASC");
+            AND p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision GROUP BY createAt HAVING SUM(r.montantrecette) > 0  ORDER BY r.createAt ASC");
     $queryDetailRecetteGraphic->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'idPrevision'=>$recette->getLignebudgetrecette(), 'debut'=> $datedebut, 'fin'=> $datefin ));
     $resultatDetailRecetteGraphic = $queryDetailRecetteGraphic->execute();
     $queryDetailRecette = $em->createQuery(
@@ -1050,6 +1105,31 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
         'formDetailRecette'=>$formDetailRecette->createView(), 'resultatDetailRecetteGraphic'=> $resultatDetailRecetteGraphic, 'resultatDetailRecette'=> $resultatDetailRecette 
     ]);
 }
+
+
+    /**
+     * @Route("/sgb/recette/detailRecette/{id}/delete", name="delete_recette")
+     */
+    public function deleteRecette(Recette $recette=null, Request $request, ObjectManager $manager, CaisseCentrale $caisseCentrale=null){
+        if(!$recette){ 
+          exit;
+       } 
+       $em = $this->getDoctrine()->getManager();
+       if($recette->getCodeJournaux()!==null){
+        $caisseCentrale=$em->getRepository(CaisseCentrale::class)->findOneBy(['recette' => $recette]);
+        $manager->remove($caisseCentrale);
+        $manager->flush();
+      }
+                       try{
+                           $manager->remove($recette);
+                           $manager->flush(); 
+                           return $this->redirectToRoute('recette_create');  
+                       }catch(\Exception $e){
+                           return $this->redirectToRoute('recette_create');  
+                       }
+   }
+    
+
 
 /**
  * @Route("/sgb/depense/planTresorerie", name="planTresorerie")

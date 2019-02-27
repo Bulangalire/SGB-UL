@@ -15,4 +15,5 @@ $(document).ready(function () {
     $("#confirmModalYes").click(function(e) {
         window.location.href = theHREF;
     });
+    
 });

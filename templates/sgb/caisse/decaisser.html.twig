@@ -2,176 +2,287 @@
 {% form_theme frmDecaisser 'bootstrap_4_layout.html.twig' %}
 {% block body %}
 
+{% if  error is not same as("delete") %}
+
+    {% if error is defined %}
+    {% if error is not same as(null)  %}
+        <h5 class="errorMoney" style="color:red;">
+        <i class="glyphicon glyphicon-trash"></i>
+            </h5>
+
+            <div class="modal hide fade" id="errorMoneyModal">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                        <h4 class="modal-title">Erreur !!!</h4>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        {{error}}
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <a href="#" class="btn btn-primary" id="errorModalFermer">Fermer</a>
+                                                      
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+    {% endif %}
+    {% endif %}
+    {% endif %}
+
     <table>
         <tbody>
             <tr>
                 <td valign="top">
                     {{form_start(frmDecaisser)}}
                     {{form_row(frmDecaisser.lignebudgetdepense)}}
-                    {{form_row(frmDecaisser.lignebudgetsource)}}
+                      {% if resultatIsCentralized[0].central is same as(true) %}
+                        {{form_row(frmDecaisser.caisseCentrale)}}
+                    {% else %}
+                        {{form_row(frmDecaisser.caisseCentrale, {'attr':{'disabled':'disabled'}})}}
+                    {% endif %}
+                    {% if resultatIsCentralized[0].central is same as(true) %}
+                        {{form_row(frmDecaisser.lignebudgetsource, {'attr':{'disabled':'disabled'}})}}
+                    {% else %}
+                        {{form_row(frmDecaisser.lignebudgetsource)}}
+                    {% endif %}
                     {{form_row(frmDecaisser.montantdetail)}}
+
                     {{form_row(frmDecaisser.modepayement)}}
                     {{form_row(frmDecaisser.createAt)}}
                     {{form_row(frmDecaisser.descriptiondetaildepense)}}
                     <br>
-                    <button type="submit" class="btn btn-success">
-                    {% if editMode %}
-                    Modifier
-                    {% else %}
-                    Enregistrer
-                    {% endif %}
-                    </button>
-                    {{form_end(frmDecaisser)}}
-
-                </td>
-                <td valign="top">
-                    <h5>Les sorties pour cet OP
-                    </h5>
-                    <table class="table table-hover">
-                        <thead>
-                            <tr class="table-primary">
-                                <th scope="col">ID</th>
-                                <th scope="col">recette</th>
-                                <th scope="col">date</th>
-                                <th scope="col">montant</th>
-                                 <th scope="col">Modifier</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% set numDepense = 0 %}
-                            {% set totalDetail = 0 %}
-                            {% for uneSortie in queryListDetailSortie %}
-                          
-                            
-                                <tr>
-                                    <th scope="row">
-                                        {% set numDepense = numDepense + 1 %}
-                                        {{ numDepense }}
-                                    </th>
-                                    <td>{{uneSortie.lesdetails.lignebudgetsource.lignebudgetprevision.intituleLigne}}
-                                    </td>
-                                    <td>{{uneSortie.lesdetails.createAt|date('d/m/Y') }}
-                                    </td>
-                                    {% set totalDetail = totalDetail + uneSortie.lesdetails.montantdetail %}
-                                    <td>{{uneSortie.lesdetails.montantdetail}}
-                                    </td>
-                                     <td>
-                                        <a href="{{path('edit_decaisser', {'id':uneSortie.lesdetails.id})}}">
-                                           <img src="{{ asset('/img/edit.png') }}"/></a>
-                                            <a href="{{path('delete_caisser', {'id':uneSortie.lesdetails.id})}}">
-                                            <img src="{{ asset('/img/delete1.png') }}"/></a>
-                                    </td>
-
-                                </tr>
-                            {% endfor %}
-                            <tr class="table-primary">
-                                <th scope="row"></th>
-                                <td></td>
-                                <td>Total</td>
-                                <td>
-                                    {{totalDetail}}
-                                </td>
-                                <td></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </td>
-                <td  valign="top">
-                 <h5> La situation de la caisse </h5>
-                         <table class="table table-hover">
+                        <button class="btn btn-success " type="submit">
+                            {% if editMode %}
+                                Modifier
+                                {% else %}
+                                Enregistrer
+                            {% endif %}
+                        </button>
+                        {{form_end(frmDecaisser)}}
+                    </td>
+                    <td valign="top">
+                        <h5>Les sorties pour cet OP
+                        </h5>
+                        <table class="table table-hover">
                             <thead>
                                 <tr class="table-primary">
                                     <th scope="col">ID</th>
-                                    <th scope="col">Service</th>
-                                    <th scope="col">recette</th>
+                                    <th scope="col">Source</th>
+                                    <th scope="col">date</th>
                                     <th scope="col">montant</th>
+                                    <th scope="col">Modifier</th>
                                 </tr>
                             </thead>
                             <tbody>
-                              {% set numDepense = 0 %}
-                               {% set soldeService = 0 %}
-                              {% set service = null %}
-                                {% for soldeLigne in querySoldeCompte %}
-                                  {% if soldeLigne.mesrecettes.lignebudgetrecette.leSolde > 0 %}
-                                   <tr>
-                                       <th scope="row">
-                                             {% set numDepense = numDepense + 1 %}
-                                        {{ numDepense }}
-                                       </th>
+                                {% set numDepense = 0 %}
+                                {% set totalDetail = 0 %}
+                                {% for uneSortie in queryListDetailSortie %}
+                                    <tr>
+                                        <th scope="row">
+                                            {% set numDepense = numDepense + 1 %}
+                                            {{ numDepense }}
+                                        </th>
                                         <td>
-                                            {{soldeLigne.mesrecettes.lignebudgetrecette.service.designation}}
-                                            {% set service = soldeLigne.mesrecettes.lignebudgetrecette.service %}
+                                        
+                                        {% if uneSortie.lesdetails.lignebudgetsource is not same as(null) %}
+                                         {{uneSortie.lesdetails.lignebudgetsource.lignebudgetprevision.intituleLigne}}
+                                         {% elseif uneSortie.lesdetails.caisseCentrale  is not same as(null)  %}
+                                              {{uneSortie.lesdetails.caisseCentrale.code}}
+                                        {% endif %}
                                         </td>
                                         <td>
-                                            {{soldeLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
+                                            {{uneSortie.lesdetails.createAt|date('d/m/Y') }}
                                         </td>
+                                        {% set totalDetail = totalDetail + uneSortie.lesdetails.montantdetail %}
                                         <td>
-                                            {% set soldeService = soldeService + soldeLigne.mesrecettes.lignebudgetrecette.leSolde %}
-                                            {{soldeLigne.mesrecettes.lignebudgetrecette.leSolde}}
+                                            {{uneSortie.lesdetails.montantdetail}}
                                         </td>
+                                      
+                                        <td>
+                                            <a href="{{path('edit_decaisser', {'id':uneSortie.lesdetails.id})}}">
+                                                <img src="{{ asset('/img/edit.png') }}"/></a>
+                                                 &nbsp; &nbsp;
+                                            
+                                            <a class="confirmModalLink" data-toggle="modal" href="{{path('delete_caisser', {'id':uneSortie.lesdetails.id})}}">
+                                                <i class="glyphicon glyphicon-trash"></i>
+                                                <img src="{{ asset("/img/delete1.png")}}" alt="Supprimer"></a>
+                                                <div class="modal hide fade" id="confirmModal">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <button aria-hidden="true" class="close" data-dismiss="modal" type="button">&times;</button>
+                                                                <h4 class="modal-title">Confirmation de la suppression</h4>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                Etes-vous sur de vouloir supprimer cette opération ?
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <a class="btn btn-primary" href="#" id="confirmModalNo">Non</a>
+                                                                <a class="btn btn-primary" href="#" id="confirmModalYes">Oui</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    <tr class="table-primary">
+                                        <th scope="row"></th>
+                                        <td></td>
+                                        <td>Total</td>
+                                        <td>
+                                            {{totalDetail}}
+                                        </td>
+                                        <td></td>
                                     </tr>
-                                    {% endif %}
-                                {% endfor %}
-                                <tr class="table-primary">
-                                <th scope="row"></th>
-                                <td colspan="1">Reste en caisse</td>
-                                <td></td>
-                                <td>{{soldeService}}</td>
-                            </tr>
-                               {% if is_granted('ROLE_CHEF_COMPTABILITE')== true  or  is_granted('ROLE_AB')== true or  is_granted('ROLE_ADMIN')== true  %}
+                                </tbody>
+                            </table>
+                        </td>
+                        <td valign="top">
+                      <h5>
+                                La situation de la caisse
+                            </h5>
+                       {% if resultatIsCentralized[0].central is same as(true) %}
+                       
+                             <table class="table table-hover">
+                                <thead>
+                                    <tr class="table-primary">
+                                        <th scope="col">ID </th>
+                                        <th scope="col">Code</th>
+                                        <th scope="col">intitule</th>
+                                        <th scope="col">montant</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                 {% set numDepense = 0 %}
+                                    {% set totalCaisse = 0 %}
+                                     {% for caisse in resultatCaisseCentrale %}
+                                      
+                                            <tr>
+                                                <th scope="row">
+                                                    {% set numDepense = numDepense + 1 %}
+                                                    {{ numDepense }}
+                                                </th>
+                                                <td>
+                                                    {{caisse.soldeCaisse.code}}
+                                                    {% set totalCaisse = totalCaisse + caisse.soldeCaisse.LeSolde %}
+                                                </td>
+                                                <td>
+                                                    {{caisse.soldeCaisse.intitule}}
+                                                </td>
+                                                <td>
+                                                    {{ caisse.soldeCaisse.LeSolde}}
+                                                </td>
+                                                </tr>
+                             {% endfor %}
+                             <tr class="table-primary">
+                                                <th scope="row"></th>
+                                                <td></td>
+                                                <td>Total
+                                                </td>
+                                                <td>
+                                                    {{totalCaisse}}</td>
+                                            </tr>
+                                            {% else %}
+                                                
+                           
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr class="table-primary">
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Service</th>
+                                        <th scope="col">recette</th>
+                                        <th scope="col">montant</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    {% set numDepense = 0 %}
+                                    {% set soldeService = 0 %}
+                                    {% set service = null %}
+                                    {% for soldeLigne in querySoldeCompte %}
+                                        {% if soldeLigne.mesrecettes.lignebudgetrecette.leSolde > 0 %}
+                                            <tr>
+                                                <th scope="row">
+                                                    {% set numDepense = numDepense + 1 %}
+                                                    {{ numDepense }}
+                                                </th>
+                                                <td>
+                                                    {{soldeLigne.mesrecettes.lignebudgetrecette.service.designation}}
+                                                    {% set service = soldeLigne.mesrecettes.lignebudgetrecette.service %}
+                                                </td>
+                                                <td>
+                                                    {{soldeLigne.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
+                                                </td>
+                                                <td>
+                                                    {% set soldeService = soldeService + soldeLigne.mesrecettes.lignebudgetrecette.leSolde %}
+                                                    {{soldeLigne.mesrecettes.lignebudgetrecette.leSolde}}
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <tr class="table-primary">
+                                        <th scope="row"></th>
+                                        <td colspan="1">Reste en caisse</td>
+                                        <td></td>
+                                        <td>
+                                            {{soldeService}}</td>
+                                    </tr>
+                                    {% if is_granted('ROLE_CHEF_COMPTABILITE')== true  or  is_granted('ROLE_AB')== true or  is_granted('ROLE_ADMIN')== true  %}
                                         {% set numDepenseAutre = 0 %}
                                         {% set soldeAutresService = 0 %}
                                         {% if querySoldeCompteAutres is not null %}
                                             {% for soldeLigneAutre in querySoldeCompteAutres %}
-                                            {% if soldeLigneAutre.mesrecettes.lignebudgetrecette.leSolde > 0  and soldeLigneAutre.mesrecettes.lignebudgetrecette.service is not same as(service) %}
-                                            <tr>
-                                                <th scope="row">
-                                                        {% set numDepenseAutre = numDepenseAutre + 1 %}
-                                                    {{ numDepenseAutre }}
-                                                </th>
-                                                    <td>
-                                                        {{soldeLigneAutre.mesrecettes.lignebudgetrecette.service.designation}}
-                                                    </td>
-                                                    <td>
-                                                        {{soldeLigneAutre.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
-                                                    </td>
-                                                    <td>
-                                                    {% set soldeAutresService = soldeAutresService + soldeLigneAutre.mesrecettes.lignebudgetrecette.leSolde %}
-                                                        {{soldeLigneAutre.mesrecettes.lignebudgetrecette.leSolde}}
-                                                    </td>
-                                            </tr>
-                                        {% endif %}
+                                                {% if soldeLigneAutre.mesrecettes.lignebudgetrecette.leSolde > 0  and soldeLigneAutre.mesrecettes.lignebudgetrecette.service is not same as(service) %}
+                                                    <tr>
+                                                        <th scope="row">
+                                                            {% set numDepenseAutre = numDepenseAutre + 1 %}
+                                                            {{ numDepenseAutre }}
+                                                        </th>
+                                                        <td>
+                                                            {{soldeLigneAutre.mesrecettes.lignebudgetrecette.service.designation}}
+                                                        </td>
+                                                        <td>
+                                                            {{soldeLigneAutre.mesrecettes.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
+                                                        </td>
+                                                        <td>
+                                                            {% set soldeAutresService = soldeAutresService + soldeLigneAutre.mesrecettes.lignebudgetrecette.leSolde %}
+                                                            {{soldeLigneAutre.mesrecettes.lignebudgetrecette.leSolde}}
+                                                        </td>
+                                                    </tr>
+                                                {% endif %}
                                             {% endfor %}
                                             <tr class="table-primary">
-                                            <th scope="row"></th>
-                                            <td></td>
-                                            <td>Reste Autre </td>
-                                            <td>{{soldeAutresService}}</td>
+                                                <th scope="row"></th>
+                                                <td></td>
+                                                <td>Reste Autre
+                                                </td>
+                                                <td>
+                                                    {{soldeAutresService}}</td>
                                             </tr>
                                             <tr class="table-primary">
-                                            <th scope="row"></th>
-                                            <td></td>
-                                            <td>Reste Global </td>
-                                            <td>{{soldeAutresService + soldeService}}</td>
+                                                <th scope="row"></th>
+                                                <td></td>
+                                                <td>Reste Global
+                                                </td>
+                                                <td>
+                                                    {{soldeAutresService + soldeService}}</td>
                                             </tr>
-                                            {% endif %}
-                                 {% endif %}
-                            </tbody>
-                        </table>
-                </td>
-
-
-            </tr>
-            <tr>
-                
-
-                 
-                    <td>
-                    </td>
-                 
-            </tr>
-
-        </tbody>
-    </table>
-
-{% endblock %}
+                                        {% endif %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                             {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endblock %}
+    

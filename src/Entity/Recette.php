@@ -52,6 +52,11 @@ class Recette
      */
     private $lignebudgetrecette;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\CompteJournaux", inversedBy="recettes")
+     */
+    private $codeJournaux;
+
   
     public function getId(): ?int
     {
@@ -127,6 +132,18 @@ class Recette
     public function setLignebudgetrecette(?Previsionbudget $lignebudgetrecette): self
     {
         $this->lignebudgetrecette = $lignebudgetrecette;
+
+        return $this;
+    }
+
+    public function getCodeJournaux(): ?CompteJournaux
+    {
+        return $this->codeJournaux;
+    }
+
+    public function setCodeJournaux(?CompteJournaux $codeJournaux): self
+    {
+        $this->codeJournaux = $codeJournaux;
 
         return $this;
     }

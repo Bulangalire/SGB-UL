@@ -7,9 +7,10 @@
 
 const $ = require('jquery');
 require('../js/Chart.bundle.min.js');
-require('../../node_modules/bootstrap/scss/bootstrap.scss');
+require('../../node_modules/bootstrap/');
 require('../scss/app.scss');
 require('../js/confirm.js');
+require('../js/alertError.js');
 /*
 $(document).ready(function () {
     //var $ = require('jquery')

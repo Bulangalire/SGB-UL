@@ -41,7 +41,6 @@ class Detaildepense
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Previsionbudget" , inversedBy="recettesUtiliseesEnDepenses")
-     * @ORM\JoinColumn(nullable=false)
      */
     private $lignebudgetsource;
 
@@ -55,6 +54,11 @@ class Detaildepense
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $createAt;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\CompteJournaux" , inversedBy="depenses")
+     */
+    private $caisseCentrale;
 
      public function getId(): ?int
     {
@@ -139,6 +143,18 @@ class Detaildepense
     public function setCreateAt(\DateTimeInterface $createAt): self
     {
         $this->createAt = $createAt;
+
+        return $this;
+    }
+
+    public function getCaisseCentrale(): ?CompteJournaux
+    {
+        return $this->caisseCentrale;
+    }
+
+    public function setCaisseCentrale(?CompteJournaux $caisseCentrale): self
+    {
+        $this->caisseCentrale = $caisseCentrale;
 
         return $this;
     }
