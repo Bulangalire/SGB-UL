@@ -109,7 +109,7 @@ function chartDetailRecette(titre, montantprevision, daterecette, ctx, typeChart
     Chart.defaults.global.defaultBackgroundColor = '#777';
     Chart.defaults.global.defaultFontFamily = 'Lato';
     Chart.defaults.global.defaultFontColor = '#777';
-    Chart.defaults.global.defaultFontSize = 18;
+    Chart.defaults.global.defaultFontSize = 12;
     Chart.defaults.global.defaultBorderColor = '#777';
     var recettes = {
         labels:daterecette,
@@ -170,6 +170,8 @@ function chartDetailRecette(titre, montantprevision, daterecette, ctx, typeChart
                     valueFormatString: "DD-MMM" ,
                 }]
             },
+            responsive: true,
+            maintainAspectRatio: false
     
         }
       });

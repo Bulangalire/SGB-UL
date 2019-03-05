@@ -59,7 +59,7 @@ function chartRecette(titre, tempData, ctx, typeChart){
     Chart.defaults.global.defaultBackgroundColor = '#777';
     Chart.defaults.global.defaultFontFamily = 'Lato';
     Chart.defaults.global.defaultFontColor = '#777';
-    Chart.defaults.global.defaultFontSize = 18;
+    Chart.defaults.global.defaultFontSize = 12;
     Chart.defaults.global.defaultBorderColor = '#777';
       var chartInstance = new Chart(ctx, {
         type: typeChart,
@@ -115,7 +115,9 @@ function chartRecette(titre, tempData, ctx, typeChart){
                         beginAtZero:true
                     }
                 }]
-            }
+            },
+            responsive: true,
+            maintainAspectRatio: false
     
         }
       });

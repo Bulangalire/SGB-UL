@@ -1,7 +1,6 @@
 {% extends 'base.html.twig' %}
 {% block body %}
     {% if comptesRecettesparservice is not empty %}
-  
         <h4>Analyse du compte
             {{comptesRecettesparservice[0].recette.lignebudgetrecette.lignebudgetprevision.intituleLigne}}
             {{ app.session.get('datedebutselect')|date('d/m/Y') }}
@@ -14,16 +13,22 @@
                     <th scope="col">ID</th>
                     <th scope="col">Compte</th>
                     <th scope="col">Réalisation</th>
+                    <th scope="col">En poucentage</th>
                     <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>
-
                 {% set numDepense = 0 %}
                 {% set total = 0 %}
+                {% set PoucentageGeneralRecette = 0 %}
+                {% set totalGeneralRecette = 0 %}
+                {% for comptesRecettePourcentage in comptesRecettesparservice %}
+                    {% if comptesRecettePourcentage.entree > 0 %}
+                        {% set totalGeneralRecette = totalGeneralRecette + comptesRecettePourcentage.entree %}
+                    {% endif %}
+                {% endfor %}
                 {% for comptesRecette in comptesRecettesparservice %}
                     {% if comptesRecette.entree > 0 %}
-                   
                         <tr>
                             <th scope="row">
                                 {% set numDepense = numDepense + 1 %}
@@ -37,8 +42,14 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {{comptesRecette.entree}}
+                                {{comptesRecette.entree|number_format(2, '.',',') }}
+                            </td>
+                            <td>
                                 {% set total = total + comptesRecette.entree %}
+                                {% if totalGeneralRecette is not same as(0) %}
+                                    {% set PoucentageGeneral =  (comptesRecette.entree * 100 ) / totalGeneralRecette %}
+                                    {{PoucentageGeneral|number_format(2, '.',',')}}{{" % "}}
+                                {% endif %}
                             </td>
                             <td>
                                 {% if is_granted('ROLE_COMPTABILITE') or is_granted('ROLE_AB') or is_granted('ROLE_ADMIN') or is_granted('ROLE_RECTOR') or is_granted('ROLE_SG')%}
@@ -53,7 +64,9 @@
                     <td>
                         {{ converssion(total, "USD") }}</td>
                     <td>
-                        {{total}}</td>
+                        {{total|number_format(2, '.',',')}}
+                    </td>
+                    <td></td>
                     <td></td>
                 </tr>
                 <tr>
@@ -66,7 +79,6 @@
         {% endif %}
         <!-- cas où c'est la ligne de depense-->
         {% if comptesDepenseparservice is not empty %}
-        
             <h4>Analyse du compte
                 {{comptesDepenseparservice[0].mesdep.lignebudgetdepense.lignebudgetprevision.intituleLigne}}
                 {{ app.session.get('datedebutselect')|date('d/m/Y') }}
@@ -79,14 +91,21 @@
                         <th scope="col">ID</th>
                         <th scope="col">Compte</th>
                         <th scope="col">Réalisation</th>
+                        <th scope="col">En poucentage</th>
                         <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
                     {% set numDepense = 0 %}
                     {% set total = 0 %}
+                    {% set PoucentageGeneralDepense = 0 %}
+                    {% set totalGeneralDepense = 0 %}
+                    {% for comptesRecettePourcentageDepense in comptesDepenseparservice %}
+                        {% if comptesRecettePourcentageDepense.sommedepense > 0 %}
+                            {% set totalGeneralDepense = totalGeneralDepense + comptesRecettePourcentageDepense.sommedepense %}
+                        {% endif %}
+                    {% endfor %}
                     {% for comptesDepense in comptesDepenseparservice %}
-                   
                         <tr>
                             <th scope="row">
                                 {% set numDepense = numDepense + 1 %}
@@ -100,8 +119,14 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {{comptesDepense.sommedepense}}
+                                {{comptesDepense.sommedepense|number_format(2, '.',',') }}
+                            </td>
+                            <td>
                                 {% set total = total + comptesDepense.sommedepense %}
+                                {% if totalGeneralDepense is not same as(0) %}
+                                    {% set PoucentageGeneralDepense =  (comptesDepense.sommedepense * 100 ) / totalGeneralDepense %}
+                                    {{PoucentageGeneralDepense|number_format(2, '.',',')}}{{" % "}}
+                                {% endif %}
                             </td>
                             <td>
                                 {% if is_granted('ROLE_COMPTABILITE') or is_granted('ROLE_AB') or is_granted('ROLE_ADMIN') or is_granted('ROLE_RECTOR') or is_granted('ROLE_SG')%}
@@ -109,28 +134,28 @@
                                 {% endif %}
                             </td>
                         </tr>
-                   
-                {% endfor %}
-                <tr class="table-primary">
-                    <th scope="row"></th>
-                    <td>
-                        {{ converssion(total, "USD") }}</td>
-                    <td>
-                        {{total}}</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td colspan="4">
-                        <canvas id="myCompteDepense" width="400" height="400" data-mescomptesdepense="{{resultatDepenseparserviceGraphic|json_encode}}"></canvas>
+                    {% endfor %}
+                    <tr class="table-primary">
+                        <th scope="row"></th>
+                        <td>
+                            {{ converssion(total, "USD") }}</td>
+                        <td>
+                            {{total|number_format(2, '.',',')}}</td>
                     </td>
-                </tbody>
-            </table>
-            
-        <script type="text/javascript" src="{{ asset('build/js/chartDepenseUnCompteParservice.js') }}"></script>
-        {% endif %}
-    {% endblock %}
-    {% block javascripts %}
-        {{ parent() }}
-        <script type="text/javascript" src="{{ asset('build/js/moment.js') }}"></script>
-        
-    {% endblock %}
+                    <td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">
+                            <canvas id="myCompteDepense" width="200" height="200" data-mescomptesdepense="{{resultatDepenseparserviceGraphic|json_encode}}"></canvas>
+                        </td>
+                    </tbody>
+                </table>
+                <script type="text/javascript" src="{{ asset('build/js/chartDepenseUnCompteParservice.js') }}"></script>
+            {% endif %}
+        {% endblock %}
+        {% block javascripts %}
+            {{ parent() }}
+            <script type="text/javascript" src="{{ asset('build/js/moment.js') }}"></script>
+        {% endblock %}
+    

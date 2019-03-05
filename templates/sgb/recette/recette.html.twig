@@ -72,7 +72,7 @@
                                     </td>
                                     <td>
                                         {% set totalPrevision = totalPrevision + recette.mesrecettes.lignebudgetrecette.montantprevision %}
-                                        {{recette.mesrecettes.lignebudgetrecette.montantprevision}}
+                                        {{recette.mesrecettes.lignebudgetrecette.montantprevision|number_format(2, '.',',')}}
                                     </td>
                                     <td>
                                         {% set totalRecette = totalRecette + recette.montantrecette %}

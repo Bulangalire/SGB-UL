@@ -439,7 +439,18 @@ class SgbController extends AbstractController
 
                     $em = $this->getDoctrine()->getManager();
              
-                    $queryDepense= $em->createQuery('SELECT d as mesdep, round(sum(d.montantdetail),2) as sommedepense 
+                    if($service=='*'){
+                        $queryDepense= $em->createQuery('SELECT d as mesdep, round(sum(d.montantdetail),2) as sommedepense 
+                    FROM   App\Entity\Detaildepense d 
+                    LEFT JOIN d.lignebudgetdepense p 
+                    WHERE p.anneebudgetprevision=:anneebudgetselect 
+                    AND d.createAt BETWEEN :debut 
+                    AND :fin 
+                    GROUP BY d.lignebudgetdepense
+                    ORDER BY p.service, d.createAt  DESC');
+                       $queryDepense->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                    }else{
+                        $queryDepense= $em->createQuery('SELECT d as mesdep, round(sum(d.montantdetail),2) as sommedepense 
                     FROM   App\Entity\Detaildepense d 
                     LEFT JOIN d.lignebudgetdepense p 
                     WHERE p.service=:userservice
@@ -450,6 +461,10 @@ class SgbController extends AbstractController
                     ORDER BY d.createAt DESC');
 
                     $queryDepense->setParameters(array('userservice' => $service, 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                   
+
+                    }
+                    
                     $queryDepenseGlobale = $queryDepense->getResult();
 
                 
@@ -1039,8 +1054,12 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
                             if( $formDetailRecette->isSubmitted() &&  $formDetailRecette->isValid()){
                             if($em->getRepository("\App\Entity\Recette")->findOneBy(
                                 array('lignebudgetrecette'=>$recette->getLignebudgetrecette(), 
-                                'montantrecette'=>$recette->getMontantrecette() 
-                            ) 
+                                    'montantrecette'=>$recette->getMontantrecette(),
+                                    'createAt'=>$recette->getCreateAt(),
+                                    'libelle'=>$recette->getLibelle(),
+                                    'description'=>$recette->getDescription()
+                                ) 
+                              
                                 )){
                                     echo '<h2 style="color:red;"> la recette existe déjà </h2>';
                                 }else{
@@ -1114,13 +1133,14 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
         if(!$recette){ 
           exit;
        } 
-       $em = $this->getDoctrine()->getManager();
-       if($recette->getCodeJournaux()!==null){
-        $caisseCentrale=$em->getRepository(CaisseCentrale::class)->findOneBy(['recette' => $recette]);
-        $manager->remove($caisseCentrale);
-        $manager->flush();
-      }
-                       try{
+       try{
+            $em = $this->getDoctrine()->getManager();
+            if($recette->getCodeJournaux()!==null){
+                $caisseCentrale=$em->getRepository(CaisseCentrale::class)->findOneBy(['recette' => $recette]);
+                $manager->remove($caisseCentrale);
+                $manager->flush();
+            }
+                      
                            $manager->remove($recette);
                            $manager->flush(); 
                            return $this->redirectToRoute('recette_create');  

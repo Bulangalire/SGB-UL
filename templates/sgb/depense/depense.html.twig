@@ -18,7 +18,7 @@
                                 <th scope="col">Réalisations</th>
                                 <th scope="col">Ecarts</th>
                                 <th scope="col">Taux de réalisation</th>
-                                <th scope="col">En lettre</th>
+                                <th scope="col">Service</th>
                                 <th scope="col"></th>
                             </tr>
                         </thead>
@@ -67,7 +67,7 @@
                                     {% set totaleSortie = totaleSortie + dep.sommedepense %}
                                   
                                     <td>
-                                        {{ converssion(dep.sommedepense, "USD") }}
+                                        {{dep.mesdep.lignebudgetdepense.service.designation }}
                                     </td>
                                 </tr>
                             {% endfor %}

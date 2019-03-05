@@ -76,7 +76,7 @@ $(document).ready(function () {
                             return tooltipLabel + ': ' + tooltipData + ' (' + tooltipPercentage + '%)';
                         }
                     }
-                },
+                }
             }
           });
         
