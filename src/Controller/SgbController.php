@@ -935,7 +935,7 @@ class SgbController extends AbstractController
     }
 /**
  * @Route("/sgb/recette/detailRecette/{id}/new", name="detail_recette")
- * @Route("/sgb/recette/detailRecette/{id}", name="edit_recette")
+ * @Route("/sgb/recette/detailRecette/{id}/edit", name="edit_recette")
  */
 public function detailRecette(Recette $recette=null, Request $request, ObjectManager $manager, CaisseCentrale $caisseCentrale=null){
 
@@ -1023,7 +1023,7 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
                 ->setParameter('larecette','Recette')
                 ->setParameter('annnebudget', $anneebudgetselect);
             }else{
-                if($service=='*'){   
+                if($service==="*"){   
                 return $er->createQueryBuilder('p') 
                             ->select("p, l")
                             ->join("p.lignebudgetprevision", 'l')

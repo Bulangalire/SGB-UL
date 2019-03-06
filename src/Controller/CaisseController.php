@@ -38,28 +38,26 @@ class CaisseController extends AbstractController{
     /**
      * @Route("/sgb/caisse/lesOP", name="servireOp")
      */
-    public function getOpPaye(Session $session, Depense $unedepense = null, Request $request, ObjectManager $manager){
+    public function getOpPaye(Depense $unedepense = null, Request $request, ObjectManager $manager){
         if($this->getUser()===null) {              
             return $this->redirectToRoute('user_login');
            }
-
+           $session = $request->getSession();
                // Service
-    if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselectOp') ){
-        $session->set('servicesselectOp', $request->request->get('services') );
-       }
-    $service= $session->get('servicesselectOp');
+        if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselectOp') ){
+            $session->set('servicesselectOp', $request->request->get('services') );
+        }
+        $service= $session->get('servicesselectOp');
 
-    // Année budgetaire
-    if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselectOp') ){
-        $session->set('anneeselectOp', $request->request->get('annees') );
-    }
-    $anneebudgetselect= $session->get('anneeselectOp');
-           $em = $this->getDoctrine()->getManager();
+        // Année budgetaire
+        if($request->request->get('annees')!==null && $request->request->get('annees') <> $session->get('anneeselectOp') ){
+            $session->set('anneeselectOp', $request->request->get('annees') );
+        }
+        $anneebudgetselect= $session->get('anneeselectOp');
+            $em = $this->getDoctrine()->getManager();
 
           
                     // Lister les op encours de paiement
-          
-       
               
           if($service=='*'){   
             $sqlOPAPaye = $em->createQuery('SELECT dop as lesdetails,
@@ -760,8 +758,9 @@ class CaisseController extends AbstractController{
                 if($detaildepense->getCaisseCentrale()!==null){
                     
                     $caisseCentrale=$em->getRepository(CaisseCentrale::class)->findOneBy(['depense'=>$detaildepense->getId()]);
-            
-                   // $caisseCentrale = new CaisseCentrale();
+                    if($caisseCentrale==null){
+                        $caisseCentrale = new CaisseCentrale();
+                    }
                     $caisseCentrale->setDateSortie($detaildepense->getCreateAt());
                     $caisseCentrale->setMontantSortie($detaildepense->getMontantdetail());
                     $caisseCentrale->setDepense($detaildepense);
@@ -833,13 +832,17 @@ class CaisseController extends AbstractController{
         $datefin =  $session->get('datefinselect');
 
         if($this->dateDifference($datedebut ,  $datefin )){
+            $error="Les nombres des jours pour l'année budgétaire depesent une année";
             return $this->redirectToRoute('selectError', array(
-                'error'=>'error'
+                'error'=> $error
             ));
         }
 
+try{
+
 
         $em = $this->getDoctrine()->getManager();
+        
         if($service!==""){
         if($service=='*'){
             $queryMaCaisse = $em->createQuery('SELECT r as mesrecettes, 
@@ -943,7 +946,13 @@ class CaisseController extends AbstractController{
             'tblCaisse'=>$maCaisse,
             'tblDepense'=>$mesDepense
           ]);
+    }catch(\Exception $e){
+        return $this->redirectToRoute('selectError', array(
+        'error'=>'Veuillez indiquer les criteres correctement'
+    ));
+        
     }
+}
 
 
     //suivi de compte
@@ -1025,6 +1034,12 @@ public function etatCompte(Request $request, ObjectManager $manager){
        }
       $anneebudgetselect= $session->get('anneeselect');
     
+           // Axe
+        if($request->request->get('axe')!==null && $request->request->get('axe') <> $session->get('axeselect') ){
+           
+            $session->set('axeselect',$request->request->get('axe') );
+        }
+        $axe= $session->get('axeselect');
         // Service
         if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
             $session->set('servicesselect', $this->getUser()->getServices()->getId() );
@@ -1059,64 +1074,263 @@ public function etatCompte(Request $request, ObjectManager $manager){
     $em = $this->getDoctrine()->getManager();
     if( $this->isGranted('ROLE_COMPTABILITE') or $this->isGranted('ROLE_AB') or $this->isGranted('ROLE_ADMIN') or $this->isGranted('ROLE_RECTOR')  or $this->isGranted('ROLE_SG')  ){
         if($ligneBudgetaire->getCategorieLigne()=="Recette"){
-         $comptesRecettes= $em->createQuery(' SELECT DISTINCT r as recette, sum(r.montantrecette) as entree
-                       FROM  App\Entity\Recette r
-                       JOIN r.lignebudgetrecette p
-                       JOIN  p.lignebudgetprevision l
-                       WHERE p.anneebudgetprevision=:anneebudgetselect
-                       AND l.id=:cetteLigne
-                       AND r.createAt >=:debut  
-                       AND r.createAt <=:fin 
-                       GROUP BY p.service ORDER BY p.service ASC');
-    $comptesRecettes->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
-    $comptesRecettesparservice = $comptesRecettes->getResult();
-    
-    $comptesRecettesparserviceGraphic = $em->createQuery(
-        "SELECT 
-            SUM(r.montantrecette) as  montantrecette, 
-            date_format(r.createAt, '%M %Y') as createAt
-        FROM  
-        App\Entity\Recette r
-        JOIN r.lignebudgetrecette p
-        JOIN  p.lignebudgetprevision l
-        WHERE p.anneebudgetprevision=:anneebudgetselect
-        AND l.id=:cetteLigne
-        AND r.createAt >=:debut  
-        AND r.createAt <=:fin 
-        GROUP BY createAt ORDER BY r.createAt  ASC");    
-        
-        $comptesRecettesparserviceGraphic->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
-    $resultatRecettesparserviceGraphic = $comptesRecettesparserviceGraphic->execute();
+            if($service!=""){
+                if($service=="*"){
+                    $comptesRecettes= $em->createQuery(' SELECT DISTINCT r as recette, sum(r.montantrecette) as entree
+                    FROM  App\Entity\Recette r
+                    JOIN r.lignebudgetrecette p
+                    JOIN  p.lignebudgetprevision l
+                    WHERE p.anneebudgetprevision=:anneebudgetselect
+                    AND l.id=:cetteLigne
+                    AND r.createAt >=:debut  
+                    AND r.createAt <=:fin 
+                    GROUP BY p.service ORDER BY p.service ASC');
+                    $comptesRecettes->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+
+                    $comptesRecettesparserviceGraphic = $em->createQuery(
+                    "SELECT 
+                        SUM(r.montantrecette) as  montantrecette, 
+                        date_format(r.createAt, '%M %Y') as createAt
+                    FROM  
+                    App\Entity\Recette r
+                    JOIN r.lignebudgetrecette p
+                    JOIN  p.lignebudgetprevision l
+                    WHERE p.anneebudgetprevision=:anneebudgetselect
+                    AND l.id=:cetteLigne
+                    AND r.createAt >=:debut  
+                    AND r.createAt <=:fin 
+                    GROUP BY createAt ORDER BY r.createAt  ASC");    
+                    
+                    $comptesRecettesparserviceGraphic->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                
+                }else{
+
+                    $comptesRecettes= $em->createQuery(' SELECT DISTINCT r as recette, sum(r.montantrecette) as entree
+                    FROM  App\Entity\Recette r
+                    JOIN r.lignebudgetrecette p
+                    JOIN  p.lignebudgetprevision l
+                    WHERE p.anneebudgetprevision=:anneebudgetselect
+                    AND p.service=:selectService
+                    AND l.id=:cetteLigne
+                    AND r.createAt >=:debut  
+                    AND r.createAt <=:fin 
+                    GROUP BY p.service ORDER BY p.service ASC');
+                    $comptesRecettes->setParameters(array('selectService'=>$service,'cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                    
+
+                    $comptesRecettesparserviceGraphic = $em->createQuery(
+                        "SELECT 
+                            SUM(r.montantrecette) as  montantrecette, 
+                            date_format(r.createAt, '%M %Y') as createAt
+                        FROM  
+                        App\Entity\Recette r
+                        JOIN r.lignebudgetrecette p
+                        JOIN  p.lignebudgetprevision l
+                        WHERE p.anneebudgetprevision=:anneebudgetselect
+                        AND p.service=:selectService
+                        AND l.id=:cetteLigne
+                        AND r.createAt >=:debut  
+                        AND r.createAt <=:fin 
+                        GROUP BY createAt ORDER BY r.createAt  ASC");    
+                        
+                        $comptesRecettesparserviceGraphic->setParameters(array('selectService'=>$service,'cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                }
+                        $comptesRecettesparservice = $comptesRecettes->getResult();
+                         $resultatRecettesparserviceGraphic = $comptesRecettesparserviceGraphic->execute();
+                }elseif($axe!==""){
+                    if($axe==='*'){
+                        
+                        $comptesRecettes= $em->createQuery(' SELECT DISTINCT r as recette, sum(r.montantrecette) as entree
+                        FROM  App\Entity\Recette r
+                        JOIN r.lignebudgetrecette p
+                        JOIN  p.lignebudgetprevision l
+                        WHERE p.anneebudgetprevision=:anneebudgetselect
+                        AND l.id=:cetteLigne
+                        AND r.createAt >=:debut  
+                        AND r.createAt <=:fin 
+                        GROUP BY p.service ORDER BY p.service ASC');
+                        $comptesRecettes->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+
+                        $comptesRecettesparserviceGraphic = $em->createQuery(
+                        "SELECT 
+                            SUM(r.montantrecette) as  montantrecette, 
+                            date_format(r.createAt, '%M %Y') as createAt
+                        FROM  
+                        App\Entity\Recette r
+                        JOIN r.lignebudgetrecette p
+                        JOIN  p.lignebudgetprevision l
+                        WHERE p.anneebudgetprevision=:anneebudgetselect
+                        AND l.id=:cetteLigne
+                        AND r.createAt >=:debut  
+                        AND r.createAt <=:fin 
+                        GROUP BY createAt ORDER BY r.createAt  ASC");    
+                        
+                        $comptesRecettesparserviceGraphic->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                        
+                    }else{
+                        $comptesRecettes= $em->createQuery(' SELECT DISTINCT r as recette, sum(r.montantrecette) as entree
+                        FROM  App\Entity\Recette r
+                        JOIN r.lignebudgetrecette p
+                        JOIN  p.lignebudgetprevision l
+                        JOIN p.service s
+                        WHERE p.anneebudgetprevision=:anneebudgetselect
+                        AND s.axeAnalytique=:axeAnalytique
+                        AND l.id=:cetteLigne
+                        AND r.createAt >=:debut  
+                        AND r.createAt <=:fin 
+                        GROUP BY p.service ORDER BY p.service ASC');
+                        $comptesRecettes->setParameters(array('axeAnalytique'=>$axe,'cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                        
+
+                        $comptesRecettesparserviceGraphic = $em->createQuery(
+                        "SELECT 
+                            SUM(r.montantrecette) as  montantrecette, 
+                            date_format(r.createAt, '%M %Y') as createAt
+                        FROM  
+                        App\Entity\Recette r
+                        JOIN r.lignebudgetrecette p
+                        JOIN  p.lignebudgetprevision l
+                        JOIN p.service s
+                        WHERE p.anneebudgetprevision=:anneebudgetselect
+                        AND s.axeAnalytique=:axeAnalytique
+                        AND l.id=:cetteLigne
+                        AND r.createAt >=:debut  
+                        AND r.createAt <=:fin 
+                        GROUP BY createAt ORDER BY r.createAt  ASC");    
+                        
+                        $comptesRecettesparserviceGraphic->setParameters(array('axeAnalytique'=>$axe, 'cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+
+                    }
+                    $comptesRecettesparservice = $comptesRecettes->getResult();
+                    $resultatRecettesparserviceGraphic = $comptesRecettesparserviceGraphic->execute();
+                }
 }elseif($ligneBudgetaire->getCategorieLigne()=="Depense"){
-    $comptesDepense= $em->createQuery("SELECT DISTINCT d as mesdep, sum(d.montantdetail) as sommedepense,
-     date_format(d.createAt, '%M %Y') as createAt
-    FROM   App\Entity\Detaildepense d 
-    JOIN d.lignebudgetdepense p 
-    JOIN  p.lignebudgetprevision l
-    WHERE p.anneebudgetprevision=:anneebudgetselect 
-    AND l.id=:cetteLigne
-    AND d.createAt >=:debut 
-    AND d.createAt <=:fin 
-    GROUP BY p.service ORDER BY p.service ASC");
-    $comptesDepense->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
-    $comptesDepenseparservice = $comptesDepense->getResult();
-    
-    $comptesDepenseparserviceGraphic = $em->createQuery(
-        "SELECT sum(d.montantdetail) as sommedepense,
-        date_format(d.createAt, '%M %Y') as createAt
-       FROM   App\Entity\Detaildepense d 
-       JOIN d.lignebudgetdepense p 
-       JOIN  p.lignebudgetprevision l
-       WHERE p.anneebudgetprevision=:anneebudgetselect 
-       AND l.id=:cetteLigne
-       AND d.createAt >=:debut 
-       AND d.createAt <=:fin 
-       GROUP BY createAt ORDER BY d.createAt  ASC");    
-        
-        $comptesDepenseparserviceGraphic->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
-    $resultatDepenseparserviceGraphic = $comptesDepenseparserviceGraphic->execute();
-}
-    
+    if($service!==""){
+            if($service=="*"){
+                    $comptesDepense= $em->createQuery("SELECT DISTINCT d as mesdep, sum(d.montantdetail) as sommedepense,
+                    date_format(d.createAt, '%M %Y') as createAt
+                    FROM   App\Entity\Detaildepense d 
+                    JOIN d.lignebudgetdepense p 
+                    JOIN  p.lignebudgetprevision l
+                    WHERE p.anneebudgetprevision=:anneebudgetselect 
+                    AND l.id=:cetteLigne
+                    AND d.createAt >=:debut 
+                    AND d.createAt <=:fin 
+                    GROUP BY p.service ORDER BY p.service ASC");
+                    $comptesDepense->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                
+                    
+                    $comptesDepenseparserviceGraphic = $em->createQuery(
+                        "SELECT sum(d.montantdetail) as sommedepense,
+                        date_format(d.createAt, '%M %Y') as createAt
+                    FROM   App\Entity\Detaildepense d 
+                    JOIN d.lignebudgetdepense p 
+                    JOIN  p.lignebudgetprevision l
+                    WHERE p.anneebudgetprevision=:anneebudgetselect 
+                    AND l.id=:cetteLigne
+                    AND d.createAt >=:debut 
+                    AND d.createAt <=:fin 
+                    GROUP BY createAt ORDER BY d.createAt  ASC");    
+                        
+                        $comptesDepenseparserviceGraphic->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+            }else{
+                $comptesDepense= $em->createQuery("SELECT DISTINCT d as mesdep, sum(d.montantdetail) as sommedepense,
+                date_format(d.createAt, '%M %Y') as createAt
+                FROM   App\Entity\Detaildepense d 
+                JOIN d.lignebudgetdepense p 
+                JOIN  p.lignebudgetprevision l
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                AND p.service=:selectService
+                AND l.id=:cetteLigne
+                AND d.createAt >=:debut 
+                AND d.createAt <=:fin 
+                GROUP BY p.service ORDER BY p.service ASC");
+                $comptesDepense->setParameters(array('selectService'=>$service,'cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                
+                $comptesDepenseparserviceGraphic = $em->createQuery(
+                    "SELECT sum(d.montantdetail) as sommedepense,
+                    date_format(d.createAt, '%M %Y') as createAt
+                FROM   App\Entity\Detaildepense d 
+                JOIN d.lignebudgetdepense p 
+                JOIN  p.lignebudgetprevision l
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                AND p.service=:selectService
+                AND l.id=:cetteLigne
+                AND d.createAt >=:debut 
+                AND d.createAt <=:fin 
+                GROUP BY createAt ORDER BY d.createAt  ASC");    
+                    
+                    $comptesDepenseparserviceGraphic->setParameters(array('selectService'=>$service,'cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                
+            }
+        }elseif($axe!==""){
+            if($axe==='*'){
+
+                $comptesDepense= $em->createQuery("SELECT DISTINCT d as mesdep, sum(d.montantdetail) as sommedepense,
+                date_format(d.createAt, '%M %Y') as createAt
+                FROM   App\Entity\Detaildepense d 
+                JOIN d.lignebudgetdepense p 
+                JOIN  p.lignebudgetprevision l
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                AND l.id=:cetteLigne
+                AND d.createAt >=:debut 
+                AND d.createAt <=:fin 
+                GROUP BY p.service ORDER BY p.service ASC");
+                $comptesDepense->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+            
+                
+                $comptesDepenseparserviceGraphic = $em->createQuery(
+                    "SELECT sum(d.montantdetail) as sommedepense,
+                    date_format(d.createAt, '%M %Y') as createAt
+                FROM   App\Entity\Detaildepense d 
+                JOIN d.lignebudgetdepense p 
+                JOIN  p.lignebudgetprevision l
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                AND l.id=:cetteLigne
+                AND d.createAt >=:debut 
+                AND d.createAt <=:fin 
+                GROUP BY createAt ORDER BY d.createAt  ASC");    
+                    
+                    $comptesDepenseparserviceGraphic->setParameters(array('cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+            }else{
+
+                $comptesDepense= $em->createQuery("SELECT DISTINCT d as mesdep, sum(d.montantdetail) as sommedepense,
+                date_format(d.createAt, '%M %Y') as createAt
+                FROM   App\Entity\Detaildepense d 
+                JOIN d.lignebudgetdepense p 
+                JOIN  p.lignebudgetprevision l
+                JOIN p.service s
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                AND s.axeAnalytique=:axeAnalytique
+                AND l.id=:cetteLigne
+                AND d.createAt >=:debut 
+                AND d.createAt <=:fin 
+                GROUP BY p.service ORDER BY p.service ASC");
+                $comptesDepense->setParameters(array('axeAnalytique'=>$axe,'cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+                
+                $comptesDepenseparserviceGraphic = $em->createQuery(
+                    "SELECT sum(d.montantdetail) as sommedepense,
+                    date_format(d.createAt, '%M %Y') as createAt
+                FROM   App\Entity\Detaildepense d 
+                JOIN d.lignebudgetdepense p 
+                JOIN  p.lignebudgetprevision l
+                JOIN p.service s
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                AND s.axeAnalytique=:axeAnalytique
+                AND l.id=:cetteLigne
+                AND d.createAt >=:debut 
+                AND d.createAt <=:fin 
+                GROUP BY createAt ORDER BY d.createAt  ASC");    
+                    
+                $comptesDepenseparserviceGraphic->setParameters(array('axeAnalytique'=>$axe, 'cetteLigne'=>$ligneBudgetaire->getId(), 'anneebudgetselect'=> $anneebudgetselect, 'debut'=> $datedebut, 'fin'=> $datefin));
+           
+
+            }
+
+        }
+$comptesDepenseparservice = $comptesDepense->getResult();
+$resultatDepenseparserviceGraphic = $comptesDepenseparserviceGraphic->execute();
+    }    
 }else{
 
     if($ligneBudgetaire->getCategorieLigne()=="Recette"){
@@ -1344,9 +1558,7 @@ function dateDifference($datedebut, $datefin)
 public function getAnalyse($error=null){
  
      $em = $this->getDoctrine()->getManager();
-     if($error){
-        $error="Les nombres des jours pour l'année budgétaire depensent une année";
-     }
+    
      $annees = $em->getRepository(Anneebudgetaire::class)->findAll();
      $services = $em->getRepository(Service::class)->findAll();
      $axes = $em->getRepository(Axeanalytique::class)->findAll();

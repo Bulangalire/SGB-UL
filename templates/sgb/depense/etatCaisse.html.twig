@@ -2,6 +2,57 @@
 {% block body %}
    <h5> La situation de la caisse </h5>
       <a class="btn btn-success" href="{{path('depense_Op')}}">Retour à l'OP</a>
+
+{% if resultatIsCentralized[0].central is same as(true) %}
+                       
+                             <table class="table table-hover">
+                                <thead>
+                                    <tr class="table-primary">
+                                        <th scope="col">ID </th>
+                                        <th scope="col">Code</th>
+                                        <th scope="col">intitule</th>
+                                        <th scope="col">montant</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                 {% set numDepense = 0 %}
+                                    {% set totalCaisse = 0 %}
+                                     {% for caisse in resultatCaisseCentrale %}
+                                     
+                                            <tr>
+                                                <th scope="row">
+                                                    {% set numDepense = numDepense + 1 %}
+                                                    {{ numDepense }}
+                                                </th>
+                                                <td>
+                                                    {{caisse.soldeCaisse.codeJournaux.code}}
+                                                    {% set totalCaisse = totalCaisse + caisse.totalrecette %}
+                                                </td>
+                                                <td>
+                                                    {{caisse.soldeCaisse.codeJournaux.intitule}}
+                                                </td>
+                                                <td>
+                                                    {{ caisse.totalrecette|number_format(2, '.',',')}}
+                                                </td>
+                                                </tr>
+                             {% endfor %}
+                             <tr class="table-primary">
+                                                <th scope="row"></th>
+                                                <td></td>
+                                                <td>Total
+                                                </td>
+                                                <td>
+                                                    {{totalCaisse|number_format(2, '.',',')}}</td>
+                                            </tr>
+                                                </tbody>
+                        </table>
+                                            {% else %}
+
+
+
+
+
                          <table class="table table-hover">
                             <thead>
                                 <tr class="table-primary">
@@ -84,4 +135,5 @@
                                 {% endif %}
                             </tbody>
                         </table>
+                        {% endif %}
                         {% endblock %}

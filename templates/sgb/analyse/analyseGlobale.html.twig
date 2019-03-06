@@ -63,6 +63,8 @@
                 {% set joursAnnee = 365 %}
             {% endif %}
             {% for soldeParLigne in tblCaisse %}
+               {% if soldeParLigne.montantrecette > 0 %}
+            
                 <tr>
                     <th scope="row">
                         {% set numDepense = numDepense + 1 %}
@@ -98,6 +100,7 @@
                         {{  ((soldeParLigne.montantrecette * 100) / previsionPeriode)|round(2, 'ceil') }}{{" % "}}
                     </td>
                 </tr>
+                {% endif %}
             {% endfor %}
             <tr class="table-primary">
                 <th scope="row"></th>

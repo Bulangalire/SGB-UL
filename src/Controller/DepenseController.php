@@ -438,15 +438,16 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
          
             // Creation de variable de session pour les parametres des requêtes
             // Service
+           
             if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
-                $session->set('servicesselect', $this->getUser()->getServices()->getId() );
-                $service= $session->get('servicesselect');
+                $session->set('servicesselectOp', $this->getUser()->getServices()->getId() );
+                $service= $session->get('servicesselectOp');
             }else{
             // Service
-            if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselect') ){
-                $session->set('servicesselect',$request->request->get('services') );
+            if($request->request->get('services')!==null && $request->request->get('services') <> $session->get('servicesselectOp') ){
+                $session->set('servicesselectOp',$request->request->get('services') );
             }
-            $service= $session->get('servicesselect');
+            $service= $session->get('servicesselectOp');
             }
 
          
@@ -512,7 +513,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                 
              }
 
-           
+           dump($service);
              $queryListOPDejaPaye = $sqlOPDejaPaye->getResult();
 
           return $this->render('sgb/depense/opRegles.html.twig',[
@@ -723,7 +724,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
          */
         public function etatCaisse(Service $service=null, Depense $depense=null, Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
 
-        
+            
             // Service
         if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
             $session->set('servicesselectOp', $this->getUser()->getServices()->getId() );
@@ -767,10 +768,30 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
 
                 $queryListDetailSortieParLigne = $sqlDetailSortieParLigne->getResult();
                 $querySoldeCompte = $sqlSoldeCompte->getResult();
+
+                $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
+                sum(r.montantrecette) as totalrecette
+                FROM  App\Entity\CompteJournaux caisse 
+                JOIN caisse.recettes r  
+                JOIN r.lignebudgetrecette p 
+                WHERE p.anneebudgetprevision=:anneebudgetselect 
+                AND p.service=:userservice 
+                group by caisse.id');
+                $sqlCaisseCentrale->setParameters(array('userservice' =>$service,
+                'anneebudgetselect'=> $anneebudgetselect));
+                $resultatCaisseCentrale = $sqlCaisseCentrale->getResult();    
+                $isCentralized = $em->createQuery('SELECT ca.isCentraleCaisse  as central 
+                                                    FROM  App\Entity\ConfigSgb ca') ;
+                                     $resultatIsCentralized  =     $isCentralized->getResult(); 
+               
+
+
                 return $this->render('sgb/depense/etatCaisse.html.twig',[
                  
                  'queryListDetailSortieParLigne'=>$queryListDetailSortieParLigne,
-                 'querySoldeCompte'=>$querySoldeCompte
+                 'querySoldeCompte'=>$querySoldeCompte,
+                 'resultatCaisseCentrale'=>$resultatCaisseCentrale,
+                 'resultatIsCentralized'=>$resultatIsCentralized,
                ]);
              
             }else{
@@ -801,11 +822,39 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
             $queryListDetailSortieParLigne = $sqlDetailSortieParLigne->getResult();
             $querySoldeCompte = $sqlSoldeCompte->getResult();
             $querySoldeCompteAutres = $sqlSoldeCompteAutres->getResult();
+
+        if($service=='*'){
+            $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
+            sum(r.montantrecette) as totalrecette
+            FROM  App\Entity\Recette caisse 
+            JOIN caisse.recettes r  
+            JOIN r.lignebudgetrecette p 
+            WHERE p.anneebudgetprevision=:anneebudgetselect 
+            group by caisse.id');
+            $sqlCaisseCentrale->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+        }else{
+            $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
+            sum(caisse.montantrecette) as totalrecette
+            FROM  App\Entity\Recette caisse 
+            JOIN caisse.codeJournaux c  
+            JOIN caisse.lignebudgetrecette p 
+            WHERE p.anneebudgetprevision=:anneebudgetselect 
+            AND p.service=:userservice 
+            group by c.id');
+            $sqlCaisseCentrale->setParameters(array('userservice' =>$service,'anneebudgetselect'=> $anneebudgetselect));
+        }
+            $resultatCaisseCentrale = $sqlCaisseCentrale->getResult();    
+            $isCentralized = $em->createQuery('SELECT ca.isCentraleCaisse  as central 
+                                                FROM  App\Entity\ConfigSgb ca') ;
+                                 $resultatIsCentralized  =     $isCentralized->getResult(); 
+
             return $this->render('sgb/depense/etatCaisse.html.twig',[
              
              'queryListDetailSortieParLigne'=>$queryListDetailSortieParLigne,
              'querySoldeCompte'=>$querySoldeCompte,
-             'querySoldeCompteAutres' =>$querySoldeCompteAutres
+             'querySoldeCompteAutres' =>$querySoldeCompteAutres,
+             'resultatCaisseCentrale'=>$resultatCaisseCentrale,
+             'resultatIsCentralized'=>$resultatIsCentralized,
            ]);
         }
          
