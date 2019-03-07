@@ -161,23 +161,26 @@
                                  {% set numDepense = 0 %}
                                     {% set totalCaisse = 0 %}
                                      {% for caisse in resultatCaisseCentrale %}
-                                      
+                                    
+                                     
+                                    
                                             <tr>
                                                 <th scope="row">
                                                     {% set numDepense = numDepense + 1 %}
                                                     {{ numDepense }}
                                                 </th>
                                                 <td>
-                                                    {{caisse.soldeCaisse.code}}
-                                                    {% set totalCaisse = totalCaisse + caisse.soldeCaisse.LeSolde %}
+                                                    {{caisse.soldeCaisse.codeJournaux.code}}
+                                                    {% set totalCaisse = totalCaisse + caisse.soldeCaisse.codeJournaux.LeSolde %}
                                                 </td>
                                                 <td>
-                                                    {{caisse.soldeCaisse.intitule}}
+                                                    {{caisse.soldeCaisse.codeJournaux.intitule}}
                                                 </td>
                                                 <td>
-                                                    {{ caisse.soldeCaisse.LeSolde}}
+                                                    {{ caisse.soldeCaisse.codeJournaux.LeSolde}}
                                                 </td>
                                                 </tr>
+                                               
                              {% endfor %}
                              <tr class="table-primary">
                                                 <th scope="row"></th>

@@ -607,8 +607,7 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
 
           $queryListOpAPaye = $sqlOPAPaye->getResult();
          
-          
-
+ 
         // Lister deja signe mais non payé
         if($service=='*'){   
           $sqlOPAPayeDeux = $em->createQuery('SELECT d
@@ -722,8 +721,8 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
         /**
          * @Route("/sgb/depense/etatCaisse", name="caisse_par_service")
          */
-        public function etatCaisse(Service $service=null, Depense $depense=null, Detaildepense $detaildepense = null, Session $session, Request $request, ObjectManager $manager){
-
+        public function etatCaisse(Service $service=null, Depense $depense=null, Detaildepense $detaildepense = null, Request $request, ObjectManager $manager){
+            $session = $request->getSession();
             
             // Service
         if( $this->isGranted('ROLE_COMPTE_FAC') or $this->isGranted('ROLE_CHEF_SERVICE') ){
@@ -743,8 +742,6 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                 $session->set('anneeselectOp', $request->request->get('annees') );
             }
             $anneebudgetselect= $session->get('anneeselectOp');
-
-
 
             $em = $this->getDoctrine()->getManager();
           
@@ -783,9 +780,6 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
                 $isCentralized = $em->createQuery('SELECT ca.isCentraleCaisse  as central 
                                                     FROM  App\Entity\ConfigSgb ca') ;
                                      $resultatIsCentralized  =     $isCentralized->getResult(); 
-               
-
-
                 return $this->render('sgb/depense/etatCaisse.html.twig',[
                  
                  'queryListDetailSortieParLigne'=>$queryListDetailSortieParLigne,
@@ -801,7 +795,6 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
             WHERE  p.anneebudgetprevision=:anneebudgetselect
            ');
            $sqlDetailSortieParLigne->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
-          
            $sqlSoldeCompte = $em->createQuery('SELECT r as mesrecettes, 
             round(sum(r.montantrecette), 2) as montantrecette, 
             p FROM  App\Entity\Recette r 
@@ -823,31 +816,19 @@ public function frmEtatBesoin(Depense $depense =null, EtatbesoinRepository $repo
             $querySoldeCompte = $sqlSoldeCompte->getResult();
             $querySoldeCompteAutres = $sqlSoldeCompteAutres->getResult();
 
-        if($service=='*'){
-            $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
-            sum(r.montantrecette) as totalrecette
-            FROM  App\Entity\Recette caisse 
-            JOIN caisse.recettes r  
-            JOIN r.lignebudgetrecette p 
-            WHERE p.anneebudgetprevision=:anneebudgetselect 
-            group by caisse.id');
-            $sqlCaisseCentrale->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
-        }else{
+        
             $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
             sum(caisse.montantrecette) as totalrecette
             FROM  App\Entity\Recette caisse 
             JOIN caisse.codeJournaux c  
             JOIN caisse.lignebudgetrecette p 
             WHERE p.anneebudgetprevision=:anneebudgetselect 
-            AND p.service=:userservice 
             group by c.id');
-            $sqlCaisseCentrale->setParameters(array('userservice' =>$service,'anneebudgetselect'=> $anneebudgetselect));
-        }
+            $sqlCaisseCentrale->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
             $resultatCaisseCentrale = $sqlCaisseCentrale->getResult();    
             $isCentralized = $em->createQuery('SELECT ca.isCentraleCaisse  as central 
                                                 FROM  App\Entity\ConfigSgb ca') ;
                                  $resultatIsCentralized  =     $isCentralized->getResult(); 
-
             return $this->render('sgb/depense/etatCaisse.html.twig',[
              
              'queryListDetailSortieParLigne'=>$queryListDetailSortieParLigne,

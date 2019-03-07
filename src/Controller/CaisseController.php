@@ -379,7 +379,7 @@ class CaisseController extends AbstractController{
 
                 $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
                 sum(r.montantrecette) as totalrecette
-                FROM  App\Entity\CompteJournaux caisse 
+                FROM  App\Entity\Re caisse 
                 JOIN caisse.recettes r  
                 JOIN r.lignebudgetrecette p 
                 WHERE p.anneebudgetprevision=:anneebudgetselect 
@@ -419,6 +419,7 @@ class CaisseController extends AbstractController{
                 $sqlSoldeCompteAutres->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
                 $querySoldeCompteAutres = $sqlSoldeCompteAutres->getResult();
             
+
                 $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
                 sum(r.montantrecette) as totalrecette
                 FROM  App\Entity\CompteJournaux caisse 
@@ -428,8 +429,26 @@ class CaisseController extends AbstractController{
                 group by caisse.id');
                 $sqlCaisseCentrale->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
                 $resultatCaisseCentrale = $sqlCaisseCentrale->getResult(); 
+
+
+ $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
+            sum(caisse.montantrecette) as totalrecette
+            FROM  App\Entity\Recette caisse 
+            JOIN caisse.codeJournaux c  
+            JOIN caisse.lignebudgetrecette p 
+            WHERE p.anneebudgetprevision=:anneebudgetselect 
+            group by c.id');
+            $sqlCaisseCentrale->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
+            $resultatCaisseCentrale = $sqlCaisseCentrale->getResult();    
+            $isCentralized = $em->createQuery('SELECT ca.isCentraleCaisse  as central 
+                                                FROM  App\Entity\ConfigSgb ca') ;
+                                 $resultatIsCentralized  =     $isCentralized->getResult(); 
+
+
                 $isCentralized = $em->createQuery('SELECT ca.isCentraleCaisse  as central 
                 FROM  App\Entity\ConfigSgb ca') ;
+
+
        $resultatIsCentralized  =   $isCentralized->getResult();        
             }
             $frmDecaisser->handleRequest($request);

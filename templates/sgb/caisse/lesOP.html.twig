@@ -136,8 +136,11 @@
                         <tbody>
                             {% set numDepense = 0 %}
                              {% set totalOPSigne = 0 %}
-                           
+                           <pre>
+                               {{ dump(queryListOpAPayeDeux) }}
+                           </pre>
                             {% for opDeux in queryListOpAPayeDeux %}
+                            
                                 <tr>
                                     <th scope="row">
                                         {% set numDepense = numDepense + 1 %}

@@ -26,14 +26,15 @@
                                                     {{ numDepense }}
                                                 </th>
                                                 <td>
+                                              
                                                     {{caisse.soldeCaisse.codeJournaux.code}}
-                                                    {% set totalCaisse = totalCaisse + caisse.totalrecette %}
+                                                    {% set totalCaisse = totalCaisse + caisse.soldeCaisse.codeJournaux.leSolde %}
                                                 </td>
                                                 <td>
                                                     {{caisse.soldeCaisse.codeJournaux.intitule}}
                                                 </td>
                                                 <td>
-                                                    {{ caisse.totalrecette|number_format(2, '.',',')}}
+                                                    {{ caisse.soldeCaisse.codeJournaux.leSolde|number_format(2, '.',',')}}
                                                 </td>
                                                 </tr>
                              {% endfor %}
