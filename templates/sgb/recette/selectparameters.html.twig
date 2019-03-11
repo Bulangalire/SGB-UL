@@ -30,7 +30,7 @@
 
             <div class="form-group">
          
-                {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF')  %}
+                {% if is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE')  %}
                    <select disabled="disabled" name="services" class="form-control">
                     <option readonly="true" value="{{app.user.services.id}}">{{app.user.services.designation}}
                     </option>

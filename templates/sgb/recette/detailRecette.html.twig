@@ -3,6 +3,12 @@
 {% block body %}
     <h3>{{ title }} Recette
     </h3>
+    {% set isEditable = true %}
+    {% if (is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE') or is_granted('ROLE_COMPTABILITE')) and resultatIsReadOnly[0].readOnlyUser is same as(true)   %}
+            {% set isEditable = false %}
+    {% else %}
+            {% set isEditable = true %}
+    {% endif %}  
     <table>
         <tbody>
 
@@ -16,7 +22,14 @@
                     {{ form_row(formDetailRecette.codeJournaux)}}
                     {{ form_row(formDetailRecette.createAt)}}
                     {{ form_row(formDetailRecette.montantrecette, {'attr' :{'required':'required'}})}}
-                    {{ form_row(formDetailRecette.sauvegarder)}}
+                      {% if isEditable is same as(true) %}
+                       {{ form_row(formDetailRecette.sauvegarder)}}
+                       {% else %}
+                       {{ form_row(formDetailRecette.sauvegarder, {'attr' :{ 'disabled': 'disabled'}} )}}
+                         
+
+                    {% endif %}
+                    
                     {{ form_end(formDetailRecette)}}
                 </td>
 
@@ -27,7 +40,9 @@
                         <thead>
                             <tr class="table-primary">
                                 <th colspan='8'>
+                                {% if  resultatDetailRecette is not empty %}
                                     Detail de la ligne  : {{ resultatDetailRecette[0].intituleLigne }}</th>
+                                {% endif %}
                             </tr>
                             <tr>
                                 <th scope="col">Code</th>
@@ -69,9 +84,11 @@
                                     </td>
 
                                     <td>
-                                                                                  
+                                    
+                                             {% if isEditable is same as(true) %}
+                                                                                
                                           <a href="{{path('edit_recette', {'id':recette.id})}}"><img src="{{ asset("/img/edit.png")}}" alt="Modifier"></a> 
-                                  &nbsp; &nbsp;
+                                              &nbsp; &nbsp;
                                             
                                             <a class="confirmModalLink" data-toggle="modal" href="{{path('delete_recette', {'id':recette.id})}}">
                                                 <i class="glyphicon glyphicon-trash"></i>
@@ -93,6 +110,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                                {% endif %}
 
                                     </td>
 

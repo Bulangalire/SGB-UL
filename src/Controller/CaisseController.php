@@ -378,12 +378,12 @@ class CaisseController extends AbstractController{
                 $querySoldeCompte = $sqlSoldeCompte->getResult();
 
                 $sqlCaisseCentrale = $em->createQuery('SELECT caisse as soldeCaisse,  
-                sum(r.montantrecette) as totalrecette
-                FROM  App\Entity\Re caisse 
-                JOIN caisse.recettes r  
-                JOIN r.lignebudgetrecette p 
+                sum(caisse.montantrecette) as totalrecette
+                FROM  App\Entity\Recette caisse 
+                JOIN caisse.codeJournaux j  
+                JOIN caisse.lignebudgetrecette p 
                 WHERE p.anneebudgetprevision=:anneebudgetselect 
-                group by caisse.id');
+                group by j.id');
                 $sqlCaisseCentrale->setParameters(array('anneebudgetselect'=> $anneebudgetselect));
                 $resultatCaisseCentrale = $sqlCaisseCentrale->getResult();    
                 $isCentralized = $em->createQuery('SELECT ca.isCentraleCaisse  as central 

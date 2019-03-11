@@ -927,10 +927,12 @@ class SgbController extends AbstractController
                             }
                             $serviceuser=$this->getUser()->getServices()->getId();
 
-
+                            $isReadOnly = $em->createQuery('SELECT ca.isReadonly  as readOnlyUser 
+                                                    FROM  App\Entity\ConfigSgb ca') ;
+                                     $resultatIsReadOnly  =     $isReadOnly->getResult(); 
         return $this->render('sgb/recette/recette.html.twig',[
             
-            'formRecette'=>$formRecette->createView(), 'planDeTresoreries'=> $queryRecetteGlobale 
+            'formRecette'=>$formRecette->createView(), 'planDeTresoreries'=> $queryRecetteGlobale , 'resultatIsReadOnly'=> $resultatIsReadOnly
         ]);
     }
 /**
@@ -1119,9 +1121,11 @@ public function detailRecette(Recette $recette=null, Request $request, ObjectMan
             AND p.anneebudgetprevision=:anneebudgetselect AND r.lignebudgetrecette=:idPrevision');
     $queryDetailRecette->setParameters(array('anneebudgetselect'=> $anneebudgetselect, 'idPrevision'=>$recette->getLignebudgetrecette(), 'debut'=> $datedebut, 'fin'=> $datefin ));
     $resultatDetailRecette = $queryDetailRecette->execute();
-
+    $isReadOnly = $em->createQuery('SELECT ca.isReadonly  as readOnlyUser 
+    FROM  App\Entity\ConfigSgb ca') ;
+$resultatIsReadOnly  =     $isReadOnly->getResult(); 
     return $this->render('sgb/recette/detailRecette.html.twig',[
-        'formDetailRecette'=>$formDetailRecette->createView(), 'resultatDetailRecetteGraphic'=> $resultatDetailRecetteGraphic, 'resultatDetailRecette'=> $resultatDetailRecette 
+        'formDetailRecette'=>$formDetailRecette->createView(), 'resultatDetailRecetteGraphic'=> $resultatDetailRecetteGraphic, 'resultatDetailRecette'=> $resultatDetailRecette, 'resultatIsReadOnly'=>$resultatIsReadOnly
     ]);
 }
 

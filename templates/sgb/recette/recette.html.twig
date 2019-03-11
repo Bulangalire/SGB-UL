@@ -16,6 +16,15 @@
                     {{ form_row(formRecette.description)}}
                     {{ form_row(formRecette.codeJournaux)}}
                     {{ form_row(formRecette.montantrecette, {'attr' :{'required':'required'}})}}
+                   
+                    {% if (is_granted('ROLE_COMPTE_FAC') or is_granted('ROLE_CHEF_SERVICE')or is_granted('ROLE_COMPTABILITE')) and resultatIsReadOnly[0].readOnlyUser is same as(true)   %}
+                    
+                     {{ form_row(formRecette.sauvegarder, {'attr' :{ 'disabled': 'disabled'}} )}}
+                     {% else %}
+                            {{ form_row(formRecette.sauvegarder)}}
+
+                    {% endif %}
+                    
                     {{ form_row(formRecette.sauvegarder)}}
                      
                     {{ form_end(formRecette)}}

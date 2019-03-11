@@ -21,6 +21,11 @@ class ConfigSgb
      */
     private $isCentraleCaisse;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $isReadonly;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -34,6 +39,18 @@ class ConfigSgb
     public function setIsCentraleCaisse(?bool $isCentraleCaisse): self
     {
         $this->isCentraleCaisse = $isCentraleCaisse;
+
+        return $this;
+    }
+
+    public function getIsReadonly(): ?bool
+    {
+        return $this->isReadonly;
+    }
+
+    public function setIsReadonly(bool $isReadonly): self
+    {
+        $this->isReadonly = $isReadonly;
 
         return $this;
     }
